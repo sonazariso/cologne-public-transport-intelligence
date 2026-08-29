@@ -34,11 +34,14 @@ The project will combine static **GTFS** schedules with available **realtime dat
 
 The current VRS GTFS snapshot has been loaded successfully into SQL Server and validated against independently profiled source counts. The load batch is marked `Validated`, with source row counts reconciled and critical integrity checks passed.
 
-The first transformation milestone now defines a reproducible Cologne boundary and classifies Cologne-serving routes into Stadtbahn/Tram, S-Bahn, RE, RB, urban bus, regional bus, and rail-replacement service categories. Realtime ingestion, the dimensional analytical warehouse, and Power BI dashboards have not yet been completed.
+The first transformation milestone defines a reproducible Cologne boundary and classifies Cologne-serving routes into Stadtbahn/Tram, S-Bahn, RE, RB, urban bus, regional bus, and rail-replacement service categories. Static analytical warehouse scripts are now prepared to materialize that validated scope into dimensions, service-date relationships, and scheduled trip and stop-event facts for Power BI.
+
+Realtime ingestion, realtime performance facts, and Power BI dashboards have not yet been completed.
 
 ## Documentation
 
 - [Project Definition](docs/PROJECT_DEFINITION.md)
 - [Initial VRS GTFS Data Profile](docs/01_VRS_GTFS_DATA_PROFILE.md)
 - [Cologne Scope and Mode Classification](docs/02_COLOGNE_SCOPE_AND_MODE_CLASSIFICATION.md)
+- [Static GTFS Analytical Warehouse Model](docs/03_STATIC_GTFS_WAREHOUSE_MODEL.md)
 - [SQL Server Implementation Guide](sql/README.md)
