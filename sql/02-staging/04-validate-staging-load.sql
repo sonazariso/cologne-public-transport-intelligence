@@ -145,7 +145,10 @@ ORDER BY
 
 /* Initial technical Cologne scope: global stop-ID prefix de:05315:. */
 SELECT
-    (SELECT COUNT_BIG(*) FROM stg.GtfsStops WHERE StopId LIKE N'de:05315:%') AS CologneStops,
+    (SELECT COUNT_BIG(*) FROM stg.GtfsStops WHERE StopId LIKE N'de:05315:%') AS CologneStopRecords,
+    (SELECT COUNT_BIG(*) FROM stg.GtfsStops WHERE StopId LIKE N'de:05315:%' AND LocationType = N'1') AS CologneParentStations,
+    (SELECT COUNT_BIG(*) FROM stg.GtfsStops WHERE StopId LIKE N'de:05315:%' AND LocationType = N'0') AS CologneStopPositions,
+    COUNT_BIG(DISTINCT stop_time.StopId) AS CologneStopsUsedInStopTimes,
     COUNT_BIG(DISTINCT trip.RouteId) AS CologneRoutes,
     COUNT_BIG(DISTINCT stop_time.TripId) AS CologneTrips,
     COUNT_BIG(*) AS CologneStopTimes

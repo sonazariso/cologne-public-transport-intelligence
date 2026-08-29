@@ -37,7 +37,10 @@ For this initial profile, Cologne stops were identified using the global stop-ID
 
 | Metric | Count |
 |---|---:|
-| Cologne stops | 2,287 |
+| Cologne stop records | 3,156 |
+| Parent stations (`location_type = 1`) | 866 |
+| Stop positions / masts (`location_type = 0`) | 2,290 |
+| Stops referenced by `stop_times.txt` | 2,287 |
 | Routes serving at least one Cologne stop | 153 |
 | Trips serving at least one Cologne stop | 90,331 |
 | Stop-time records at Cologne stops | 1,551,343 |
@@ -56,6 +59,7 @@ These counts confirm that the source supports a substantial multimodal Cologne c
 
 - The feed contains no data rows in `frequencies.txt`; scheduled service is represented through trips, stop times, and service calendars.
 - `routes.txt` contains one duplicated `route_id`: `be:sncb:S41:`. The two source rows have different `agency_id` values (`159` and `5`) while their other route attributes match. Raw staging must preserve both rows; the ambiguity will be resolved explicitly in transformation rather than hidden by a staging constraint.
+- The Cologne prefix identifies 3,156 stop records: 866 parent stations and 2,290 stop positions/masts. Of those stop positions, 2,287 are referenced by `stop_times.txt`; three are currently unused. Parent stations organize child stop positions and are not expected to appear in scheduled stop times.
 - The feed is regional, so the Cologne analytical scope must be derived rather than treating the entire feed as Cologne data.
 - Global stop IDs provide a useful initial geographic filter, but boundary and cross-city route behavior still require validation.
 - Static GTFS describes scheduled service and cannot measure actual delay, cancellation, or disruption performance without realtime or event data.

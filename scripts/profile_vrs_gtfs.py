@@ -80,8 +80,22 @@ def main() -> None:
     for name in REQUIRED_FILES:
         print(f"  {name}: {count_data_rows(args.gtfs_dir / name):,}")
 
+    cologne_parent_stations = sum(
+        row["location_type"] == "1"
+        for row in stops
+        if row["stop_id"] in cologne_stop_ids
+    )
+    cologne_stop_positions = sum(
+        row["location_type"] == "0"
+        for row in stops
+        if row["stop_id"] in cologne_stop_ids
+    )
+
     print("\nInitial Cologne scope")
-    print(f"  Stops: {len(used_cologne_stops):,}")
+    print(f"  Stop records: {len(cologne_stop_ids):,}")
+    print(f"  Parent stations: {cologne_parent_stations:,}")
+    print(f"  Stop positions / masts: {cologne_stop_positions:,}")
+    print(f"  Stops referenced by stop_times: {len(used_cologne_stops):,}")
     print(f"  Routes: {len(cologne_routes):,}")
     print(f"  Trips: {len(cologne_trips):,}")
     print(f"  Stop times: {cologne_stop_times:,}")
