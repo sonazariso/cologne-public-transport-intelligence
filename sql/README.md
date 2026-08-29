@@ -20,6 +20,8 @@ The VRS static GTFS snapshot has been loaded and validated in the source-faithfu
 10. `04-warehouse/01-create-static-warehouse.sql`
 11. `04-warehouse/02-load-static-warehouse.sql`
 12. `04-warehouse/03-validate-static-warehouse.sql`
+13. `05-analytics/01-create-static-analytics-views.sql`
+14. `05-analytics/02-validate-static-analytics-views.sql`
 
 ## Important: Source Path
 
@@ -72,3 +74,11 @@ The loader uses `FORMAT = 'CSV'` and requires SQL Server 2017 or later.
 - Realtime observations will be stored in separate facts and will not overwrite the scheduled baseline.
 - The large scheduled stop-event fact is committed in bounded batches so the development transaction log can be reused.
 - Power BI must consume only warehouse batches whose audit status is `Validated`.
+
+## Analytics-Layer Design Rules
+
+- Analytics views expose business-readable scheduled-service datasets.
+- Pattern counts and dated occurrence counts have explicit names and must not be mixed.
+- Parent stations and physical stop positions remain separate reporting grains.
+- The first Power BI report must be labelled as a scheduled baseline, not a reliability report.
+- Aggregated analytics views are preferred over raw facts for the first Import-mode portfolio report.
