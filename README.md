@@ -32,12 +32,13 @@ The project will combine static **GTFS** schedules with available **realtime dat
 
 ## Project Status
 
-The project is currently in the **static GTFS ingestion stage**. A current VRS GTFS feed has been downloaded and profiled, confirming substantial multimodal coverage for Cologne across tram/light rail, rail, and bus services. The initial SQL Server database, raw staging, bulk-load, indexing, and validation scripts are now defined but have not yet been executed against the target SQL Server instance.
+The current VRS GTFS snapshot has been loaded successfully into SQL Server and validated against independently profiled source counts. The load batch is marked `Validated`, with source row counts reconciled and critical integrity checks passed.
 
-Realtime ingestion, transformation models, the analytical warehouse, and Power BI dashboards have not yet been completed.
+The first transformation milestone now defines a reproducible Cologne boundary and classifies Cologne-serving routes into Stadtbahn/Tram, S-Bahn, RE, RB, urban bus, regional bus, and rail-replacement service categories. Realtime ingestion, the dimensional analytical warehouse, and Power BI dashboards have not yet been completed.
 
 ## Documentation
 
 - [Project Definition](docs/PROJECT_DEFINITION.md)
 - [Initial VRS GTFS Data Profile](docs/01_VRS_GTFS_DATA_PROFILE.md)
+- [Cologne Scope and Mode Classification](docs/02_COLOGNE_SCOPE_AND_MODE_CLASSIFICATION.md)
 - [SQL Server Implementation Guide](sql/README.md)

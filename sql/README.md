@@ -4,7 +4,7 @@ This directory contains the SQL Server implementation for the Cologne public tra
 
 ## Current Milestone
 
-The current scripts create the database and load the VRS static GTFS snapshot into a source-faithful staging layer. All staging columns are intentionally stored as text. Type conversion, standardization, Cologne filtering, and transport-mode classification belong in the next transformation layer.
+The VRS static GTFS snapshot has been loaded and validated in the source-faithful staging layer. The working-layer scripts now define typed Cologne stops, Cologne-serving routes and trips, scheduled stop events inside Cologne, and a defensible transport-mode classification.
 
 ## Execution Order
 
@@ -14,6 +14,8 @@ The current scripts create the database and load the VRS static GTFS snapshot in
 4. `02-staging/02-load-vrs-gtfs.sql`
 5. `02-staging/03-create-staging-indexes.sql`
 6. `02-staging/04-validate-staging-load.sql`
+7. `03-working/01-create-cologne-working-layer.sql`
+8. `03-working/02-validate-cologne-working-layer.sql`
 
 ## Important: Source Path
 
@@ -22,7 +24,7 @@ The current scripts create the database and load the VRS static GTFS snapshot in
 The extracted feed is currently stored on the Mac at:
 
 ```text
-/Users/admin/Documents/DataBaseKÖLN/google_transit_goR/
+/Users/admin/Documents/CologneTransitData/google_transit_goR/
 ```
 
 Before running the loader:
@@ -44,3 +46,13 @@ The loader uses `FORMAT = 'CSV'` and requires SQL Server 2017 or later.
 - GTFS identifiers use a binary collation for exact matching.
 - The current staging layer holds one replaceable feed snapshot.
 - Feed history is retained through archived source files and load-batch metadata, not by appending duplicate staging snapshots.
+
+## Working-Layer Design Rules
+
+- A Cologne stop is identified by the global stop-ID prefix `de:05315:`.
+- A trip or route is included when it serves at least one Cologne stop.
+- Operator identity is not used as the city-boundary filter.
+- Original GTFS types remain visible beside the derived management category.
+- S-Bahn, RE, RB, ordinary buses, and rail-replacement buses are kept separate.
+- Scheduled GTFS times are converted to seconds after service-day midnight so values above `24:00:00` remain valid.
+- Working objects are views at this milestone; physical dimensional tables will be designed after realtime keys and analytical grain are confirmed.
