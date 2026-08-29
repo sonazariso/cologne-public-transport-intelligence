@@ -10,6 +10,19 @@ The working views intentionally expose every rule and are valuable for validatio
 
 The warehouse therefore materializes the validated result once and adds surrogate keys, foreign keys, uniqueness constraints, and reporting indexes. This creates a controlled performance boundary without changing the raw source or hiding the transformation logic.
 
+## Transaction and Log Strategy
+
+The scheduled stop-event fact contains more than 1.5 million rows. Loading the entire warehouse inside one transaction can fill the transaction log on a development VM because active transaction log records cannot be reused before commit.
+
+The ETL therefore uses two controlled stages:
+
+1. Dimensions, service dates, and trip patterns are rebuilt and committed together.
+2. Scheduled stop events are inserted in batches of 5,000 trip keys, with one commit and checkpoint per batch.
+
+The audit status remains `Loading` until all batches finish and becomes `Validated` only after reconciliation. A failed run is not exposed as a valid dataset and the next run starts by rebuilding the warehouse. This design trades one very large atomic transaction for bounded log usage and explicit restartability.
+
+The local development database uses `SIMPLE` recovery because the warehouse is reproducible from source and no transaction-log backup process exists. A production environment requires a separate recovery and backup decision by its database administrator.
+
 ## Grain Before Tables
 
 The grain states exactly what one row represents. Defining it first prevents ambiguous counts and double counting.
@@ -154,4 +167,3 @@ It records when a timetable pattern is scheduled to be active. It contains no ac
 ### Can this model already prove root cause?
 
 No. It establishes the planned operational context. Root-cause claims require realtime observations, alerts, infrastructure or weather context, and careful separation of evidence from inference.
-

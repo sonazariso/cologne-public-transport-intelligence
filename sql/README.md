@@ -16,9 +16,10 @@ The VRS static GTFS snapshot has been loaded and validated in the source-faithfu
 6. `02-staging/04-validate-staging-load.sql`
 7. `03-working/01-create-cologne-working-layer.sql`
 8. `03-working/02-validate-cologne-working-layer.sql`
-9. `04-warehouse/01-create-static-warehouse.sql`
-10. `04-warehouse/02-load-static-warehouse.sql`
-11. `04-warehouse/03-validate-static-warehouse.sql`
+9. `04-warehouse/00-configure-development-database.sql` (local development only)
+10. `04-warehouse/01-create-static-warehouse.sql`
+11. `04-warehouse/02-load-static-warehouse.sql`
+12. `04-warehouse/03-validate-static-warehouse.sql`
 
 ## Important: Source Path
 
@@ -69,3 +70,5 @@ The loader uses `FORMAT = 'CSV'` and requires SQL Server 2017 or later.
 - A trip ID is treated as a schedule pattern; a dated operational occurrence will later use `trip_id + service date`.
 - The scheduled stop-event fact is restricted to events occurring at Cologne stops.
 - Realtime observations will be stored in separate facts and will not overwrite the scheduled baseline.
+- The large scheduled stop-event fact is committed in bounded batches so the development transaction log can be reused.
+- Power BI must consume only warehouse batches whose audit status is `Validated`.

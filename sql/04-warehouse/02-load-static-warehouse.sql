@@ -4,6 +4,11 @@ GO
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
 
+IF CONVERT(NVARCHAR(60), DATABASEPROPERTYEX(DB_NAME(), 'Recovery')) <> N'SIMPLE'
+BEGIN
+    THROW 50013, 'For local development, run 00-configure-development-database.sql before this loader.', 1;
+END;
+
 DECLARE @GtfsLoadBatchId BIGINT =
 (
     SELECT TOP (1) LoadBatchId
@@ -20,6 +25,10 @@ END;
 DECLARE @FeedStartDate DATE;
 DECLARE @FeedEndDate DATE;
 DECLARE @WarehouseLoadBatchId BIGINT;
+DECLARE @TripBatchSize BIGINT = 5000;
+DECLARE @FirstTripKey BIGINT;
+DECLARE @LastTripKey BIGINT;
+DECLARE @MaximumTripKey BIGINT;
 
 SELECT
     @FeedStartDate = FeedStartDate,
@@ -355,51 +364,77 @@ BEGIN TRY
     JOIN dw.DimService AS service
         ON service.ServiceId = trip.ServiceId;
 
-    INSERT INTO dw.FactScheduledStopEvent
-    (
-        TripKey,
-        RouteKey,
-        AgencyKey,
-        ModeKey,
-        ServiceKey,
-        StopKey,
-        StopSequence,
-        ScheduledArrivalTimeText,
-        ScheduledDepartureTimeText,
-        ScheduledArrivalSeconds,
-        ScheduledDepartureSeconds,
-        ArrivalDayOffset,
-        DepartureDayOffset,
-        StopHeadsign,
-        PickupType,
-        DropOffType,
-        ShapeDistanceTraveled,
-        WarehouseLoadBatchId
-    )
+    /*
+        Commit dimensions and trip patterns before loading the 1.55M-row fact.
+        The large fact is loaded in restartable transaction-log-safe batches.
+        The audit row remains Loading until every batch completes.
+    */
+    COMMIT TRANSACTION;
+    CHECKPOINT;
+
     SELECT
-        trip.TripKey,
-        trip.RouteKey,
-        trip.AgencyKey,
-        trip.ModeKey,
-        trip.ServiceKey,
-        stop.StopKey,
-        stop_event.StopSequence,
-        stop_event.ScheduledArrivalTimeText,
-        stop_event.ScheduledDepartureTimeText,
-        stop_event.ScheduledArrivalSeconds,
-        stop_event.ScheduledDepartureSeconds,
-        stop_event.ArrivalDayOffset,
-        stop_event.DepartureDayOffset,
-        stop_event.StopHeadsign,
-        stop_event.PickupType,
-        stop_event.DropOffType,
-        stop_event.ShapeDistanceTraveled,
-        @WarehouseLoadBatchId
-    FROM wrk.vwCologneScheduledStopEvent AS stop_event
-    JOIN dw.FactScheduledTrip AS trip
-        ON trip.TripId = stop_event.TripId
-    JOIN dw.DimStop AS stop
-        ON stop.StopId = stop_event.StopId;
+        @FirstTripKey = MIN(TripKey),
+        @MaximumTripKey = MAX(TripKey)
+    FROM dw.FactScheduledTrip;
+
+    WHILE @FirstTripKey IS NOT NULL AND @FirstTripKey <= @MaximumTripKey
+    BEGIN
+        SET @LastTripKey = @FirstTripKey + @TripBatchSize - 1;
+
+        BEGIN TRANSACTION;
+
+        INSERT INTO dw.FactScheduledStopEvent
+        (
+            TripKey,
+            RouteKey,
+            AgencyKey,
+            ModeKey,
+            ServiceKey,
+            StopKey,
+            StopSequence,
+            ScheduledArrivalTimeText,
+            ScheduledDepartureTimeText,
+            ScheduledArrivalSeconds,
+            ScheduledDepartureSeconds,
+            ArrivalDayOffset,
+            DepartureDayOffset,
+            StopHeadsign,
+            PickupType,
+            DropOffType,
+            ShapeDistanceTraveled,
+            WarehouseLoadBatchId
+        )
+        SELECT
+            trip.TripKey,
+            trip.RouteKey,
+            trip.AgencyKey,
+            trip.ModeKey,
+            trip.ServiceKey,
+            stop.StopKey,
+            TRY_CONVERT(INT, stop_time.StopSequence),
+            NULLIF(stop_time.ArrivalTime, N''),
+            NULLIF(stop_time.DepartureTime, N''),
+            wrk.GtfsTimeToSeconds(stop_time.ArrivalTime),
+            wrk.GtfsTimeToSeconds(stop_time.DepartureTime),
+            wrk.GtfsTimeToSeconds(stop_time.ArrivalTime) / 86400,
+            wrk.GtfsTimeToSeconds(stop_time.DepartureTime) / 86400,
+            NULLIF(stop_time.StopHeadsign, N''),
+            TRY_CONVERT(TINYINT, NULLIF(stop_time.PickupType, N'')),
+            TRY_CONVERT(TINYINT, NULLIF(stop_time.DropOffType, N'')),
+            TRY_CONVERT(DECIMAL(18, 3), NULLIF(stop_time.ShapeDistTraveled, N'')),
+            @WarehouseLoadBatchId
+        FROM dw.FactScheduledTrip AS trip
+        JOIN stg.GtfsStopTimes AS stop_time
+            ON stop_time.TripId = trip.TripId
+        JOIN dw.DimStop AS stop
+            ON stop.StopId = stop_time.StopId
+        WHERE trip.TripKey BETWEEN @FirstTripKey AND @LastTripKey;
+
+        COMMIT TRANSACTION;
+        CHECKPOINT;
+
+        SET @FirstTripKey = @LastTripKey + 1;
+    END;
 
     UPDATE ctl.StaticWarehouseLoadBatch
     SET
@@ -416,7 +451,6 @@ BEGIN TRY
         ScheduledStopEventRows = (SELECT COUNT_BIG(*) FROM dw.FactScheduledStopEvent)
     WHERE WarehouseLoadBatchId = @WarehouseLoadBatchId;
 
-    COMMIT TRANSACTION;
 END TRY
 BEGIN CATCH
     IF XACT_STATE() <> 0 ROLLBACK TRANSACTION;
