@@ -23,6 +23,7 @@ This report is a **scheduled-service baseline**, not a reliability dashboard. It
 | `analytics.vwNetworkBaselineKpi` | Whole scheduled network | 1 | KPI cards |
 | `analytics.vwModeScheduleProfile` | Transport mode | 7 | Mode comparison |
 | `analytics.vwRouteScheduleProfile` | Route | 153 | Route ranking and drill-through |
+| `analytics.vwActiveDateProfile` | Active service date | 182 | Date dimension and calendar filtering |
 | `analytics.vwStopPositionScheduleProfile` | Physical stop position | 2,290 | Map and stop analysis |
 | `analytics.vwParentStationScheduleProfile` | Parent station | 866 | Management station rollup |
 | `analytics.vwDailyScheduledTripProfile` | Active date and route | 20,059 | Daily planned service trend |
@@ -78,7 +79,7 @@ Database: CologneTransitIntelligence
 Data connectivity mode: Import
 ```
 
-Select only the six views in the `analytics` schema for the first report. Import mode is appropriate because the views are compact, refreshable, and optimized for interactive exploration.
+Select only the seven views documented in the Power BI build guide. Import mode is appropriate because the views are compact, refreshable, and optimized for interactive exploration.
 
 ## Recommended Initial Pages
 
@@ -138,4 +139,3 @@ The reporting views are compact and change only when the warehouse refreshes. Im
 ### Can scheduled trip count be used as a demand metric?
 
 No. Passenger counts, occupancy, ticketing, or survey data would be required to measure demand.
-

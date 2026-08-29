@@ -36,7 +36,7 @@ The current VRS GTFS snapshot has been loaded successfully into SQL Server and v
 
 The first transformation milestone defines a reproducible Cologne boundary and classifies Cologne-serving routes into Stadtbahn/Tram, S-Bahn, RE, RB, urban bus, regional bus, and rail-replacement service categories. The static analytical warehouse has been materialized and validated. Reporting views are prepared for a first Power BI scheduled-service baseline covering network scope, modes, routes, stops, stations, and daily planned trips.
 
-Realtime ingestion, realtime performance facts, and Power BI dashboards have not yet been completed.
+Realtime ingestion and realtime performance facts have not yet been completed. The SQL semantic model, reviewed DAX measures, report theme, and build guide are ready for the first Power BI scheduled-baseline report.
 
 ## Documentation
 
@@ -45,4 +45,5 @@ Realtime ingestion, realtime performance facts, and Power BI dashboards have not
 - [Cologne Scope and Mode Classification](docs/02_COLOGNE_SCOPE_AND_MODE_CLASSIFICATION.md)
 - [Static GTFS Analytical Warehouse Model](docs/03_STATIC_GTFS_WAREHOUSE_MODEL.md)
 - [Static Analytics and Power BI Baseline](docs/04_STATIC_ANALYTICS_AND_POWER_BI_BASELINE.md)
+- [Power BI Static Baseline Build Guide](docs/05_POWER_BI_STATIC_BASELINE_BUILD_GUIDE.md)
 - [SQL Server Implementation Guide](sql/README.md)

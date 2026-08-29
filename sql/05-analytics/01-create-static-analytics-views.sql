@@ -118,6 +118,7 @@ SELECT
     route.RouteTypeCode,
     agency.AgencyId,
     agency.AgencyName,
+    mode.ModeKey,
     mode.ModeSortOrder,
     mode.ModeGroup,
     mode.ModeDetail,
@@ -218,6 +219,30 @@ LEFT JOIN StationEventStats AS event_stats ON event_stats.ParentStopKey = parent
 WHERE parent_stop.LocationTypeCode = 1;
 GO
 
+/* One row per date with at least one active Cologne-relevant service. */
+CREATE OR ALTER VIEW analytics.vwActiveDateProfile
+AS
+SELECT
+    date_dimension.DateKey,
+    date_dimension.DateValue,
+    date_dimension.CalendarYear,
+    date_dimension.CalendarQuarter,
+    date_dimension.CalendarMonth,
+    date_dimension.MonthName,
+    date_dimension.DayOfMonth,
+    date_dimension.IsoWeekNumber,
+    date_dimension.IsoWeekdayNumber,
+    date_dimension.WeekdayName,
+    date_dimension.IsWeekend
+FROM dw.DimDate AS date_dimension
+WHERE EXISTS
+(
+    SELECT 1
+    FROM dw.BridgeServiceDate AS service_date
+    WHERE service_date.DateKey = date_dimension.DateKey
+);
+GO
+
 /* One row per active date and route for planned daily-service analysis. */
 CREATE OR ALTER VIEW analytics.vwDailyScheduledTripProfile
 AS
@@ -273,4 +298,3 @@ GROUP BY
     mode.ModeDetail,
     mode.IsRailReplacementService;
 GO
-

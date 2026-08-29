@@ -82,3 +82,4 @@ The loader uses `FORMAT = 'CSV'` and requires SQL Server 2017 or later.
 - Parent stations and physical stop positions remain separate reporting grains.
 - The first Power BI report must be labelled as a scheduled baseline, not a reliability report.
 - Aggregated analytics views are preferred over raw facts for the first Import-mode portfolio report.
+- `vwActiveDateProfile`, `vwRouteScheduleProfile`, and `vwModeScheduleProfile` provide the one-side tables for the Power BI semantic relationships.

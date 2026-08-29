@@ -15,6 +15,9 @@ FROM
     SELECT N'Network KPI rows' AS MetricName, CONVERT(BIGINT, 1) AS ExpectedValue,
            (SELECT COUNT_BIG(*) FROM analytics.vwNetworkBaselineKpi) AS ActualValue
     UNION ALL
+    SELECT N'Active-date profile rows', 182,
+           (SELECT COUNT_BIG(*) FROM analytics.vwActiveDateProfile)
+    UNION ALL
     SELECT N'Mode profile rows', 7,
            (SELECT COUNT_BIG(*) FROM analytics.vwModeScheduleProfile)
     UNION ALL
@@ -99,4 +102,3 @@ SELECT
     END AS CheckStatus
 FROM analytics.vwDailyScheduledTripProfile;
 GO
-

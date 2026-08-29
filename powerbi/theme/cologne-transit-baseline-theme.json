@@ -1,0 +1,61 @@
+{
+  "name": "Cologne Transit Baseline",
+  "dataColors": [
+    "#0B6E8A",
+    "#2A9D8F",
+    "#4C78A8",
+    "#F2C14E",
+    "#E76F51",
+    "#7A5195",
+    "#8C8C8C"
+  ],
+  "background": "#F5F7F9",
+  "foreground": "#1F2933",
+  "tableAccent": "#0B6E8A",
+  "good": "#2A9D8F",
+  "neutral": "#F2C14E",
+  "bad": "#D64545",
+  "maximum": "#0B6E8A",
+  "center": "#F2C14E",
+  "minimum": "#E6EEF2",
+  "visualStyles": {
+    "*": {
+      "*": {
+        "title": [
+          {
+            "show": true,
+            "fontFamily": "Segoe UI Semibold",
+            "fontSize": 12,
+            "fontColor": { "solid": { "color": "#1F2933" } },
+            "background": { "solid": { "color": "#FFFFFF" } }
+          }
+        ],
+        "background": [
+          {
+            "show": true,
+            "color": { "solid": { "color": "#FFFFFF" } },
+            "transparency": 0
+          }
+        ],
+        "border": [
+          {
+            "show": true,
+            "color": { "solid": { "color": "#D8E1E7" } },
+            "radius": 4
+          }
+        ]
+      }
+    },
+    "page": {
+      "*": {
+        "background": [
+          {
+            "color": { "solid": { "color": "#F5F7F9" } },
+            "transparency": 0
+          }
+        ]
+      }
+    }
+  }
+}
+

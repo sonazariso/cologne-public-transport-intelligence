@@ -1,0 +1,81 @@
+-- Create these measures in Power BI after renaming the imported tables as
+-- documented in docs/05_POWER_BI_STATIC_BASELINE_BUILD_GUIDE.md.
+
+Scheduled Trips =
+SUM ( DailySchedule[ScheduledTripCount] )
+
+Active Dates in Context =
+DISTINCTCOUNT ( DailySchedule[DateKey] )
+
+Routes in Context =
+DISTINCTCOUNT ( DailySchedule[RouteKey] )
+
+Agencies in Context =
+DISTINCTCOUNT ( DailySchedule[AgencyId] )
+
+Average Scheduled Trips per Active Day =
+DIVIDE ( [Scheduled Trips], [Active Dates in Context] )
+
+Weekday Scheduled Trips =
+CALCULATE (
+    [Scheduled Trips],
+    KEEPFILTERS ( ActiveDate[IsWeekend] = FALSE () )
+)
+
+Weekend Scheduled Trips =
+CALCULATE (
+    [Scheduled Trips],
+    KEEPFILTERS ( ActiveDate[IsWeekend] = TRUE () )
+)
+
+Weekend Share =
+DIVIDE ( [Weekend Scheduled Trips], [Scheduled Trips] )
+
+Mode Share of Scheduled Trips =
+DIVIDE (
+    [Scheduled Trips],
+    CALCULATE ( [Scheduled Trips], REMOVEFILTERS ( Mode[ModeDetail] ) )
+)
+
+Baseline Agencies =
+MAX ( NetworkKPI[AgencyCount] )
+
+Baseline Modes =
+MAX ( NetworkKPI[ModeCount] )
+
+Baseline Routes =
+MAX ( NetworkKPI[RouteCount] )
+
+Baseline Parent Stations =
+MAX ( NetworkKPI[ParentStationCount] )
+
+Baseline Stop Positions =
+MAX ( NetworkKPI[StopPositionCount] )
+
+Baseline Used Stop Positions =
+MAX ( NetworkKPI[UsedStopPositionCount] )
+
+Baseline Active Service Dates =
+MAX ( NetworkKPI[ActiveServiceDateCount] )
+
+Baseline Scheduled Trip Patterns =
+MAX ( NetworkKPI[ScheduledTripPatternCount] )
+
+Baseline Scheduled Trip Occurrences =
+MAX ( NetworkKPI[ScheduledTripOccurrenceCount] )
+
+Baseline Scheduled Stop-Event Patterns =
+MAX ( NetworkKPI[ScheduledStopEventPatternCount] )
+
+Used Stop Positions =
+CALCULATE (
+    COUNTROWS ( StopPosition ),
+    StopPosition[IsUsedInCurrentSchedule] = TRUE ()
+)
+
+Unused Stop Positions =
+CALCULATE (
+    COUNTROWS ( StopPosition ),
+    StopPosition[IsUsedInCurrentSchedule] = FALSE ()
+)
+
