@@ -32,6 +32,12 @@ The project will combine static **GTFS** schedules with available **realtime dat
 
 ## Project Status
 
-This repository is at the project-definition stage. Data-source validation, architecture, implementation, analytical models, and dashboards have not yet been completed.
+The project is currently in the **static GTFS ingestion stage**. A current VRS GTFS feed has been downloaded and profiled, confirming substantial multimodal coverage for Cologne across tram/light rail, rail, and bus services. The initial SQL Server database, raw staging, bulk-load, indexing, and validation scripts are now defined but have not yet been executed against the target SQL Server instance.
 
-See [Project Definition](docs/PROJECT_DEFINITION.md) for the planned scope, goals, and approach.
+Realtime ingestion, transformation models, the analytical warehouse, and Power BI dashboards have not yet been completed.
+
+## Documentation
+
+- [Project Definition](docs/PROJECT_DEFINITION.md)
+- [Initial VRS GTFS Data Profile](docs/01_VRS_GTFS_DATA_PROFILE.md)
+- [SQL Server Implementation Guide](sql/README.md)

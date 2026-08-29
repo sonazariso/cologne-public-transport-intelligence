@@ -1,0 +1,29 @@
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Local configuration and credentials
+.env
+.env.*
+*.secret
+
+# Raw and generated data
+data/raw/
+data/interim/
+data/processed/
+*.zip
+
+# SQL Server local files and backups
+*.bak
+*.mdf
+*.ndf
+*.ldf
+
+# Logs and temporary files
+logs/
+*.log
+*.tmp
+
+# Python cache
+__pycache__/
+*.py[cod]
