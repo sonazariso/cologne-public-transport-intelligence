@@ -29,6 +29,9 @@ DECLARE @TripBatchSize BIGINT = 5000;
 DECLARE @FirstTripKey BIGINT;
 DECLARE @LastTripKey BIGINT;
 DECLARE @MaximumTripKey BIGINT;
+DECLARE @RowsInserted BIGINT;
+DECLARE @TotalRowsInserted BIGINT = 0;
+DECLARE @ProgressMessage NVARCHAR(4000);
 
 SELECT
     @FeedStartDate = FeedStartDate,
@@ -430,8 +433,25 @@ BEGIN TRY
             ON stop.StopId = stop_time.StopId
         WHERE trip.TripKey BETWEEN @FirstTripKey AND @LastTripKey;
 
+        SET @RowsInserted = @@ROWCOUNT;
+        SET @TotalRowsInserted += @RowsInserted;
+
         COMMIT TRANSACTION;
         CHECKPOINT;
+
+        SET @ProgressMessage = CONCAT
+        (
+            N'Loaded TripKey batch ',
+            @FirstTripKey,
+            N'–',
+            @LastTripKey,
+            N': ',
+            @RowsInserted,
+            N' stop events; cumulative ',
+            @TotalRowsInserted,
+            N'.'
+        );
+        RAISERROR(@ProgressMessage, 10, 1) WITH NOWAIT;
 
         SET @FirstTripKey = @LastTripKey + 1;
     END;
