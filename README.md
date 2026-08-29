@@ -1,4 +1,15 @@
 # Cologne Public Transport Intelligence
+<p align="center">
+  <a href="https://commons.wikimedia.org/wiki/File:K%C3%B6ln_Hohenzollernbr%C3%BCcke.jpg">
+    <img src="https://commons.wikimedia.org/wiki/Special:Redirect/file/K%C3%B6ln%20Hohenzollernbr%C3%BCcke.jpg?width=1600"
+         alt="Cologne Cathedral and Hohenzollern Bridge across the Rhine"
+         width="100%">
+  </a>
+  <br>
+  <sub>Cologne Cathedral and Hohenzollern Bridge · Photo: Anne Offermanns ·
+    <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>
+  </sub>
+</p>
 
 An end-to-end analytics project for understanding the reliability and performance of multimodal public transport in Cologne, Germany.
 
