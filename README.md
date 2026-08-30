@@ -40,10 +40,15 @@ Realtime ingestion and realtime performance facts have not yet been completed. T
 
 ## Documentation
 
-- [Project Definition](docs/PROJECT_DEFINITION.md)
-- [Initial VRS GTFS Data Profile](docs/01_VRS_GTFS_DATA_PROFILE.md)
-- [Cologne Scope and Mode Classification](docs/02_COLOGNE_SCOPE_AND_MODE_CLASSIFICATION.md)
-- [Static GTFS Analytical Warehouse Model](docs/03_STATIC_GTFS_WAREHOUSE_MODEL.md)
-- [Static Analytics and Power BI Baseline](docs/04_STATIC_ANALYTICS_AND_POWER_BI_BASELINE.md)
-- [Power BI Static Baseline Build Guide](docs/05_POWER_BI_STATIC_BASELINE_BUILD_GUIDE.md)
-- [SQL Server Implementation Guide](sql/README.md)
+Read the project documentation in this order:
+
+1. [Project Definition](docs/01-PROJECT-DEFINITION.md)
+2. [Data Sources and Initial GTFS Profile](docs/02-DATA-SOURCES-AND-GTFS-PROFILE.md)
+3. [Cologne Scope and Mode Classification](docs/03-COLOGNE-SCOPE-AND-MODE-CLASSIFICATION.md)
+4. [Data Architecture](docs/04-DATA-ARCHITECTURE.md)
+5. [Database Design and SQL Server Implementation](docs/05-DATABASE-DESIGN-AND-SQL-IMPLEMENTATION.md)
+6. [Static GTFS Analytical Warehouse Model](docs/06-STATIC-GTFS-WAREHOUSE-MODEL.md)
+7. [Static Analytics and Power BI Baseline](docs/07-STATIC-ANALYTICS-AND-POWER-BI-BASELINE.md)
+8. [Power BI Static Baseline Build Guide](docs/08-POWER-BI-STATIC-BASELINE-BUILD-GUIDE.md)
+
+Component entry points remain available in the [SQL](sql/README.md), [Power BI](powerbi/README.md), and [local data](data/README.md) directories.

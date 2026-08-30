@@ -12,5 +12,4 @@ This directory contains source-controlled assets for the static scheduled-servic
 
 The first report describes scheduled service. It must not be presented as a delay, reliability, demand, or actual-performance report until GTFS Realtime observations are integrated.
 
-See [`docs/05_POWER_BI_STATIC_BASELINE_BUILD_GUIDE.md`](../docs/05_POWER_BI_STATIC_BASELINE_BUILD_GUIDE.md) for the complete build process.
-
+See the [Power BI Static Baseline Build Guide](../docs/08-POWER-BI-STATIC-BASELINE-BUILD-GUIDE.md) for the complete build process.
