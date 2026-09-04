@@ -1,61 +1,42 @@
 # Static Analytics and Power BI Baseline
 
-## Purpose
+**Last updated:** 2026-09-04
 
-The analytics layer exposes small, business-readable views over the validated warehouse. It supports an initial Power BI portfolio report while realtime access is pending.
+## 1. Purpose
 
-This report is a **scheduled-service baseline**, not a reliability dashboard. It describes planned network coverage and service supply but cannot yet measure actual delay, cancellation, disruption, or vehicle performance.
+The static analytics layer remains the validated **scheduled-service baseline** for the portfolio. Realtime integration now exists in `stg`/`wrk`, but the current baseline Power BI report must still be interpreted as planned supply rather than reliability.
 
-## Layer Responsibilities
+## 2. Static Analytics Views
 
-| Layer | Responsibility |
-|---|---|
-| `stg` | Preserve the source faithfully |
-| `wrk` | Apply transparent scope and classification rules |
-| `dw` | Materialize validated dimensions and facts |
-| `analytics` | Present business-readable reporting datasets |
-| Power BI | Visual interaction, measures, narrative, and decision support |
+| View | Grain | Expected rows |
+|---|---|---:|
+| `analytics.vwNetworkBaselineKpi` | whole network | 1 |
+| `analytics.vwModeScheduleProfile` | mode | 7 |
+| `analytics.vwRouteScheduleProfile` | route | 153 |
+| `analytics.vwActiveDateProfile` | active service date | 182 |
+| `analytics.vwStopPositionScheduleProfile` | physical stop | 2,290 |
+| `analytics.vwParentStationScheduleProfile` | parent station | 866 |
+| `analytics.vwDailyScheduledTripProfile` | active date + route | 20,059 |
 
-## Analytics Views
+## 3. Baseline KPIs
 
-| View | Grain | Expected rows | Primary use |
-|---|---|---:|---|
-| `analytics.vwNetworkBaselineKpi` | Whole scheduled network | 1 | KPI cards |
-| `analytics.vwModeScheduleProfile` | Transport mode | 7 | Mode comparison |
-| `analytics.vwRouteScheduleProfile` | Route | 153 | Route ranking and drill-through |
-| `analytics.vwActiveDateProfile` | Active service date | 182 | Date dimension and calendar filtering |
-| `analytics.vwStopPositionScheduleProfile` | Physical stop position | 2,290 | Map and stop analysis |
-| `analytics.vwParentStationScheduleProfile` | Parent station | 866 | Management station rollup |
-| `analytics.vwDailyScheduledTripProfile` | Active date and route | 20,059 | Daily planned service trend |
+| KPI | Value |
+|---|---:|
+| Agencies | 15 |
+| Modes | 7 |
+| Routes | 153 |
+| Parent stations | 866 |
+| Stop positions | 2,290 |
+| Used stop positions | 2,287 |
+| Service patterns | 3,947 |
+| Active service dates | 182 |
+| Scheduled trip patterns | 90,331 |
+| Scheduled trip occurrences | 1,878,944 |
+| Scheduled stop-event patterns | 1,551,343 |
 
-## Baseline KPIs
+## 4. Scheduled Trip Occurrences by Mode
 
-| KPI | Value | Correct interpretation |
-|---|---:|---|
-| Agencies | 15 | Operators with Cologne-serving routes |
-| Modes | 7 | Derived analytical transport categories |
-| Routes | 153 | GTFS route IDs serving Cologne |
-| Parent stations | 866 | Logical station groupings |
-| Stop positions | 2,290 | Physical boarding positions/masts |
-| Used stop positions | 2,287 | Positions referenced by the schedule |
-| Service patterns | 3,947 | GTFS calendar patterns |
-| Active service dates | 182 | Dates with at least one active relevant service |
-| Scheduled trip patterns | 90,331 | GTFS trip templates |
-| Scheduled trip occurrences | 1,878,944 | Trip templates expanded across active dates |
-| Scheduled stop-event patterns | 1,551,343 | In-city stop events before date expansion |
-
-## Pattern Counts Versus Occurrence Counts
-
-- **Trip pattern:** one `trip_id` template in GTFS.
-- **Trip occurrence:** one trip pattern scheduled on one active date.
-- **Stop-event pattern:** one stop sequence belonging to a trip pattern.
-- **Actual stop event:** a dated operational event derived from realtime data later.
-
-Calling a trip pattern an “actual trip” would overstate what static GTFS proves.
-
-## Scheduled Trip Occurrences by Mode
-
-| Mode | Scheduled trip occurrences |
+| Mode | Occurrences |
 |---|---:|
 | Stadtbahn / Tram | 500,043 |
 | S-Bahn | 80,403 |
@@ -66,76 +47,50 @@ Calling a trip pattern an “actual trip” would overstate what static GTFS pro
 | Rail Replacement Bus (SEV) | 55,816 |
 | **Total** | **1,878,944** |
 
-These counts measure planned supply, not completed trips or passenger demand.
+## 5. Semantic Guardrails
 
-## Recommended Power BI Connection
+- Use “scheduled”, “planned”, or “baseline” for current supply metrics.
+- Do not label the existing static report as a reliability dashboard.
+- Scheduled trip count is not passenger demand.
+- Do not combine parent stations and physical stop positions into one station count.
+- Keep SEV separate from ordinary bus service.
+- Snapshot/feed version and coverage dates should remain visible in methodology documentation.
 
-Use Power BI Desktop inside the Windows VM:
+## 6. Realtime Status Update
 
-```text
-Get data → SQL Server
-Server: localhost
-Database: CologneTransitIntelligence
-Data connectivity mode: Import
-```
+Realtime MDD/TRIAS ingestion structures and matching views now exist in the database working layer. They currently support:
 
-Select only the seven views documented in the Power BI build guide. Import mode is appropriate because the views are compact, refreshable, and optimized for interactive exploration.
+- delay calculation;
+- platform/bay interpretation;
+- situation context;
+- static stop enrichment;
+- UTC/local-time conversion;
+- service-date matching;
+- match-quality statuses.
 
-## Recommended Initial Pages
+This does **not** yet mean the Power BI static baseline should be converted into a reliability report. Historical collection and consolidated operational grains must be established first.
 
-### 1. Network Overview
+## 7. Future Realtime Analytics
 
-- KPI cards for agencies, modes, routes, parent stations, and active service dates.
-- Subtitle: “Scheduled GTFS baseline — not actual operational performance.”
-- Mode share by scheduled trip occurrences.
+Once approved historical collection is active, new analytics views should expose measures such as:
 
-### 2. Mode and Route Profile
+- observed services;
+- match coverage and data-quality rates;
+- on-time / delayed distribution;
+- median / P95 delay;
+- route/station hotspots;
+- platform mismatch/change evidence;
+- situation-linked delay counts;
+- coverage-missing and unresolved rates.
 
-- Scheduled trip occurrences by mode.
-- Route ranking by scheduled occurrences.
-- Filters for mode, agency, and route.
-- Separate visual or color for `SEV`.
+Raw snapshot row counts must never be used as delayed-service counts.
 
-### 3. Stop and Station Coverage
+## 8. Current Recommended Static Report Pages
 
-- Map using latitude and longitude.
-- Route count and scheduled stop-event patterns as tooltips.
-- Separate views for physical stop positions and parent stations.
+1. Scheduled Network Overview
+2. Mode and Route Profile
+3. Stop and Station Coverage
+4. Planned Daily Service
+5. Methodology / Data Quality
 
-### 4. Planned Daily Service
-
-- Daily scheduled trip count.
-- Weekday/weekend comparison.
-- Mode and route drill-down.
-- Date filter restricted to active scheduled dates.
-
-## Semantic Guardrails
-
-- Use “scheduled,” “planned,” or “baseline” in every supply metric label.
-- Do not label the current report “reliability,” “delay,” or “performance.”
-- Do not interpret scheduled count as passenger demand.
-- Do not combine parent stations and physical stop positions in one count.
-- Keep SEV separate from ordinary buses.
-- Display snapshot version and coverage dates on an information page.
-
-## Realtime Extension
-
-GTFS Realtime will later add predicted or observed times, delay seconds, cancellations, skipped stops, service alerts, disruption categories, vehicle positions if supplied, feed-quality KPIs, and consolidated stop performance. Only then can the project progress from planned supply to evidence-based reliability and root-cause analysis.
-
-## Defence Questions
-
-### Why create a dashboard before realtime data arrives?
-
-The scheduled baseline establishes what service was supposed to operate, validates the city and mode scope, and prepares the dimensions and interaction design. Realtime performance has no meaning without a trustworthy schedule baseline.
-
-### Why use Import rather than DirectQuery?
-
-The reporting views are compact and change only when the warehouse refreshes. Import provides faster interaction and a portable portfolio file.
-
-### Why does the feed contain 364 dates but only 182 active service dates?
-
-`DimDate` covers the published feed range. Calendar rules and exception removals determine the dates with relevant scheduled service. The active set begins on 14 June 2026 and ends on 12 December 2026.
-
-### Can scheduled trip count be used as a demand metric?
-
-No. Passenger counts, occupancy, ticketing, or survey data would be required to measure demand.
+A separate realtime reliability section/report can be added when the collector history is analytically stable.

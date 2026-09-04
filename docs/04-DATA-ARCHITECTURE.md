@@ -1,296 +1,230 @@
 # Data Architecture
 
-## Purpose
+**Last updated:** 2026-09-04
 
-This document explains how Cologne Public Transport Intelligence moves from source data to defensible management information. It separates source preservation, transformation, analytical modeling, reporting, and interpretation so that every KPI can be traced back to evidence.
+## 1. Purpose
 
-The architecture supports the complete target journey:
+The architecture separates schedule data, realtime observations, transformation, matching, warehouse materialization, business-facing analytics, and reporting so every KPI can be traced to source evidence.
 
-```text
-Scheduled data + realtime observations + disruption context
-                         |
-                         v
-              ingestion and source audit
-                         |
-                         v
-         source-faithful staging (`stg`)
-                         |
-                         v
-       transparent transformation (`wrk`)
-                         |
-                         v
-        validated analytical warehouse (`dw`)
-                         |
-                         v
-        business-facing views (`analytics`)
-                         |
-                         v
-                 Power BI model
-                         |
-                         v
-  problem -> evidence -> likely cause -> impact -> recommendation
-```
-
-## Current Stage and Target Stage
-
-The project currently has a validated static GTFS pipeline. It can describe scheduled network coverage, modes, routes, stops, stations, calendars, and planned service volume. It cannot yet claim that a service was late, cancelled, disrupted, or completed.
-
-The target architecture adds independently collected realtime data and disruption context, matches dated observations to the scheduled baseline, consolidates repeated predictions, and exposes reliability facts to Power BI. This separation prevents planned service from being mistaken for actual performance.
-
-## Source Architecture
-
-### Static VRS GTFS
-
-The VRS/go.Rheinland GTFS feed is the schedule system of record for the initial multimodal Cologne scope. It provides agencies, routes, trips, stops, stop times, service calendars, exceptions, transfers, shapes, and feed metadata.
-
-It establishes what should operate. Raw extracts remain outside Git because they are large, replaceable source files. The repository stores profiling results, schema definitions, loaders, validation rules, and documentation instead.
-
-### VRS GTFS Realtime
-
-VRS GTFS-RT is the intended operational source for urban and regional services where the feed supplies trip updates, stop-time predictions, vehicle positions, or service alerts. Access has been requested, but ingestion is not yet implemented or validated.
-
-Realtime messages are snapshots. The same trip and stop may appear repeatedly as a prediction changes. Therefore a snapshot is an observation, not a separate trip, delay, or incident.
-
-### DB Timetables API
-
-The DB Timetables API is a separate candidate source for railway planned and changed arrivals/departures, cancellations, and platform changes. It must remain a distinct ingestion stream because its identifiers, message semantics, refresh behavior, and coverage differ from GTFS-RT.
-
-### Disruption and Context Sources
-
-Service alerts, construction notices, infrastructure outages, platform changes, and other operational messages may later contribute explanatory evidence. They must not be treated as proven causes merely because their time and location overlap with a delay. The analytical output must distinguish observed facts, associations, likely contributing factors, and unknown causes.
-
-## Layer Responsibilities
-
-### `ctl` — Control and Audit
-
-The control layer records load identity, source version, timestamps, status, row counts, and errors. A dataset is available to downstream consumers only after reconciliation and validation. Existing examples are `ctl.GtfsLoadBatch` and `ctl.StaticWarehouseLoadBatch`.
-
-This layer answers:
-
-- Which source snapshot produced these rows?
-- When did the load start and finish?
-- Did the run load, fail, or validate?
-- How many rows were expected and written?
-- Can a Power BI refresh safely consume this batch?
-
-### `stg` — Source-Faithful Staging
-
-The staging schema preserves source values with minimal interpretation. Static GTFS tables retain the published identifiers and text. Realtime database observations use the fixed staging table name:
+## 2. Current End-to-End Architecture
 
 ```text
-stg.DbRealtimeStopObservation
+VRS/go.Rheinland static GTFS            MDD NRW DELFI/TRIAS
+             |                                   |
+             v                                   v
+       static staging (`stg`)          realtime staging (`stg`)
+             |                                   |
+             +----------------+------------------+
+                              |
+                              v
+                    working layer (`wrk`)
+             scope / typing / time normalization
+              static enrichment / trip matching
+                    situation relationships
+                              |
+                  +-----------+-----------+
+                  |                       |
+                  v                       v
+          static warehouse (`dw`)   realtime evidence views
+                  |                       |
+                  +-----------+-----------+
+                              |
+                              v
+                       `analytics`
+                              |
+                              v
+                           Power BI
 ```
 
-The table name is a stabilized project decision and must not be replaced with an alternative schema or duplicate staging table without an explicit migration decision.
+## 3. Layer Responsibilities
 
-Staging is intentionally not a reporting layer. It may contain repeated snapshots, incomplete source fields, provider-specific codes, and source text that still requires normalization.
+### `ctl`
 
-### `wrk` — Transparent Working Layer
+Load/control metadata, statuses, counts, timestamps, source versions, and errors.
 
-The working layer applies reproducible business rules while preserving lineage. Current views identify Cologne stops, Cologne-serving routes and trips, scheduled stop events, and analytical transport categories.
+### `stg`
 
-The working layer is where future realtime logic should:
+Source-faithful staging. No business KPI calculations.
 
-- parse and normalize source timestamps;
-- resolve service dates and time zones;
-- match provider identifiers to GTFS identifiers;
-- retain unmatched records for investigation;
-- distinguish prediction, observation, cancellation, and skipped-stop states;
-- classify alerts and disruption evidence;
-- calculate candidate delay values without yet presenting management KPIs.
+Static examples:
 
-### `dw` — Validated Analytical Warehouse
+- `stg.GtfsAgency`
+- `stg.GtfsRoutes`
+- `stg.GtfsTrips`
+- `stg.GtfsStops`
+- `stg.GtfsStopTimes`
 
-The warehouse materializes stable dimensions, bridges, and facts with explicit grains. Static dimensions retain GTFS natural IDs for lineage and use integer surrogate keys for efficient SQL and Power BI relationships.
+Realtime objects:
 
-Realtime extensions must add facts rather than overwrite the scheduled facts. This preserves the difference between:
+- `stg.MddRealtimeStopObservation`
+- `stg.MddRealtimeSituationObservation`
+- `stg.MddRealtimeStopSituationLink`
+
+### `wrk`
+
+Transparent transformations and derived logic:
+
+- city scope;
+- mode classification;
+- UTC/local-time normalization;
+- GTFS service-day handling;
+- realtime delay calculation;
+- static stop enrichment;
+- trip candidate generation and match classification;
+- situation evidence exposure.
+
+### `dw`
+
+Validated static dimensions, service-date bridge, and facts. Realtime facts will be added only after observation collection and consolidation behavior is stable.
+
+### `analytics`
+
+Business-readable datasets for Power BI. Existing views are static scheduled-supply views. Realtime reliability views are a later phase.
+
+## 4. Realtime Source Architecture
+
+The validated operational source is MDD NRW's direct DELFI endpoint using TRIAS 1.2:
 
 ```text
-what was scheduled
-what the source reported at a point in time
-what was finally observed or inferred
+POST https://mdd.gorheinland.com/delfi
+Header: x-api-key
+Content-Type: application/xml
 ```
 
-### `analytics` — Business-Readable Views
+The current monthly request limit is **250,000**. Collector cadence must be budgeted against this limit.
 
-The analytics schema presents small, named datasets with defined meanings. The current views expose only scheduled supply. Future reliability views must be based on consolidated dated operational events, not raw snapshot counts.
+## 5. Realtime Staging Grain
 
-### Power BI — Semantic and Decision Layer
+### `stg.MddRealtimeStopObservation`
 
-Power BI supplies measures, filters, visual narrative, and decision support. Transformations that define city scope, transport mode, matching, or reliability should remain in SQL so they are testable and reusable. DAX should focus on analytical measures rather than repairing source data.
+One source stop-event observation at one observed timestamp.
 
-## Static Data Flow Already Implemented
+Important source-aligned fields include:
+
+- result ID;
+- stop-point reference/name;
+- line/line reference;
+- journey reference;
+- direction/operator/mode;
+- timetabled and estimated arrival UTC;
+- planned and estimated bay;
+- observed/created timestamps.
+
+### `stg.MddRealtimeSituationObservation`
+
+One situation snapshot with participant reference, situation number, summary, description, detail, validity interval, and observation timestamps.
+
+### `stg.MddRealtimeStopSituationLink`
+
+Many-to-many relationship between a stop observation and a situation. `RelationScope` is constrained to `CALL` or `SERVICE`.
+
+## 6. Working Realtime Flow
 
 ```text
-VRS GTFS text files
+stg.MddRealtimeStopObservation
         |
         v
-stg.Gtfs* tables
+wrk.vwCologneRealtimeStopObservation
+  delay + nullable platform-change inference
         |
         v
-wrk.vwCologneStop
-wrk.vwCologneServingRoute
-wrk.vwCologneServingTrip
-wrk.vwCologneScheduledStopEvent
-wrk.vwCologneModeSummary
+wrk.vwCologneRealtimeStopEnriched
+  exact static StopId enrichment
         |
         v
-dw dimensions, service-date bridge,
-scheduled-trip and scheduled-stop-event facts
+wrk.vwCologneRealtimeTripMatchKey
+  UTC -> Europe/Berlin
+  local date + local seconds
         |
         v
-analytics scheduled-baseline views
+wrk.vwCologneRealtimeTripMatch
+  service date + line + time + stop/station hierarchy
         |
         v
-Power BI scheduled baseline
+wrk.vwCologneRealtimeEvidenceSituation
+  match quality + disruption/situation context
 ```
 
-At each boundary, row-count reconciliation and integrity checks protect the analytical scope. The validated warehouse batch is the only safe input to the analytics layer.
+## 7. Time and Service-Day Normalization
 
-## Target Realtime Data Flow
+All 15 agencies currently represented in `dw.DimAgency` use `Europe/Berlin`. SQL Server conversion uses `W. Europe Standard Time`.
+
+TRIAS timestamps are normalized from UTC to Berlin local time before matching to GTFS scheduled seconds.
+
+For a candidate with `ArrivalDayOffset = N`:
 
 ```text
-VRS GTFS-RT / DB realtime endpoint
-        |
-        v
-collector with UTC collection timestamp
-        |
-        v
-source payload archive outside Git
-        |
-        v
-stg.DbRealtimeStopObservation
-        |
-        v
-working normalization and GTFS matching
-        |
-        +----> unmatched-record quality queue
-        |
-        v
-raw observation facts
-        |
-        v
-consolidated trip/stop performance facts
-        |
-        +----> alert and disruption evidence
-        |
-        v
-analytics reliability and cause-association views
-        |
-        v
-Power BI reliability, hotspots, causes, and recommendations
+GTFS ServiceDate
+= TRIAS LocalCalendarDate - N days
+
+GTFS ScheduledArrivalSeconds
+= TRIAS LocalSecondsOfDay + N * 86400
 ```
 
-The collector must timestamp every retrieval independently of provider timestamps. Raw payload retention makes parser changes auditable, while the database table supports structured matching and analysis.
+This handles GTFS times up to at least the validated `49:23:00` case.
 
-## Matching Strategy
+## 8. Trip Matching Strategy
 
-The strongest GTFS-RT stop-event key is expected to be:
+TRIAS and GTFS identifiers are not assumed equal. Matching is based on:
+
+- normalized line name;
+- active service date;
+- local scheduled time;
+- exact stop when possible;
+- parent station as controlled fallback.
+
+Statuses:
+
+- `ExactStopMatch`
+- `ParentStationFallback`
+- `StaticCoverageMissing`
+- `Unresolved`
+
+Only the first two are considered usable static matches.
+
+## 9. Validated Five-Event Match Test
+
+| Realtime line | Status |
+|---|---|
+| ICE | `StaticCoverageMissing` |
+| RE 7 | `ExactStopMatch` |
+| RB 27 | `ParentStationFallback` |
+| RB 25 | `ExactStopMatch` |
+| RE 9 | `ExactStopMatch` |
+
+## 10. Evidence vs Cause Boundary
+
+The architecture supports:
 
 ```text
-trip_id + service date + stop_sequence
+observed delay
++
+linked situation / overlapping disruption context
++
+repeated temporal/location pattern
+=
+association or likely contributing factor
 ```
 
-Depending on source completeness, `stop_id`, route, direction, start time, and vehicle identifiers may provide supporting evidence. Matches must receive an explicit quality status such as exact, fallback, ambiguous, or unmatched. Ambiguous records must not silently enter punctuality KPIs.
+A source-linked situation is evidence, not automatic proof that it caused the delay.
 
-GTFS times can exceed `24:00:00`; they are stored as seconds after service-day midnight. Realtime timestamps must be normalized to the same service-day interpretation before delay is calculated.
+## 11. Data Quality Gates
 
-## Observation Versus Outcome
+Critical checks include:
 
-A feed collected every interval can report many predictions for one stop occurrence. The architecture preserves both grains:
+- parse success and source availability;
+- feed/request age and collection gaps;
+- duplicate observation detection;
+- exact/fallback/unresolved/coverage-missing match rates;
+- stop/platform disagreement rate;
+- invalid time conversions;
+- service-date reconciliation;
+- situation-link integrity;
+- warehouse-to-analytics reconciliation.
 
-| Dataset | Grain | Use |
-|---|---|---|
-| Raw realtime observation | One source report for one trip/stop at one collection time | Feed quality and prediction evolution |
-| Consolidated stop performance | One dated trip-stop occurrence | Delay and cancellation KPIs |
-| Consolidated trip performance | One dated trip occurrence | Route and trip reliability |
-| Alert/disruption evidence | One normalized message or affected entity/time interval | Cause-association analysis |
+## 12. Security and Compliance
 
-This prevents a frequently updated delayed trip from being counted as many delayed trips.
-
-## Security and Configuration
-
-Secrets never belong in Git, Markdown examples, SQL scripts, PBIX files, or screenshots. Runtime configuration must use placeholders or environment variables, for example:
-
-```text
-VRS_GTFS_RT_CLIENT_ID
-VRS_GTFS_RT_API_KEY
-DB_TIMETABLES_CLIENT_ID
-DB_TIMETABLES_API_KEY
-SQL_CONNECTION_STRING
-```
-
-Local `.env` or secrets files must be ignored. Documentation may show variable names but never real values. Database permissions should follow least privilege: the collector writes staging data, ETL procedures transform it, and Power BI reads validated analytics views.
-
-## Reliability, Restartability, and Auditability
-
-- Every run receives a batch or collection identity.
-- Source version and collection time are retained.
-- UTC is used for audit timestamps; local service time retains the `Europe/Berlin` interpretation.
-- Loads are idempotent or explicitly replaceable at their documented grain.
-- Partial failures do not become validated reporting data.
-- Large writes are committed in bounded batches to control transaction-log growth.
-- Raw and transformed counts are reconciled.
-- Unmatched and malformed records remain measurable rather than disappearing.
-- Power BI reads validated views, not raw staging tables.
-
-## Data Quality Gates
-
-The pipeline should not advance when critical checks fail. Required controls include:
-
-- source availability and parse success;
-- expected file or entity presence;
-- natural-key duplication analysis;
-- referential integrity between routes, trips, stops, and calendars;
-- valid coordinates and service-day times;
-- Cologne-scope reconciliation;
-- mode-classification completeness;
-- feed age and collection-gap monitoring;
-- exact/fallback/unmatched realtime-match rates;
-- duplicate snapshot detection;
-- cancellation and skipped-stop consistency;
-- warehouse-to-analytics row reconciliation.
-
-## Root-Cause Evidence Boundary
-
-The architecture supports root-cause investigation but does not manufacture causality. A defensible chain is:
-
-```text
-observed performance problem
-        +
-time/location/entity overlap with an alert or event
-        +
-repeated pattern or operational context
-        =
-documented association or likely contributing factor
-```
-
-A cause may be called confirmed only when the source explicitly provides reliable causal information or an independent operational record verifies it. Otherwise the correct category is likely, associated, or unknown/insufficient evidence.
-
-## Deployment Context
-
-Development currently runs on Windows 11 in VMware Fusion on the MacBook. SQL Server 2022 Developer, SSMS, and Power BI Desktop run in Windows. The repository and large source files are available through controlled shared folders, but SQL Server `BULK INSERT` requires a Windows path readable by the SQL Server Database Engine service account.
-
-This local topology is suitable for portfolio development. It does not imply a production SLA, public cloud deployment, or realtime control-room system.
-
-## Defence Questions
-
-### Why use several schemas instead of one collection of tables?
-
-Each schema establishes a trust boundary. Staging preserves the source, working objects explain transformation, the warehouse enforces analytical grain and relationships, and analytics views expose business meaning. This makes errors easier to locate and prevents Power BI from becoming an undocumented ETL layer.
-
-### Why keep static and realtime data separate?
-
-Static GTFS is a plan; realtime messages are changing observations about dated operations. Overwriting one with the other destroys lineage and makes it impossible to distinguish schedule design from operational execution.
-
-### Why preserve every realtime snapshot?
-
-Snapshots show how predictions evolve and allow feed-quality analysis. Management KPIs use a consolidated outcome, so preservation does not imply counting every snapshot as a separate service.
-
-### Why is the database table fixed as `stg.DbRealtimeStopObservation`?
-
-It is the agreed integration contract for database realtime stop observations. A stable name prevents collectors, validation scripts, ETL logic, and documentation from drifting toward multiple competing tables.
-
-### Why are secrets represented only by environment-variable names?
-
-Credentials change independently of code and documentation. External configuration avoids accidental Git exposure and allows development, test, and future production environments to use different values safely.
+- API keys and secrets remain outside Git and documentation.
+- The MDD storage/retention confirmation email has been received.
+- Exact compliance terms will be documented only after the email text is supplied.
+- No legal/retention condition is inferred from the existence of the confirmation alone.

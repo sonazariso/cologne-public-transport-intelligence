@@ -1,619 +1,210 @@
 # Cologne Public Transport Intelligence
 
-## Project Definition
+**Last updated:** 2026-09-04
 
-### 1. Project Goal
+## 1. Project Goal
 
 The goal of this project is to build an end-to-end **Data Analytics and Business Intelligence solution for public transport in Cologne (Köln), Germany**.
 
-The project will combine scheduled and realtime public transport data to answer a central analytical question:
+The central analytical question is:
 
 > **How reliable and efficient is Cologne's public transport network, where do delays and disruptions occur, what are their likely causes, and what improvements could have the greatest operational impact?**
 
-The final solution should demonstrate practical skills in:
+The project demonstrates practical skills in:
 
-- SQL Server
-- Data modeling
-- ETL / ELT
-- Data quality
-- GTFS
-- Realtime transport data
-- Analytical SQL
-- Root-cause analysis
-- Power BI
-- KPI design
-- Data visualization
-- Business recommendations
-- Technical documentation
-
----
+- SQL Server and analytical SQL
+- GTFS schedule modeling
+- realtime public-transport integration
+- ETL / ELT and data quality
+- dimensional modeling
+- schedule-to-realtime matching
+- delay and disruption analysis
+- root-cause evidence handling
+- Power BI and KPI design
+- technical documentation and portfolio communication
 
 ## 2. Geographic Scope
 
-The primary geographic scope is:
+The primary analytical scope is **Cologne**. The static GTFS source is regional, but the working layer derives a Cologne-specific scope from stop/service evidence.
 
-**Köln (Cologne), Germany**
+The current static municipality rule uses the global stop-ID prefix:
 
-The project deliberately focuses on one city rather than attempting to analyze the entire NRW transport network.
+```text
+de:05315:
+```
 
-This allows the analysis to go deeper into:
-
-- individual routes
-- stops and stations
-- transport modes
-- time periods
-- delays
-- cancellations
-- disruptions
-- reliability patterns
-- possible causes
-
-Düsseldorf or another NRW city may later be used as a **benchmark**, but it is not part of the initial core scope.
-
----
+The project does not attempt to analyze all NRW cities in its first version.
 
 ## 3. Transport Scope
 
-The project should include the public transport modes serving Cologne that are available and sufficiently represented in the selected data sources.
+The static baseline currently contains seven analytical categories:
 
-Expected modes include:
+1. Stadtbahn / Tram
+2. S-Bahn
+3. Regional Express (RE)
+4. Regional Bahn (RB)
+5. Urban Bus (KVB)
+6. Regional / Other Bus
+7. Rail Replacement Bus (SEV)
 
-```text
-Regional Rail
-RE
+The realtime DELFI/TRIAS source may return services that are not represented in the current static Cologne GTFS scope. The validated example is **ICE**, which is classified as `StaticCoverageMissing` during schedule matching rather than as a failed match.
 
-Regional Rail
-RB
+## 4. Current Data Sources
 
-S-Bahn
+### Static schedule baseline
 
-Stadtbahn / Light Rail / Tram
+The primary schedule source is the VRS/go.Rheinland static GTFS feed. It supplies agencies, routes, trips, stops, stop times, calendars, calendar exceptions, shapes, transfers, and feed metadata.
 
-Bus
+### Realtime operational source
 
-Other relevant public transport modes
-if present in the source data
-```
-
-The exact list must be determined from the actual GTFS data rather than assumed in advance.
-
----
-
-## 4. Data Sources
-
-### 4.1 Scheduled Transport Data
-
-Primary scheduled data:
-
-**GTFS**
-
-Expected entities include:
+The currently validated realtime source is the **MDD NRW direct DELFI interface using TRIAS 1.2**:
 
 ```text
-Agency
-Routes
-Trips
-Stops
-StopTimes
-Calendar
-CalendarDates
-FeedInfo
+POST https://mdd.gorheinland.com/delfi
+Content-Type: application/xml
+Header: x-api-key
 ```
 
-GTFS will provide the foundation for analyzing:
+A successful authenticated `StopEventRequest` has been validated with realtime arrival estimates, line/journey references, stop-point references, bays/platforms, and situation context.
 
-- scheduled services
-- routes
-- stops
-- trips
-- frequency
-- service calendars
-- scheduled travel times
-- transport modes
+The current MDD NRW monthly request limit for the project is **250,000 requests**.
 
----
+### Realtime compliance status
 
-### 4.2 Deutsche Bahn Realtime Data
+A confirmation email regarding realtime data storage/retention has been received. The exact wording and conditions are intentionally **not inferred** here; they will be transcribed into the documentation after the email text is supplied.
 
-The **DB Timetables API** will be used where appropriate for railway realtime information.
+## 5. Current Implementation Status
 
-Relevant information includes:
+The project is no longer static-only. The following have been implemented and validated:
 
-```text
-Planned arrival
-Actual/changed arrival
+- static GTFS staging, working layer, warehouse, analytics, and Power BI baseline;
+- MDD/TRIAS authentication and request execution;
+- parsing of realtime stop-event responses;
+- arrival delay calculation;
+- planned/estimated bay handling;
+- situation/disruption extraction and linking;
+- TRIAS stop enrichment with static GTFS stop hierarchy;
+- UTC to Europe/Berlin normalization;
+- GTFS service-day matching including times beyond 24:00;
+- TRIAS-to-GTFS trip matching with explicit match quality;
+- evidence/situation working view for later root-cause analysis.
 
-Planned departure
-Actual/changed departure
+## 6. Main Analytical Questions
 
-Arrival delay
-Departure delay
+### Network and supply
 
-Cancellation
-
-Planned platform
-Changed platform
-
-Train
-Line
-Station
-```
-
-The previously developed NRW project has already validated the technical feasibility of this source.
-
----
-
-### 4.3 Urban Transport Realtime Data
-
-For Bus / Stadtbahn and other urban transport services, appropriate realtime sources such as **VRS GTFS-RT** should be investigated and integrated where practical.
-
-This should be treated as a separate source from the DB railway realtime pipeline.
-
----
-
-### 4.4 Disruption Data
-
-Where reliable data is available, additional disruption information should be considered.
-
-Examples:
-
-```text
-Störung
-Bauarbeiten
-Service interruption
-Station disruption
-Elevator outage
-Escalator outage
-Platform changes
-Other operational messages
-```
-
-These datasets may later contribute to root-cause analysis.
-
----
-
-## 5. Main Business Questions
-
-The project should ultimately answer questions such as:
-
-### Network
-
-- How large is Cologne's public transport network?
-- Which transport modes operate in Cologne?
-- Which routes and stops carry the largest scheduled service volume?
-- How does service frequency vary throughout the day?
+- How large is the scheduled Cologne network?
+- Which modes, routes, stops, and stations carry the largest planned service volume?
+- How does planned service vary by day and time?
 
 ### Reliability
 
-- What percentage of services operate on time?
-- What is the average and median delay?
-- How severe are delays?
-- Which routes are least reliable?
-- Which stations/stops are delay hotspots?
+After the realtime collector is operational at historical scale:
 
-### Time
+- What percentage of observed services are on time?
+- What are average, median, and high-percentile delays?
+- Which routes, stops, stations, and time periods are least reliable?
+- How often do platform changes occur where the source explicitly reports them?
 
-How does performance change by:
+### Disruptions and likely causes
 
-```text
-Hour
-Peak / Off-Peak
-Day of Week
-Weekday / Weekend
-Month
-```
+- Which delayed events have linked situation/disruption evidence?
+- Which categories repeatedly overlap with delay hotspots?
+- When is evidence insufficient to assign a likely cause?
 
-### Transport Mode
+The project must distinguish **evidence, association, likely contributing factor, and confirmed cause**.
 
-How does reliability compare between:
+## 7. Matching Quality Contract
+
+Realtime-to-static matching uses these statuses:
 
 ```text
-Rail
-S-Bahn
-Stadtbahn
-Bus
+ExactStopMatch
+ParentStationFallback
+StaticCoverageMissing
+Unresolved
 ```
 
-### Cancellation
-
-- Which routes experience the most cancellations?
-- When do cancellations occur?
-- Are cancellations concentrated at particular locations?
-
-### Delay Propagation
-
-Where technically possible:
-
-- Does a train arrive late and leave even later?
-- Does delay propagate through subsequent stops?
-- Which services recover from delays?
-- Which services accumulate delays?
-
-### Infrastructure / Operations
-
-Investigate relationships between:
-
-```text
-Platform changes
-Construction
-Operational disruptions
-Station problems
-Service interruptions
-```
-
-and transport performance.
-
----
-
-## 6. Root-Cause Analysis
-
-The project should go beyond displaying delay statistics.
-
-A major objective is to identify **likely contributing factors**.
-
-Potential categories:
-
-```text
-Construction / Bauarbeiten
-
-Operational disruption / Störung
-
-Upstream delay
-
-Platform change
-
-Infrastructure issue
-
-Cancellation
-
-Station-related disruption
-
-Unknown / insufficient evidence
-```
-
-An important analytical rule:
-
-> **Correlation must not automatically be presented as causation.**
-
-When the available data cannot prove a cause, the dashboard/report should describe it as an association or likely contributing factor.
-
-This makes the analysis more defensible.
-
----
-
-## 7. KPIs
-
-Candidate KPIs include:
-
-```text
-Total Scheduled Services
-
-Observed Services
-
-On-Time %
-
-Average Arrival Delay
-
-Median Arrival Delay
-
-Average Departure Delay
-
-P95 Delay
-
-Delayed Services %
-
-Severely Delayed Services %
-
-Cancellation Rate
-
-Platform Change Rate
-
-Service Frequency
-
-Average Headway
-
-Reliability Score
-```
-
-The exact definitions and thresholds must be documented.
-
-For example, we must explicitly define what the project considers:
-
-```text
-On Time
-Minor Delay
-Moderate Delay
-Severe Delay
-```
-
-rather than selecting arbitrary thresholds without explanation.
-
----
+`ExactStopMatch` and `ParentStationFallback` are considered usable static matches. `StaticCoverageMissing` means the realtime service is outside current static coverage. `Unresolved` means static coverage exists but the available evidence does not produce one defensible candidate.
 
 ## 8. Data Architecture
 
-Proposed architecture:
-
 ```text
-             DATA SOURCES
-                  |
-        +---------+---------+
-        |                   |
-        v                   v
-      GTFS            Realtime APIs
-                        DB / VRS
-        |                   |
-        +---------+---------+
-                  |
-                  v
-               STAGING
-                  |
-                  v
-            WORKING LAYER
-                  |
-        Cleaning / Matching
-        Normalization
-        Classification
-                  |
-                  v
-           DATA WAREHOUSE
-                  |
-          Star Schema / Facts
-                  |
-                  v
-          ANALYTICAL VIEWS
-                  |
-                  v
-              POWER BI
-                  |
-                  v
-        INSIGHTS & RECOMMENDATIONS
+Static GTFS                     MDD NRW / DELFI / TRIAS
+    |                                     |
+    v                                     v
+source-faithful staging (`stg`) + realtime observation staging
+                     |
+                     v
+             working layer (`wrk`)
+      scope / normalization / matching
+                     |
+           +---------+---------+
+           |                   |
+           v                   v
+   static warehouse (`dw`)   realtime evidence
+           |                   |
+           +---------+---------+
+                     |
+                     v
+              analytics views
+                     |
+                     v
+                  Power BI
+                     |
+                     v
+problem -> evidence -> likely cause -> impact -> recommendation
 ```
 
-SQL Server remains the analytical database.
+## 9. Key Design Principles
 
----
+- Static GTFS is the schedule baseline, not proof of actual operation.
+- Realtime snapshots are observations, not separate trips.
+- Source-faithful values belong in `stg`; derived logic belongs in `wrk`.
+- TRIAS `JourneyRef` is not assumed equal to GTFS `TripId`.
+- TRIAS `LineRef` is not assumed equal to GTFS `RouteId`.
+- GTFS times above `24:00:00` preserve service-day meaning.
+- Missing realtime bay data is not interpreted as “platform unchanged.”
+- Ambiguous or uncovered records must not silently enter reliability KPIs.
+- Correlation is not automatically causation.
 
-## 9. Proposed Database Layers
+## 10. Portfolio Deliverables
 
-Keep clear separation of responsibilities:
-
-```text
-stg
-```
-
-Raw/staging source data.
-
-```text
-wrk
-```
-
-Transformation, matching, normalization and intermediate calculations.
+The repository should contain:
 
 ```text
-dw
-```
-
-Dimensions, facts and reporting-ready warehouse objects.
-
-```text
-cfg
-```
-
-Configuration where necessary.
-
-This preserves useful architectural lessons from the previous NRW project.
-
----
-
-## 10. Power BI Deliverable
-
-The final project should not consist of dozens of disconnected dashboards.
-
-A focused analytical report of approximately **5–8 strong pages** is preferable.
-
-Potential structure:
-
-### Page 1 — Executive Overview
-
-Overall health of Cologne public transport.
-
-### Page 2 — Network & Service
-
-Routes, stops, modes and service frequency.
-
-### Page 3 — Reliability
-
-Delay distribution and core reliability KPIs.
-
-### Page 4 — Delay Hotspots
-
-Problematic routes, stops and time periods.
-
-### Page 5 — Mode Comparison
-
-Compare:
-
-```text
-Rail
-S-Bahn
-Stadtbahn
-Bus
-```
-
-### Page 6 — Disruptions & Causes
-
-Disruptions and likely contributing factors.
-
-### Page 7 — Deep Dive
-
-Detailed investigation of important problem areas.
-
-### Page 8 — Recommendations
-
-Evidence-based findings and proposed improvements.
-
-The exact page count can change if fewer pages tell the story better.
-
----
-
-## 11. Recommendations
-
-The project must finish with actionable conclusions rather than only charts.
-
-A recommendation should follow:
-
-```text
-Problem
-   ↓
-Evidence
-   ↓
-Likely Cause
-   ↓
-Operational Impact
-   ↓
-Recommendation
-```
-
-Recommendations must remain within what the data can reasonably support.
-
----
-
-## 12. Portfolio Deliverables
-
-The finished GitHub repository should contain at least:
-
-```text
-README.md
-
 docs/
-    PROJECT_DEFINITION.md
-    DATA_SOURCES.md
-    ARCHITECTURE.md
-    DATA_MODEL.md
-    DATA_QUALITY.md
-    REALTIME_PIPELINE.md
-    ANALYSIS_AND_FINDINGS.md
-
 sql/
-    staging/
-    working/
-    warehouse/
-    analytics/
-
 collector/
-    realtime collection scripts
-
 powerbi/
-    Power BI project/report
-
 images/
-    architecture
-    data model
-    dashboard screenshots
 ```
 
-We do **not** need to create all these documents at the beginning. Documentation should grow with the implementation.
-
----
-
-## 13. Definition of Done
-
-The project is considered **complete** when all of the following are true:
-
-**Data**
-
-Scheduled multimodal Cologne data is successfully modeled.
-
-**Realtime**
-
-Reliable realtime observations exist for the transport modes where an appropriate realtime source is available.
-
-**Warehouse**
-
-A validated analytical data warehouse exists.
-
-**Quality**
-
-Important data-quality tests have been performed and documented.
-
-**Analysis**
-
-Major reliability problems and patterns have been identified.
-
-**Root Cause**
-
-Likely causes or contributing factors have been investigated where evidence exists.
-
-**Power BI**
-
-A polished analytical report tells the complete story.
-
-**Recommendations**
-
-The project provides evidence-based recommendations.
-
-**Documentation**
-
-Another technical person can understand the architecture, sources, assumptions and analytical methodology from GitHub.
-
-**Portfolio**
-
-The project can be explained clearly in approximately **5–10 minutes during an interview**.
-
----
-
-## 14. Explicit Non-Goals
-
-To prevent scope creep, the first version will **not** attempt to:
-
-- Analyze all NRW cities.
-- Collect realtime data from every German station.
-- Predict delays with machine learning.
-- Build a passenger mobile application.
-- Create a realtime operational control system.
-- Solve route optimization.
-- Build dozens of dashboards.
-- Integrate every available transport API.
-
-These can become future extensions.
-
----
-
-## 15. Project Strategy
-
-The development strategy is:
+The documentation set is numbered so the project can be read in implementation order. The realtime implementation is documented in:
 
 ```text
-Breadth:
-One city
-
-Coverage:
-Multiple public transport modes
-
-Depth:
-High
-
-Analysis:
-Schedule
-+
-Realtime
-+
-Disruptions
-+
-Root Cause
-+
-Recommendations
+09-REALTIME-MDD-TRIAS-INTEGRATION-AND-GTFS-MATCHING.md
 ```
 
-The guiding principle is:
+## 11. Definition of Done
 
-> **One city deeply analyzed is more valuable for this portfolio project than an entire region analyzed superficially.**
+The project is complete when:
 
----
+- static multimodal Cologne data is validated and modeled;
+- realtime collection runs reliably under the approved usage terms;
+- raw observations are consolidated into defensible dated operational outcomes;
+- delay, cancellation, platform, disruption, and data-quality KPIs are documented;
+- root-cause analysis clearly separates evidence from inference;
+- Power BI tells a coherent management story;
+- findings lead to evidence-based recommendations;
+- another technical person can understand and reproduce the pipeline from repository documentation.
 
-## Final Project Vision
+## 12. Non-Goals for the First Version
 
-The final portfolio should demonstrate the complete analytical journey:
-
-**Raw public transport data → SQL data engineering → data warehouse → realtime integration → data quality → Power BI → problem discovery → root-cause investigation → actionable recommendation.**
+- all-NRW operational analytics;
+- machine-learning delay prediction;
+- passenger mobile application;
+- realtime control-room software;
+- route optimization;
+- exhaustive integration of every transport API;
+- undocumented causal claims.
