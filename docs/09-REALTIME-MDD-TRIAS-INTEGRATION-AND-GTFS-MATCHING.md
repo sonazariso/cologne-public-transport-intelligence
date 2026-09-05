@@ -1,55 +1,59 @@
 # Realtime MDD/TRIAS Integration and GTFS Matching
 
-**Last updated:** 2026-09-04
+**Last updated:** 2026-09-05
 
 ## Purpose
 
-This document is the canonical implementation record for the realtime phase of Cologne Public Transport Intelligence. It documents the MDD NRW DELFI/TRIAS source, staging model, situation evidence, timezone/service-day normalization, static GTFS enrichment, trip-matching hierarchy, validated test cases, and the compliance checkpoint before production collection.
+This document is the canonical implementation record for the realtime phase of Cologne Public Transport Intelligence.
 
-## 1. Project Objective
+It records the validated MDD NRW / DELFI / TRIAS source, realtime staging model, situation evidence, timezone and GTFS service-day normalization, TRIAS-to-GTFS matching, compliance status, and the first successfully persisted realtime snapshot.
 
-Build a Cologne-focused public-transport intelligence project that combines:
-
-- static GTFS schedule/reference data,
-- realtime DELFI/TRIAS observations from MDD NRW,
-- delay calculations,
-- platform/bay information,
-- service disruption/situation context,
-- matching of realtime events to static GTFS trips,
-- and later analytical models / dashboards for delay evidence and likely causes.
-
-The current implementation deliberately separates raw/source data, working logic, and analytical/warehouse structures.
+If an older project document conflicts with this file on realtime behavior, this file takes precedence.
 
 ---
 
-## 2. Data-Layer Architecture
+## 1. Realtime Architecture
 
-### `stg` — source-aligned staging
+The project preserves the following data-layer contract:
 
-Purpose:
+```text
+MDD NRW / DELFI / TRIAS
+        |
+        v
+source-faithful realtime staging (`stg`)
+        |
+        v
+normalization / enrichment / matching (`wrk`)
+        |
+        +----------------------+
+        |                      |
+        v                      v
+static GTFS / DW         situation evidence
+        |                      |
+        +----------+-----------+
+                   |
+                   v
+wrk.vwCologneRealtimeEvidenceSituation
+                   |
+                   v
+future validated DW realtime facts / analytics / Power BI
+```
 
-- store values as received from the source,
-- avoid derived business logic in staging,
-- preserve source identifiers and source timestamps,
-- keep realtime observations and situations separate.
+### `stg`
 
-Current realtime staging objects:
+Source-faithful realtime storage. Derived KPIs do not belong here.
+
+Current realtime tables:
 
 1. `stg.MddRealtimeStopObservation`
 2. `stg.MddRealtimeSituationObservation`
 3. `stg.MddRealtimeStopSituationLink`
 
-### `wrk` — normalization and matching logic
+### `wrk`
 
-Purpose:
+Derived / normalized logic.
 
-- calculate delay,
-- normalize UTC timestamps to local service time,
-- enrich realtime stops with static GTFS information,
-- match TRIAS realtime events to GTFS trips,
-- expose situation/evidence relationships.
-
-Current realtime working views:
+Current realtime views:
 
 1. `wrk.vwCologneRealtimeStopObservation`
 2. `wrk.vwCologneRealtimeStopEnriched`
@@ -57,154 +61,88 @@ Current realtime working views:
 4. `wrk.vwCologneRealtimeTripMatch`
 5. `wrk.vwCologneRealtimeEvidenceSituation`
 
-Existing static working views used by realtime matching:
+### `dw`
 
-- `wrk.vwCologneStop`
-- `wrk.vwCologneScheduledStopEvent`
-- `wrk.vwCologneServingRoute`
-- `wrk.vwCologneServingTrip`
-- `wrk.vwCologneModeSummary`
-
-### `dw` — warehouse / conformed structures
-
-Important existing objects used by realtime matching:
-
-- `dw.DimAgency`
-- `dw.DimDate`
-- `dw.DimService`
-- `dw.BridgeServiceDate`
-- `dw.FactScheduledStopEvent`
-- `dw.FactScheduledTrip`
+The existing static warehouse provides the schedule/service calendar needed for realtime matching. No final realtime fact has been approved yet.
 
 ### `analytics`
 
-Existing analytical objects include:
+Realtime reliability analytics will be added only after collector behavior and consolidated operational grains are stable.
 
-- `analytics.vwActiveDateProfile`
-- `analytics.vwDailyScheduledTripProfile`
-
-No realtime reporting fact has been finalized yet.
+Power BI must not read realtime staging directly.
 
 ---
 
-## 3. MDD NRW / DELFI / TRIAS Access
+## 2. MDD NRW / DELFI / TRIAS Source
 
-The realtime source currently being tested is the MDD NRW direct DELFI endpoint:
+Validated endpoint:
 
-`POST https://mdd.gorheinland.com/delfi`
+```text
+POST https://mdd.gorheinland.com/delfi
+Content-Type: application/xml
+Header: x-api-key
+Protocol: TRIAS 1.2
+```
 
-Protocol / format:
+Authentication has been tested successfully with HTTP `200` responses.
 
-- TRIAS 1.2
-- request body: XML
-- authentication header: `x-api-key`
-- realtime stop-event requests tested successfully.
-
-### Request-limit status
-
-The MDD NRW monthly request limit for this project has been increased to:
+The current project request budget is:
 
 **250,000 requests per month**
 
-This is the active planning limit for future collector scheduling.
+Collector scheduling must remain within this limit.
 
-### Storage / retention permission
-
-A follow-up request was sent to MDD NRW to clarify whether DELFI/TRIAS responses and extracted realtime information may be stored and historically analyzed.
-
-**Current status as of 2026-09-04:**  
-The user reports that a confirmation email has now been received.
-
-Important documentation action still required:
-
-- copy the exact wording of that confirmation into the project compliance notes,
-- record any retention duration, attribution, redistribution, commercial/non-commercial, or other conditions exactly as stated in the email.
-
-Until the exact email text is copied into the repository, this document does **not** infer conditions that were not explicitly provided.
+Secrets and API keys must never be committed to GitHub, embedded in SQL, or exposed in screenshots.
 
 ---
 
-## 4. Successful TRIAS Test
+## 3. Data-Usage / Retention Permission
 
-A successful authenticated TRIAS request returned:
+The storage/retention clarification email has now been reviewed.
 
-- HTTP `200`
-- JSON response representation after client-side conversion
-- `Result count = 5`
+The response states that the TRIAS interface may be used for:
 
-The response timestamp observed in the test was:
+- research,
+- test,
+- development,
+- hobby purposes.
 
-`2026-09-03T19:41:42Z[GMT]`
+The project had previously been described as a limited, non-commercial pilot. Based on that description, the responder's assessment was:
 
-The five arrival observations used during the matching investigation were:
+> `... ist unsere Einschätzung, dass die unten aufgeführten Punkte unkritisch sind.`
 
-| Sample | TRIAS line | StopPointRef | Timetabled arrival UTC | Estimated arrival UTC | Delay |
-|---|---|---|---|---|---:|
-| 1 | ICE | `de:05315:11201:7:77` | 19:14 | 19:41 | 27 min |
-| 2 | RE 7 | `de:05315:11201:7:72` | 19:17 | 20:02 | 45 min |
-| 3 | RB 27 | `de:05315:11201:7:73` | 19:35 | 19:58 | 23 min |
-| 4 | RB 25 | `de:05315:11201:7:81` | 19:36 | 19:44 | 8 min |
-| 5 | RE 9 | `de:05315:11201:7:78` | 19:37 | 19:42 | 5 min |
+For the current project scope, this is treated as positive permission to proceed with the previously described non-commercial pilot activities, including the storage and historical analysis questions that were part of that request.
 
----
+If the usage moves outside that framework, especially into commercial use, the project description should be sent to:
 
-## 5. TRIAS Response Findings
+```text
+opendata-oepnv@vrr.de
+```
 
-### Arrival vs departure
+### Important compliance boundary
 
-The tested request used an arrival-oriented `StopEventRequest`.
+The supplied reply does **not** state a specific retention duration.
 
-Observed structure:
+Therefore this project does not invent a retention period and does not interpret the reply as an unlimited or unconditional license beyond the described pilot scope.
 
-- `thisCall.callAtStop.serviceArrival` exists.
-- `serviceArrival.timetabledTime` exists.
-- `serviceArrival.estimatedTime` exists.
-- `serviceDeparture` was not present for the inspected sample.
-
-Therefore departure columns have **not** been added based on assumptions.
-
-### Bay / platform information
-
-Observed properties in `thisCall.callAtStop`:
-
-- `plannedBay`
-- `estimatedBay`
-
-The test sample showed planned bays such as:
-
-- `7`
-- `2 A-C`
-- `4 A-C`
-- `11 B-C`
-- `8 A-C`
-
-`estimatedBay` was empty in the five inspected results.
-
-Interpretation rule:
-
-> `EstimatedBay = NULL` does **not** mean “platform unchanged”.  
-> It means that no separate realtime estimated-bay value was supplied in that snapshot.
-
-Therefore `PlatformChanged` is nullable.
-
-### Cancellation
-
-No direct `cancelled` property was observed in the inspected `stopEvent` / `callAtStop` structure.
-
-Cancellation fields are therefore **not** being added until a real response demonstrates the applicable source field.
+**Documentation decision date:** 2026-09-05.
 
 ---
 
-## 6. Realtime Staging Tables
+## 4. Realtime Staging Tables
 
-### 6.1 `stg.MddRealtimeStopObservation`
+### 4.1 `stg.MddRealtimeStopObservation`
 
-Current logical structure:
+Grain:
 
-- `ObservationKey` — bigint, PK
+> one source stop-event observation at one source observation timestamp.
+
+Current relevant columns:
+
+- `ObservationKey` — bigint IDENTITY, primary key
 - `ObservedAtUtc` — datetime2, required
 - `ResultId` — nvarchar, required
-- `StopPointRef` — nvarchar, required
+- `StopPointRef` — nvarchar, required, `Latin1_General_100_BIN2`
 - `StopName` — nvarchar, nullable
 - `LineName` — nvarchar, nullable
 - `LineRef` — nvarchar, nullable
@@ -215,34 +153,36 @@ Current logical structure:
 - `RailSubmode` — nvarchar, nullable
 - `TimetabledArrivalUtc` — datetime2, nullable
 - `EstimatedArrivalUtc` — datetime2, nullable
-- `CreatedAtUtc` — datetime2, required
 - `PlannedBay` — nvarchar, nullable
 - `EstimatedBay` — nvarchar, nullable
+- `CreatedAtUtc` — datetime2, default `sysutcdatetime()`
 
-Important design choice:
+`ArrivalDelayMinutes` is deliberately derived in `wrk`, not stored in staging.
 
-`ArrivalDelayMinutes` is **not** stored in staging. It is derived in `wrk`.
+A unique observation rule exists on `(ObservedAtUtc, ResultId)`.
 
-### 6.2 `stg.MddRealtimeSituationObservation`
+### 4.2 `stg.MddRealtimeSituationObservation`
 
-Current structure:
+Grain:
 
-- `SituationObservationKey` — bigint, required
-- `ObservedAtUtc` — datetime2, required
-- `ParticipantRef` — nvarchar, required
-- `SituationNumber` — nvarchar, required
-- `Summary` — nvarchar, nullable
-- `Description` — nvarchar, nullable
-- `Detail` — nvarchar(max), nullable
-- `ValidFromUtc` — datetime2, nullable
-- `ValidToUtc` — datetime2, nullable
-- `CreatedAtUtc` — datetime2, required
+> one identifiable source situation snapshot at one observation timestamp.
 
-### 6.3 `stg.MddRealtimeStopSituationLink`
+Current relevant columns:
 
-Purpose:
+- `SituationObservationKey` — bigint IDENTITY, primary key
+- `ObservedAtUtc`
+- `ParticipantRef` — required
+- `SituationNumber` — required
+- `Summary`
+- `Description`
+- `Detail`
+- `ValidFromUtc`
+- `ValidToUtc`
+- `CreatedAtUtc` — default `sysutcdatetime()`
 
-Many-to-many bridge between a realtime stop observation and one or more situations.
+### 4.3 `stg.MddRealtimeStopSituationLink`
+
+Many-to-many bridge between stop-event observations and situation observations.
 
 Columns:
 
@@ -251,352 +191,256 @@ Columns:
 - `RelationScope`
 - `CreatedAtUtc`
 
-Validated constraints:
+Validated `RelationScope` values:
 
-- composite primary key:
-  - `ObservationKey`
-  - `SituationObservationKey`
-  - `RelationScope`
-- FK to realtime stop observation
-- FK to situation observation
-- CHECK constraint restricting `RelationScope` to:
-  - `SERVICE`
-  - `CALL`
+```text
+CALL
+SERVICE
+```
+
+The composite primary key covers observation, situation and scope.
 
 ---
 
-## 7. Situation / Disruption Evidence from Test Response
+## 5. Arrival, Departure, Bay and Cancellation Semantics
 
-The response contained situation references and situation context.
+### Arrival
 
-Examples observed:
+The current collector prototype is arrival-oriented and persists:
 
-### RB 27
+```text
+stopEvent.thisCall.callAtStop.serviceArrival
+```
 
-`JourneyRef = ddb:90E27::H:j26:52`
+with timetabled and estimated arrival timestamps when supplied.
 
-Two service-level situations were associated with the event:
+### Departure
 
-1. `ZTP-PROD-132377`
-   - Summary: `Kein barrierefreier Ein- und Ausstieg möglich`
+The 2026-09-05 arrival response demonstrated that `serviceDeparture` can appear inside `previousCall` / `onwardCall` structures.
 
-2. `ZTP-PROD-138201`
-   - Summary: disruption in the greater Mönchengladbach area related to construction / overhead-line work.
+This does **not** yet define the production departure grain for this project.
 
-### RB 25
+The arrival collector continues to persist only the `thisCall` arrival event. Departure fields will not be added until a real, explicitly validated departure/current-call example establishes the correct semantics.
 
-`JourneyRef = ddb:90E25::R:j26:516`
+### Bay / platform
 
-One service-level situation:
+Observed source fields:
 
-- `ZTP-PROD-138150`
-- related to the Hoffnungsthal stop / a system-information issue and construction-related stop disruption.
+- `plannedBay`
+- `estimatedBay`
 
-### Other tested arrivals
+Working-layer rule:
 
-The tested ICE, RE7 and RE9 observations did not have a linked service situation in the inspected result set.
+```text
+EstimatedBay missing        -> PlatformChanged = NULL
+Both present and different  -> PlatformChanged = 1
+Both present and equal      -> PlatformChanged = 0
+```
 
-This supports the analytical model:
+A missing estimated bay is not interpreted as an unchanged platform.
 
-`Realtime delay evidence -> linked situation context -> possible explanation / likely cause`
+### Cancellation
 
-It does **not** prove causality by itself.
+No production cancellation field has been approved.
 
----
-
-## 8. Collation Issue and Resolution
-
-A real integration issue was found when joining TRIAS stop references to static GTFS stop identifiers.
-
-Originally:
-
-- `stg.MddRealtimeStopObservation.StopPointRef`
-  - `SQL_Latin1_General_CP1_CI_AS`
-- static GTFS `StopId`
-  - `Latin1_General_100_BIN2`
-
-This produced SQL Server error 468:
-
-> Cannot resolve the collation conflict ... in the equal to operation.
-
-Resolution:
-
-`stg.MddRealtimeStopObservation.StopPointRef` was altered to:
-
-`Latin1_General_100_BIN2`
-
-After altering the underlying column, the metadata of:
-
-`wrk.vwCologneRealtimeStopObservation`
-
-still exposed the previous collation.
-
-The view metadata was refreshed using:
-
-`sys.sp_refreshview`
-
-After refresh, realtime `StopPointRef` and static `StopId` both exposed:
-
-`Latin1_General_100_BIN2`
-
-The stop enrichment join then succeeded.
+Cancellation semantics will only be added after a real TRIAS example demonstrates the applicable source field and interpretation.
 
 ---
 
-## 9. Static Stop Enrichment
+## 6. Collation Resolution
 
-Static GTFS at Köln Hbf contains both station-level and platform-level stops.
+A real SQL Server collation conflict occurred between:
+
+```text
+stg realtime StopPointRef : SQL_Latin1_General_CP1_CI_AS
+static GTFS StopId        : Latin1_General_100_BIN2
+```
+
+The realtime staging column was changed to:
+
+```text
+Latin1_General_100_BIN2
+```
+
+After that alteration, `sys.sp_refreshview` was executed for `wrk.vwCologneRealtimeStopObservation` because existing view metadata still exposed the previous collation.
+
+The exact stop join then worked correctly.
+
+---
+
+## 7. Static Stop Enrichment
+
+At Köln Hbf, static GTFS contains a parent station and physical platform stops.
 
 Examples:
 
-Station:
+```text
+de:05315:11201        -> Köln Hbf
+de:05315:11201:7:71   -> Köln Hbf (Gleis 1)
+de:05315:11201:7:78   -> Köln Hbf (Gleis 8)
+```
 
-`de:05315:11201` -> `Köln Hbf`
+Primary stop-enrichment rule:
 
-Platforms:
+```text
+TRIAS StopPointRef = GTFS StopId
+```
 
-- `de:05315:11201:7:71` -> Gleis 1
-- `de:05315:11201:7:72` -> Gleis 2
-- `de:05315:11201:7:73` -> Gleis 3
-- ...
-- `de:05315:11201:7:81` -> Gleis 11
-
-The TRIAS `StopPointRef` values therefore use identifiers that can directly match the static GTFS platform-level `StopId` values.
-
-A validation query confirmed that static `StopId` maps consistently to a single `ParentStationId` and `StopName` in the current dataset.
-
-### `wrk.vwCologneRealtimeStopEnriched`
-
-This view enriches realtime observations with:
+`wrk.vwCologneRealtimeStopEnriched` exposes:
 
 - `StaticParentStationId`
 - `StaticStopName`
 - `StaticStopMatched`
 
-Primary rule:
+No guessed string truncation is used as the primary stop mapping method.
 
-`TRIAS StopPointRef = GTFS StopId`
-
-No string truncation or guessed station-ID parsing is used as the primary mapping strategy.
+A successful static stop enrichment does not imply that the realtime line/trip exists in the current static route coverage. This distinction is demonstrated by ICE observations that match a Köln Hbf platform but remain `StaticCoverageMissing` at trip level.
 
 ---
 
-## 10. Realtime Delay Logic
+## 8. Delay and Timezone Normalization
 
-### `wrk.vwCologneRealtimeStopObservation`
+### Delay
 
-This view derives:
-
-`ArrivalDelayMinutes`
-
-from:
+`wrk.vwCologneRealtimeStopObservation` derives `ArrivalDelayMinutes` from:
 
 - `TimetabledArrivalUtc`
 - `EstimatedArrivalUtc`
 
-using second-level difference divided by 60.
+If the estimated arrival is absent, delay remains NULL.
 
-It also derives:
+### Timezone
 
-`PlatformChanged`
-
-Rules:
-
-- if `EstimatedBay` is NULL / blank -> `PlatformChanged = NULL`
-- if both values exist and differ -> `1`
-- if both exist and are equal -> `0`
-
-This preserves the important distinction between:
-
-- “no evidence of a realtime bay value”
-- and
-- “confirmed unchanged bay”.
-
----
-
-## 11. Timezone Normalization
-
-A major matching issue was discovered during TRIAS-to-GTFS trip matching.
-
-TRIAS response timestamps were represented as UTC, e.g.:
-
-`2026-09-03T19:37:00Z[GMT]`
+TRIAS timestamps are represented as UTC.
 
 Static GTFS uses local agency time.
 
-For agency `5` (`DB DB Regio AG`):
-
-`AgencyTimezone = Europe/Berlin`
-
-The stop-level timezone for Köln Hbf platform 8 was NULL, so agency timezone applies.
-
 All 15 agencies currently represented in `dw.DimAgency` use:
 
-`Europe/Berlin`
+```text
+Europe/Berlin
+```
 
-For SQL Server conversion the working layer uses:
+SQL Server conversion uses:
 
-`W. Europe Standard Time`
+```sql
+AT TIME ZONE 'UTC'
+AT TIME ZONE 'W. Europe Standard Time'
+```
 
-Example:
-
-`2026-09-03 19:37 UTC`
--> `2026-09-03 21:37 +02:00` Berlin local time.
-
-### `wrk.vwCologneRealtimeTripMatchKey`
-
-This view derives:
-
-- `TimetabledArrivalLocal`
-- `ServiceDateLocal`
-- `ScheduledArrivalSecondsLocal`
-
-This logic belongs in `wrk`, not staging.
+The timezone conversion belongs in `wrk`, not `stg`.
 
 ---
 
-## 12. GTFS Service-Day / After-Midnight Logic
+## 9. GTFS Service-Day / After-Midnight Logic
 
-Static GTFS schedule times are not limited to `00:00–23:59`.
+GTFS schedule times can exceed 24 hours.
 
-Observed data:
+Validated current values include:
 
-- `24:00:00` -> `86400` seconds -> `ArrivalDayOffset = 1`
-- `24:01:00` -> `86460` seconds -> `ArrivalDayOffset = 1`
+```text
+24:00:00 -> 86400 seconds  -> ArrivalDayOffset 1
+24:01:00 -> 86460 seconds  -> ArrivalDayOffset 1
+48:50:00 -> 175800 seconds -> ArrivalDayOffset 2
+49:23:00 -> 177780 seconds -> ArrivalDayOffset 2
+```
 
-Observed day-offset distribution:
+Observed `ArrivalDayOffset` values:
 
-- `ArrivalDayOffset = 0`
-  - 1,488,108 stop events
-- `ArrivalDayOffset = 1`
-  - 63,231 stop events
-- `ArrivalDayOffset = 2`
-  - 4 stop events
+- 0
+- 1
+- 2
 
-Maximum observed arrival seconds:
+General matching formula:
 
-`177780`
+```text
+GTFS ServiceDate
+= TRIAS LocalCalendarDate - ArrivalDayOffset
 
-This corresponds to approximately:
+GTFS ScheduledArrivalSeconds
+= TRIAS LocalSecondsOfDay + ArrivalDayOffset * 86400
+```
 
-`49:23:00`
-
-The four `ArrivalDayOffset = 2` rows belong to an S12 trip and contain times such as:
-
-- `48:50:00`
-- `49:00:00`
-- `49:13:00`
-- `49:23:00`
-
-### General matching formula
-
-For a static candidate with `ArrivalDayOffset = N`:
-
-`GTFS ServiceDate = TRIAS LocalCalendarDate - N days`
-
-and:
-
-`GTFS ScheduledArrivalSeconds = TRIAS LocalSecondsOfDay + (N * 86400)`
-
-This logic is intentionally general and does not hard-code only offset 0 or 1.
+The implementation intentionally does not hard-code only offsets 0 and 1.
 
 ---
 
-## 13. TRIAS -> GTFS Trip Matching
+## 10. TRIAS-to-GTFS Trip Matching
 
-Direct identifier equality is **not** valid.
+TRIAS identifiers and GTFS identifiers use different schemes.
 
-Example:
+Never assume:
 
-TRIAS:
+```text
+TRIAS JourneyRef = GTFS TripId
+TRIAS LineRef    = GTFS RouteId
+```
 
-- `LineRef = ddb:90E09::R`
-- `JourneyRef = ddb:90E09::R:j26:163`
+Matching uses evidence from:
 
-Static GTFS RE9:
+1. normalized line name,
+2. local scheduled time,
+3. GTFS service-day calculation,
+4. active `ServiceId`,
+5. exact stop when available,
+6. controlled parent-station fallback.
 
-- `RouteId = de:nrw:re9:`
-- GTFS `TripId` follows a completely different identifier scheme.
+Current line-name normalization removes spaces, for example:
 
-Therefore:
+```text
+RE 9  -> RE9
+RB 27 -> RB27
+```
 
-- `LineRef != RouteId`
-- `JourneyRef != TripId`
+Active-service validation uses:
 
-The matching strategy is evidence-based.
-
-### Core matching dimensions
-
-1. normalized line name
-2. stop / station
-3. local scheduled time
-4. GTFS service-day logic
-5. active `ServiceId` on the corresponding service date
-
-Line-name normalization currently removes spaces, e.g.:
-
-- `RE 9` -> `RE9`
-- `RB 27` -> `RB27`
-
-### RE9 validation
-
-TRIAS event:
-
-- line: `RE 9`
-- StopPointRef: `de:05315:11201:7:78`
-- UTC planned arrival: `19:37`
-- Berlin local arrival: `21:37`
-- date: `2026-09-03`
-
-Static GTFS initially produced multiple schedule candidates across services.
-
-After applying `dw.DimService + dw.BridgeServiceDate + dw.DimDate`, only:
-
-`ServiceId = 67358`
-
-was active on `2026-09-03`.
-
-The final static filter returned exactly one GTFS trip candidate:
-
-- route: `de:nrw:re9:`
-- service: `67358`
-- headsign: `Aachen Hbf`
-- platform-level stop: Gleis 8
-
-This validated the general matching approach.
+- `dw.DimService`
+- `dw.BridgeServiceDate`
+- `dw.DimDate`
 
 ---
 
-## 14. Match Hierarchy
+## 11. Match-Quality Contract
 
-Testing all five realtime examples showed that exact platform matching alone is insufficient.
+Final statuses:
 
-The finalized hierarchy is:
+```text
+StaticCoverageMissing
+ExactStopMatch
+ParentStationFallback
+Unresolved
+```
 
-### 1. `StaticCoverageMissing`
+### `StaticCoverageMissing`
 
-Use when the realtime line does not exist in the static route coverage.
+Realtime line/service is outside the current static route/trip coverage.
 
-### 2. `ExactStopMatch`
+### `ExactStopMatch`
 
-Use when exactly one valid active GTFS candidate matches:
+Exactly one valid active candidate matches the normalized line, service date, scheduled local time and exact `StopId`.
 
-- normalized line,
-- service date,
-- scheduled local time,
-- exact `StopId`.
+### `ParentStationFallback`
 
-### 3. `ParentStationFallback`
+No exact stop candidate exists, but one candidate resolves uniquely at the same parent station using the remaining validated evidence.
 
-Use when exact stop match does not exist, but exactly one candidate matches the same parent station.
+### `Unresolved`
 
-### 4. `Unresolved`
+Static coverage exists, but the available evidence does not produce exactly one defensible candidate.
 
-Use when the event is covered by static data but the available evidence does not produce exactly one usable candidate.
+`HasUsableStaticMatch = 1` only for:
 
-### Test results
+```text
+ExactStopMatch
+ParentStationFallback
+```
 
-| TRIAS line | Result |
+---
+
+## 12. Original Five-Event Matching Validation — 2026-09-03
+
+The original engineering sample established the matching hierarchy:
+
+| Line | MatchStatus |
 |---|---|
 | ICE | `StaticCoverageMissing` |
 | RE 7 | `ExactStopMatch` |
@@ -604,333 +448,295 @@ Use when the event is covered by static data but the available evidence does not
 | RB 25 | `ExactStopMatch` |
 | RE 9 | `ExactStopMatch` |
 
----
+### RB27 platform fallback
 
-## 15. RB27 Platform-Mismatch Validation
-
-TRIAS reported:
-
-`de:05315:11201:7:73`
--> Köln Hbf, Gleis 3
-
-The corresponding static GTFS active trip matched at parent-station level but reported:
-
-`de:05315:11201:7:74`
--> Köln Hbf, Gleis 4
-
-The static candidate was:
-
-- `RouteShortName = RB27`
-- `ServiceId = 50242`
-- `TripHeadsign = Troisdorf Bf`
-- scheduled local arrival = `21:35`
-
-Therefore this event is correctly classified as:
-
-`ParentStationFallback`
-
-This is evidence of a platform mismatch between realtime TRIAS and static GTFS, not a failed trip match.
-
----
-
-## 16. ICE Static-Coverage Investigation
-
-The ICE realtime event did not match even after removing:
-
-- exact platform restriction,
-- line-name restriction.
-
-A direct search of the current static route and trip views for ICE returned zero rows.
-
-Therefore, for the current static dataset:
-
-**ICE is not represented in `wrk.vwCologneServingRoute` / `wrk.vwCologneServingTrip`.**
-
-The event is therefore classified as:
-
-`StaticCoverageMissing`
-
-and **not** `MatchFailed`.
-
-This distinction is important for future data-quality reporting.
-
----
-
-## 17. `wrk.vwCologneRealtimeTripMatch`
-
-This is now the canonical working view for realtime-to-static trip matching.
-
-Important output columns include:
-
-- `ExactStopCandidateCount`
-- `ParentStationCandidateCount`
-- `MatchStatus`
-- `MatchedTripId`
-- `MatchedRouteId`
-- `MatchedServiceId`
-- `MatchedStaticStopId`
-
-The view preserves the source realtime identifiers while attaching a static match only when the matching rules produce a usable result.
-
----
-
-## 18. `wrk.vwCologneRealtimeEvidenceSituation`
-
-This is currently the highest-level realtime working view.
-
-It combines:
-
-### Realtime evidence
-
-- observation identity
-- realtime stop identity
-- line / journey references
-- planned and estimated arrival
-- calculated delay
-- planned / estimated bay
-- platform-change inference
-
-### Static enrichment
-
-- parent station
-- static stop name
-- local-time normalization
-- service-day matching keys
-- GTFS trip match
-- GTFS route match
-- GTFS service match
-- matched static stop
-
-### Match quality
-
-- candidate counts
-- `MatchStatus`
-- `HasUsableStaticMatch`
-
-### Situation context
-
-- relation scope
-- situation observation key
-- participant ref
-- situation number
-- summary
-- description
-- detail
-- validity window
-
----
-
-## 19. `HasUsableStaticMatch`
-
-A derived `bit` column has been added to:
-
-`wrk.vwCologneRealtimeEvidenceSituation`
-
-Logic:
-
-Usable:
-
-- `ExactStopMatch`
-- `ParentStationFallback`
-
-Not usable:
-
-- `StaticCoverageMissing`
-- `Unresolved`
-
-The expression was wrapped with `ISNULL(..., 0)` so SQL Server metadata correctly reports:
-
-- datatype: `bit`
-- nullable: `0`
-
-This is useful for later analytics and quality KPIs.
-
----
-
-## 20. Important Modeling Decisions
-
-The following decisions are now established.
-
-### Source vs derived data
-
-Keep source values in `stg`.
-
-Calculate / normalize in `wrk`.
-
-Examples:
-
-Source-aligned:
-
-- TRIAS stop ref
-- journey ref
-- line ref
-- planned bay
-- estimated bay
-- situation number
-
-Derived:
-
-- delay minutes
-- platform changed
-- local service time
-- local scheduled seconds
-- static-match status
-- usable-match flag
-
-### Do not infer absent source fields
-
-Do not add departure or cancellation fields until an actual TRIAS response demonstrates the source structure needed to populate them.
-
-### Do not equate TRIAS and GTFS IDs
-
-Never assume:
-
-- TRIAS `JourneyRef = GTFS TripId`
-- TRIAS `LineRef = GTFS RouteId`
-
-Matching must use validated schedule/service evidence.
-
-### Parent-station fallback is legitimate
-
-A platform mismatch does not automatically invalidate a trip match.
-
-If exact stop fails but the same line/time/service resolves uniquely at parent-station level, classify it as:
-
-`ParentStationFallback`
-
-### Coverage gaps are not match failures
-
-A realtime event whose line is absent from the static GTFS coverage must be classified separately as:
-
-`StaticCoverageMissing`
-
----
-
-## 21. Current Realtime Persistence State
-
-During the design and validation work, the implementation intentionally avoided inserting the tested realtime response into SQL while storage/retention permission was being clarified.
-
-A final three-table row-count checkpoint was requested for:
-
-- `stg.MddRealtimeStopObservation`
-- `stg.MddRealtimeSituationObservation`
-- `stg.MddRealtimeStopSituationLink`
-
-The row-count result was not shown in the conversation before the confirmation email was received.
-
-Therefore the precise current database row counts should be verified before the collector is enabled.
-
----
-
-## 22. Next Recommended Steps
-
-### Compliance checkpoint
-
-1. Add the exact confirmation-email wording to repository documentation.
-2. Record any conditions or retention limits exactly.
-3. Mark the permission decision and date.
-
-### Database checkpoint
-
-4. Confirm the current row count of all three realtime staging tables.
-
-### Collector implementation
-
-5. Build the production parser / collector for TRIAS arrival observations.
-6. Populate:
-   - realtime stop observation,
-   - situation observations,
-   - stop-situation bridge.
-7. Keep source fields source-aligned.
-8. Apply deduplication using the established observation uniqueness rules.
-
-### Validation
-
-9. Run the existing five-event sample through the real staging/working pipeline.
-10. Verify expected statuses:
-    - ICE -> `StaticCoverageMissing`
-    - RE7 -> `ExactStopMatch`
-    - RB27 -> `ParentStationFallback`
-    - RB25 -> `ExactStopMatch`
-    - RE9 -> `ExactStopMatch`
-11. Verify delay calculations and situation links.
-12. Verify null semantics for `EstimatedBay` and `PlatformChanged`.
-
-### Later extensions
-
-13. Investigate departure events with a real departure-oriented TRIAS response.
-14. Investigate cancellation semantics only from real source fields.
-15. Add data-quality KPIs:
-    - exact-match rate,
-    - parent-fallback rate,
-    - unresolved rate,
-    - static-coverage-missing rate.
-16. Build the final realtime analytical fact only after staging and matching behavior is stable.
-
----
-
-## 23. Current Architecture Summary
+TRIAS:
 
 ```text
-MDD NRW / DELFI / TRIAS
-        |
-        v
-stg.MddRealtimeStopObservation
-stg.MddRealtimeSituationObservation
-stg.MddRealtimeStopSituationLink
-        |
-        v
-wrk.vwCologneRealtimeStopObservation
-        |
-        v
-wrk.vwCologneRealtimeStopEnriched
-        |
-        v
-wrk.vwCologneRealtimeTripMatchKey
-        |
-        v
-wrk.vwCologneRealtimeTripMatch
-        |
-        +------------------------+
-        |                        |
-        v                        v
-Static GTFS / DW            Situation links
-        |                        |
-        +-----------+------------+
-                    |
-                    v
-wrk.vwCologneRealtimeEvidenceSituation
-                    |
-                    v
-Future DW realtime fact / analytics / Power BI
+StopPointRef = de:05315:11201:7:73
+Gleis 3
 ```
 
----
+Static GTFS candidate:
 
-## 24. Status at This Checkpoint
+```text
+StopId = de:05315:11201:7:74
+Gleis 4
+```
 
-At the end of this checkpoint:
+The route, service date, local scheduled time and parent station resolved uniquely, so this is a valid `ParentStationFallback`, not a failed match.
 
-- MDD authentication works.
-- TRIAS requests work.
-- HTTP 200 realtime response confirmed.
-- Arrival parsing works.
-- Delay calculation logic is established.
-- Situation extraction is established.
-- Stop-situation relationship model is established.
-- bay/platform source fields are understood.
-- stop-level static enrichment works.
-- collation conflict is resolved.
-- UTC -> Europe/Berlin normalization is established.
-- GTFS after-midnight service-day logic is validated up to `ArrivalDayOffset = 2`.
-- TRIAS -> GTFS trip matching hierarchy is validated on the five-event sample.
-- `StaticCoverageMissing`, `ExactStopMatch`, `ParentStationFallback`, and `Unresolved` are established statuses.
-- `HasUsableStaticMatch` is available as a non-null bit.
-- confirmation email regarding storage/retention has been received according to the user.
-- production realtime persistence / collector activation is the next major implementation phase after compliance wording and row-count checkpoint are recorded.
+### ICE coverage gap
+
+No ICE rows exist in the current:
+
+- `wrk.vwCologneServingRoute`
+- `wrk.vwCologneServingTrip`
+
+Therefore ICE is `StaticCoverageMissing`, not `MatchFailed`.
 
 ---
 
-## Compliance Update Pending Exact Email Text
+## 13. Situation Evidence Contract
 
-A confirmation email regarding storage/retention has been received. The exact wording, permitted retention, restrictions, attribution requirements, redistribution conditions, and any other obligations will be inserted here after the user provides the email text. Until then, this document deliberately records only the fact that confirmation was received and does not infer its legal scope.
+TRIAS situation context is evidence, not automatic proof of causality.
+
+The analytical boundary remains:
+
+```text
+observed delay
++
+linked / overlapping situation context
++
+repeated temporal and location evidence
+=
+association or likely contributing factor
+```
+
+A confirmed cause requires stronger source evidence than simple co-occurrence or linkage.
+
+`RelationScope` records whether a source reference was attached at:
+
+- `SERVICE`, or
+- `CALL`
+
+level.
+
+---
+
+## 14. First Persisted Realtime Snapshot — 2026-09-05
+
+Before persistence, all three realtime staging tables were confirmed to contain zero rows.
+
+A new authenticated arrival request then returned:
+
+```text
+HTTP Status: 200
+Response length: 43618
+Result count: 5
+ObservedAtUtc: 2026-09-05 08:27:28 UTC
+```
+
+The response was parsed directly in PowerShell and inserted into SQL Server using parameterized commands and SQL transactions.
+
+No API key was persisted.
+
+### Staging result
+
+After the first successful persistence:
+
+| Table | Rows from snapshot |
+|---|---:|
+| `stg.MddRealtimeStopObservation` | 5 |
+| `stg.MddRealtimeSituationObservation` | 2 |
+| `stg.MddRealtimeStopSituationLink` | 2 |
+
+### Five persisted stop observations
+
+| Line | Timetabled UTC | Estimated UTC | Delay min | MatchStatus | HasUsableStaticMatch |
+|---|---|---|---:|---|---:|
+| ICE | 08:06 | 08:56 | 50 | `StaticCoverageMissing` | 0 |
+| ICE | 08:16 | 08:29 | 13 | `StaticCoverageMissing` | 0 |
+| RB 48 | 08:22 | 08:36 | 14 | `ParentStationFallback` | 1 |
+| RB 25 | 08:23 | 08:25 | 2 | `ExactStopMatch` | 1 |
+| RB38 | 08:26 | NULL | NULL | `ParentStationFallback` | 1 |
+
+All five realtime `StopPointRef` values successfully enriched against the static stop hierarchy (`StaticStopMatched = 1`).
+
+This again demonstrates that stop enrichment and trip coverage are separate concepts: the two ICE rows have known static platforms at Köln Hbf but no usable static trip coverage.
+
+### Platform / bay findings
+
+The source supplied planned bays including:
+
+- ICE: `5`
+- ICE: `4`
+- RB48: `1 A-C`
+- RB25: `10 A-B`
+- RB38: `7 D-G`
+
+`EstimatedBay` was NULL for all five observations, therefore `PlatformChanged` correctly remained NULL for all five.
+
+Two current rows resolved through parent-station fallback:
+
+- RB48: realtime `StopPointRef = de:05315:11201:7:72`, matched static stop `de:05315:11201:7:71`;
+- RB38: realtime `StopPointRef = de:05315:11201:7:78`, matched static stop `de:05315:11201:7:77`.
+
+These are retained as controlled fallback evidence, not converted into invented platform-change events.
+
+### Situation observations
+
+Three context `ptSituation` objects were visible in the source response.
+
+Two had the identifiers required by the current staging contract and were persisted:
+
+1. `ZTP-PROD-135726`
+   - summary: `Aufzug Gleis 1/2 in Haan außer Betrieb`
+
+2. `ZTP-PROD-138150`
+   - summary: system-information issue involving the Hoffnungsthal stop
+
+One additional context situation had the summary:
+
+```text
+Defektes Stellwerk
+```
+
+but did not expose `ParticipantRef` or `SituationNumber` in the inspected object.
+
+Because the current staging model requires both source identifiers, this unidentified context object was **not persisted**, no surrogate source identity was invented, and no event association was inferred.
+
+This is now a recorded source/data-quality case for the future production parser.
+
+### Situation links
+
+Two source-observed service-level relationships were persisted:
+
+| Line | SituationNumber | RelationScope |
+|---|---|---|
+| RB 48 | `ZTP-PROD-135726` | `SERVICE` |
+| RB 25 | `ZTP-PROD-138150` | `SERVICE` |
+
+No CALL-level relationship was observed in this snapshot.
+
+The presence of these links is situation evidence only; it is not proof that the linked situation caused the measured delay.
+
+---
+
+## 15. Validation Through `wrk.vwCologneRealtimeEvidenceSituation`
+
+The first persisted snapshot was successfully read through:
+
+```text
+stg
+ -> wrk.vwCologneRealtimeStopObservation
+ -> wrk.vwCologneRealtimeStopEnriched
+ -> wrk.vwCologneRealtimeTripMatchKey
+ -> wrk.vwCologneRealtimeTripMatch
+ -> wrk.vwCologneRealtimeEvidenceSituation
+```
+
+The final evidence view produced all five observation rows with the expected:
+
+- source stop identity,
+- static stop enrichment,
+- UTC-to-Berlin normalization,
+- scheduled local seconds,
+- delay evidence,
+- candidate counts,
+- match status,
+- usable-match flag,
+- and situation context.
+
+Validated current match distribution for this snapshot:
+
+```text
+StaticCoverageMissing : 2
+ExactStopMatch         : 1
+ParentStationFallback  : 2
+Unresolved             : 0
+```
+
+Usable static matches:
+
+```text
+3 of 5 observations
+```
+
+This is an engineering sample only and must not be reported as a network reliability rate.
+
+---
+
+## 16. Current Data-Quality Findings
+
+The production collector must preserve and expose, rather than hide, cases such as:
+
+- static stop exists but static trip coverage is missing;
+- exact platform fails but parent-station matching is uniquely defensible;
+- estimated arrival is absent;
+- estimated bay is absent;
+- situation context exists without a usable source identifier;
+- situation evidence exists but causality is not established;
+- repeated source snapshots represent observations, not repeated trips.
+
+Raw snapshot row counts must never be interpreted as service counts or delay counts.
+
+---
+
+## 17. Current Persistence Status
+
+Realtime persistence is no longer blocked by the earlier permission checkpoint.
+
+The database now contains the first validated historical snapshot in all three realtime staging tables.
+
+The current implementation was performed manually/prototypically through PowerShell to prove:
+
+- request execution,
+- parsing,
+- parameterized insertion,
+- transaction behavior,
+- foreign-key resolution,
+- situation linking,
+- and end-to-end working-view validation.
+
+This manual prototype is not yet the production collector.
+
+---
+
+## 18. Next Implementation Step
+
+The next major technical step is to convert the validated manual prototype into a production-style arrival collector while preserving the exact semantics proven above.
+
+The collector design must include:
+
+- API-quota-aware scheduling against 250,000 requests/month;
+- secure external API-key configuration;
+- one coherent snapshot timestamp per response;
+- parameterized SQL writes;
+- transactional insertion of stop observations, situation observations and links;
+- deduplication / idempotency using established source identities and snapshot timestamp;
+- explicit handling/logging of unidentifiable context situations rather than inventing identifiers;
+- preservation of NULL semantics;
+- no inferred cancellation or departure fields;
+- collection-gap/error logging;
+- validation metrics for exact match, parent fallback, unresolved and static coverage missing.
+
+Collector code should be added to the repository only after its first design is validated against the current database contract.
+
+---
+
+## 19. Established Modeling Decisions
+
+The following decisions remain binding unless explicitly revised after new source evidence:
+
+- raw/source values stay in `stg`;
+- normalization and derived logic stay in `wrk`;
+- validated facts only later enter `dw` / `analytics`;
+- Power BI does not read staging directly;
+- TRIAS IDs are not assumed equal to GTFS IDs;
+- GTFS service-day semantics above 24:00 are preserved;
+- exact stop match is preferred, parent-station fallback is controlled and explicit;
+- static coverage gaps are not match failures;
+- `EstimatedBay = NULL` does not mean platform unchanged;
+- absent estimated arrival means no derived arrival delay for that snapshot;
+- situation linkage is evidence, not confirmed causality;
+- cancellation/departure semantics are not invented from unvalidated source structures;
+- API secrets remain outside source control and screenshots.
+
+---
+
+## 20. Current Checkpoint
+
+As of 2026-09-05:
+
+- MDD authentication works;
+- TRIAS 1.2 arrival requests work;
+- monthly request budget is 250,000;
+- current non-commercial pilot usage has a positive permission assessment from the MDD/OpenData contact context described above;
+- exact retention duration was not stated and is therefore not invented;
+- realtime staging tables and constraints are validated;
+- first realtime persistence succeeded;
+- first situation persistence and service-level linking succeeded;
+- working-layer delay, timezone, GTFS matching and evidence views succeeded against persisted data;
+- the first persisted snapshot produced 2 `StaticCoverageMissing`, 1 `ExactStopMatch`, 2 `ParentStationFallback`, and 0 `Unresolved` rows;
+- production-style collector implementation is the next major step.
