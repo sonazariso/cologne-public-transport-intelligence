@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$Endpoint = "https://mdd.gorheinland.com/delfi",
     [string]$StopPointRef = "de:05315:11201",
     [int]$NumberOfResults = 5,
@@ -104,7 +104,7 @@ function Add-Parameter {
 }
 
 # Read the API key from the environment when available; otherwise prompt securely.
-$apiKeyPlain = $env:MDD_API_KEY
+$apiKeyPlain = [System.Environment]::GetEnvironmentVariable("MDD_API_KEY", "User")
 
 if ([string]::IsNullOrWhiteSpace($apiKeyPlain)) {
     $secureApiKey = Read-Host "Enter MDD API Key" -AsSecureString
@@ -541,15 +541,17 @@ Write-Host ""
 Write-Host "Snapshot persisted successfully."
 Write-Host "ObservedAtUtc:               $observedAtUtc"
 Write-Host "HTTP status:                 $($response.StatusCode)"
-Write-Host "Stop events returned:        $($parsedStops.Count)"
+Write-Host "Stop events returned:        $(@($parsedStops).Count)"
 Write-Host "Stops inserted:              $insertedStops"
 Write-Host "Stops already present:       $existingStops"
-Write-Host "Situations in context:       $($parsedSituations.Count)"
+Write-Host "Situations in context:       $(@($parsedSituations).Count)"
 Write-Host "Situations inserted:         $insertedSituations"
 Write-Host "Situations already present:  $existingSituations"
 Write-Host "Unidentified situations:     $unidentifiedSituationCount"
-Write-Host "Links observed:              $($parsedLinks.Count)"
+Write-Host "Links observed:              $(@($parsedLinks).Count)"
 Write-Host "Links inserted:              $insertedLinks"
 Write-Host "Links already present:       $existingLinks"
 Write-Host "Links skipped unresolved:    $skippedLinks"
 Write-Host "API requests used:           1"
+
+
