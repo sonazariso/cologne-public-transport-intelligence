@@ -2,21 +2,13 @@
 
 **Updated:** 2026-09-05
 
-This local working area is used for documentation changes before manual synchronization with GitHub Desktop.
+The local project documentation is being maintained during the realtime collector implementation and will be synchronized manually to GitHub using GitHub Desktop.
 
-## Current local updates
+Current local-only additions:
 
-- `09-REALTIME-MDD-TRIAS-INTEGRATION-AND-GTFS-MATCHING.md`
-  - MDD permission/compliance wording recorded.
-  - First persisted realtime snapshot documented.
-  - Realtime staging row counts documented.
-  - Situation parsing/link findings documented.
-  - Working-layer validation results documented.
-  - Production-style collector marked as the next implementation step.
+- MDD non-commercial pilot permission / retention interpretation.
+- First persisted realtime snapshot and working-layer validation.
+- VM resource decision: keep the collector lightweight and use PowerShell instead of installing the .NET SDK on the constrained SQL Server VM.
+- One-shot PowerShell collector prototype at `collector/Invoke-MddRealtimeCollector.ps1`.
 
-## Workflow
-
-1. Update documentation locally after each validated project step.
-2. Keep GitHub documentation as the published source of truth until the local changes are manually synchronized.
-3. Synchronize local changes through GitHub Desktop after review.
-4. Never commit secrets, API keys, or sensitive local configuration.
+GitHub remains unchanged until the user performs a manual synchronization.
