@@ -740,3 +740,36 @@ As of 2026-09-05:
 - working-layer delay, timezone, GTFS matching and evidence views succeeded against persisted data;
 - the first persisted snapshot produced 2 `StaticCoverageMissing`, 1 `ExactStopMatch`, 2 `ParentStationFallback`, and 0 `Unresolved` rows;
 - production-style collector implementation is the next major step.
+
+---
+
+## 21. Collector Implementation Environment Decision
+
+The Windows VM was checked before installing an additional .NET SDK.
+
+Observed resources on 2026-09-05:
+
+```text
+Total RAM : 8.00 GB
+Free RAM  : 1.25 GB
+Free C:    6.59 GB
+```
+
+The `dotnet` CLI is not currently installed or available on the VM.
+
+Because SQL Server and the analytics tooling already share this constrained VM, the project will **not install the .NET SDK on this VM at this stage**. The first production-style collector will therefore be implemented with the already available Windows PowerShell / .NET Framework runtime and ADO.NET primitives that were successfully validated during the persistence prototype.
+
+This is an environment/resource decision, not a permanent rejection of .NET. A later migration to a C#/.NET Worker Service remains possible if the collector is moved to a less constrained machine or the VM resource budget changes.
+
+The PowerShell collector must still meet production-style requirements:
+
+- secure API-key input/configuration outside source control;
+- quota-aware scheduling;
+- one coherent source observation timestamp per response;
+- parameterized SQL commands;
+- transactional persistence across stop observations, situation observations and links;
+- idempotent/deduplicated writes;
+- explicit logging of skipped/unidentifiable source situations;
+- preservation of NULL semantics;
+- no invented cancellation/departure semantics;
+- no direct Power BI dependency on staging.
