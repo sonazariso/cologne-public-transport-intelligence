@@ -16,7 +16,7 @@ BEGIN
     CREATE TABLE stg.MddRealtimeStopObservation
     (
         ObservationKey BIGINT IDENTITY(1, 1) NOT NULL
-            CONSTRAINT PK_stg_MddRealtimeStopObservation PRIMARY KEY,
+            CONSTRAINT PK_MddRealtimeStopObservation PRIMARY KEY,
         ObservedAtUtc DATETIME2(0) NOT NULL,
         ResultId NVARCHAR(100) NOT NULL,
         StopPointRef NVARCHAR(100) COLLATE Latin1_General_100_BIN2 NOT NULL,
@@ -31,7 +31,7 @@ BEGIN
         TimetabledArrivalUtc DATETIME2(0) NULL,
         EstimatedArrivalUtc DATETIME2(0) NULL,
         CreatedAtUtc DATETIME2(0) NOT NULL
-            CONSTRAINT DF_stg_MddRealtimeStopObservation_CreatedAtUtc DEFAULT SYSUTCDATETIME(),
+            CONSTRAINT DF_MddRealtimeStopObservation_CreatedAtUtc DEFAULT SYSUTCDATETIME(),
         PlannedBay NVARCHAR(100) NULL,
         EstimatedBay NVARCHAR(100) NULL
     );
@@ -43,10 +43,10 @@ IF NOT EXISTS
     SELECT 1
     FROM sys.indexes
     WHERE object_id = OBJECT_ID(N'stg.MddRealtimeStopObservation')
-      AND name = N'UX_stg_MddRealtimeStopObservation_ObservedAtUtc_ResultId'
+      AND name = N'UX_MddRealtimeStopObservation_ObservedAt_ResultId'
 )
 BEGIN
-    CREATE UNIQUE INDEX UX_stg_MddRealtimeStopObservation_ObservedAtUtc_ResultId
+    CREATE UNIQUE INDEX UX_MddRealtimeStopObservation_ObservedAt_ResultId
         ON stg.MddRealtimeStopObservation (ObservedAtUtc, ResultId);
 END;
 GO
@@ -56,7 +56,7 @@ BEGIN
     CREATE TABLE stg.MddRealtimeSituationObservation
     (
         SituationObservationKey BIGINT IDENTITY(1, 1) NOT NULL
-            CONSTRAINT PK_stg_MddRealtimeSituationObservation PRIMARY KEY,
+            CONSTRAINT PK_MddRealtimeSituationObservation PRIMARY KEY,
         ObservedAtUtc DATETIME2(0) NOT NULL,
         ParticipantRef NVARCHAR(100) NOT NULL,
         SituationNumber NVARCHAR(150) NOT NULL,
@@ -66,8 +66,26 @@ BEGIN
         ValidFromUtc DATETIME2(0) NULL,
         ValidToUtc DATETIME2(0) NULL,
         CreatedAtUtc DATETIME2(0) NOT NULL
-            CONSTRAINT DF_stg_MddRealtimeSituationObservation_CreatedAtUtc DEFAULT SYSUTCDATETIME()
+            CONSTRAINT DF_MddRealtimeSituationObservation_CreatedAtUtc DEFAULT SYSUTCDATETIME()
     );
+END;
+GO
+
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM sys.indexes
+    WHERE object_id = OBJECT_ID(N'stg.MddRealtimeSituationObservation')
+      AND name = N'UX_MddRealtimeSituationObservation_Snapshot'
+)
+BEGIN
+    CREATE UNIQUE INDEX UX_MddRealtimeSituationObservation_Snapshot
+        ON stg.MddRealtimeSituationObservation
+        (
+            ObservedAtUtc,
+            ParticipantRef,
+            SituationNumber
+        );
 END;
 GO
 
@@ -79,16 +97,16 @@ BEGIN
         SituationObservationKey BIGINT NOT NULL,
         RelationScope NVARCHAR(20) NOT NULL,
         CreatedAtUtc DATETIME2(0) NOT NULL
-            CONSTRAINT DF_stg_MddRealtimeStopSituationLink_CreatedAtUtc DEFAULT SYSUTCDATETIME(),
-        CONSTRAINT PK_stg_MddRealtimeStopSituationLink
+            CONSTRAINT DF_MddRealtimeStopSituationLink_CreatedAtUtc DEFAULT SYSUTCDATETIME(),
+        CONSTRAINT PK_MddRealtimeStopSituationLink
             PRIMARY KEY (ObservationKey, SituationObservationKey, RelationScope),
-        CONSTRAINT FK_stg_MddRealtimeStopSituationLink_Observation
+        CONSTRAINT FK_MddRealtimeStopSituationLink_Observation
             FOREIGN KEY (ObservationKey)
             REFERENCES stg.MddRealtimeStopObservation (ObservationKey),
-        CONSTRAINT FK_stg_MddRealtimeStopSituationLink_Situation
+        CONSTRAINT FK_MddRealtimeStopSituationLink_Situation
             FOREIGN KEY (SituationObservationKey)
             REFERENCES stg.MddRealtimeSituationObservation (SituationObservationKey),
-        CONSTRAINT CK_stg_MddRealtimeStopSituationLink_RelationScope
+        CONSTRAINT CK_MddRealtimeStopSituationLink_RelationScope
             CHECK (RelationScope IN (N'CALL', N'SERVICE'))
     );
 END;

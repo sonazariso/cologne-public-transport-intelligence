@@ -70,6 +70,11 @@ The repository now contains reproducible SQL for the validated realtime structur
 - `stg.MddRealtimeSituationObservation`
 - `stg.MddRealtimeStopSituationLink`
 
+Validated staging indexes:
+
+- `UX_MddRealtimeStopObservation_ObservedAt_ResultId`
+- `UX_MddRealtimeSituationObservation_Snapshot`
+
 ### Realtime working views
 
 - `wrk.vwCologneRealtimeStopObservation`

@@ -5,412 +5,411 @@ SET NOCOUNT ON;
 SET XACT_ABORT ON;
 GO
 
-/* Normalize source arrival values and derive nullable realtime measures. */
 CREATE OR ALTER VIEW wrk.vwCologneRealtimeStopObservation
 AS
 SELECT
-    observation.ObservationKey,
-    observation.ObservedAtUtc,
-    observation.ResultId,
-    observation.StopPointRef,
-    observation.StopName,
-    observation.LineName,
-    observation.LineRef,
-    observation.JourneyRef,
-    observation.DirectionRef,
-    observation.OperatorRef,
-    observation.PtMode,
-    observation.RailSubmode,
-    observation.TimetabledArrivalUtc,
-    observation.EstimatedArrivalUtc,
-    observation.CreatedAtUtc,
-    observation.PlannedBay,
-    observation.EstimatedBay,
-    DATEDIFF
-    (
-        MINUTE,
-        observation.TimetabledArrivalUtc,
-        observation.EstimatedArrivalUtc
-    ) AS ArrivalDelayMinutes,
-    CONVERT
-    (
-        BIT,
-        CASE
-            WHEN observation.PlannedBay IS NULL
-                 OR observation.EstimatedBay IS NULL THEN NULL
-            WHEN observation.PlannedBay <> observation.EstimatedBay THEN 1
-            ELSE 0
-        END
-    ) AS PlatformChanged
-FROM stg.MddRealtimeStopObservation AS observation;
+    s.ObservationKey,
+    s.ObservedAtUtc,
+    s.ResultId,
+
+    s.StopPointRef,
+    s.StopName,
+
+    s.LineName,
+    s.LineRef,
+    s.JourneyRef,
+    s.DirectionRef,
+    s.OperatorRef,
+
+    s.PtMode,
+    s.RailSubmode,
+
+    s.TimetabledArrivalUtc,
+    s.EstimatedArrivalUtc,
+
+    CASE
+        WHEN s.TimetabledArrivalUtc IS NOT NULL
+         AND s.EstimatedArrivalUtc IS NOT NULL
+        THEN
+            CAST(
+                DATEDIFF(
+                    SECOND,
+                    s.TimetabledArrivalUtc,
+                    s.EstimatedArrivalUtc
+                ) / 60.0
+                AS DECIMAL(10,2)
+            )
+        ELSE NULL
+    END AS ArrivalDelayMinutes,
+
+    s.PlannedBay,
+    s.EstimatedBay,
+
+    CASE
+        WHEN s.EstimatedBay IS NULL
+          OR LTRIM(RTRIM(s.EstimatedBay)) = ''
+        THEN NULL
+
+        WHEN ISNULL(s.PlannedBay, '') <> s.EstimatedBay
+        THEN CAST(1 AS BIT)
+
+        ELSE CAST(0 AS BIT)
+    END AS PlatformChanged,
+
+    s.CreatedAtUtc
+FROM stg.MddRealtimeStopObservation AS s;
 GO
 
 /*
-    Enrich only with static stop positions that are actually used by the
-    scheduled warehouse.  This is the validated warehouse-based replacement
-    for rebuilding the stop map through wrk.vwCologneScheduledStopEvent.
+    Enrich realtime stop observations using the curated static stop dimension.
+
+    The previous implementation rebuilt a distinct stop map from
+    wrk.vwCologneScheduledStopEvent, which required scanning approximately
+    1.55 million scheduled stop-event rows on every query.
+
+    This version preserves the same result while using dw.DimStop and an
+    indexed existence check against dw.FactScheduledStopEvent.
 */
 CREATE OR ALTER VIEW wrk.vwCologneRealtimeStopEnriched
 AS
-WITH UsedStaticStop AS
+SELECT
+    r.*,
+
+    sm.ParentStationId AS StaticParentStationId,
+    sm.StopName AS StaticStopName,
+
+    CAST
+    (
+        CASE
+            WHEN sm.StopId IS NOT NULL THEN 1
+            ELSE 0
+        END
+        AS BIT
+    ) AS StaticStopMatched
+
+FROM wrk.vwCologneRealtimeStopObservation AS r
+
+LEFT JOIN
 (
     SELECT
-        stop.StopId,
-        stop.ParentStationId,
-        stop.StopName
-    FROM dw.DimStop AS stop
+        s.StopId,
+        s.ParentStationId,
+        s.StopName
+    FROM dw.DimStop AS s
     WHERE EXISTS
     (
         SELECT 1
-        FROM dw.FactScheduledStopEvent AS stop_event
-        WHERE stop_event.StopKey = stop.StopKey
+        FROM dw.FactScheduledStopEvent AS f
+        WHERE f.StopKey = s.StopKey
     )
-)
-SELECT
-    realtime.*,
-    static_stop.ParentStationId AS StaticParentStationId,
-    static_stop.StopName AS StaticStopName,
-    CONVERT
-    (
-        BIT,
-        CASE WHEN static_stop.StopId IS NULL THEN 0 ELSE 1 END
-    ) AS StaticStopMatched
-FROM wrk.vwCologneRealtimeStopObservation AS realtime
-LEFT JOIN UsedStaticStop AS static_stop
-    ON static_stop.StopId = realtime.StopPointRef;
+) AS sm
+    ON sm.StopId COLLATE Latin1_General_100_BIN2
+     = r.StopPointRef COLLATE Latin1_General_100_BIN2;
 GO
 
-/* Convert UTC TRIAS timetable values to Berlin local service-day inputs. */
 CREATE OR ALTER VIEW wrk.vwCologneRealtimeTripMatchKey
 AS
-WITH Localized AS
-(
-    SELECT
-        realtime.*,
-        CONVERT
-        (
-            DATETIME2(0),
-            realtime.TimetabledArrivalUtc
-                AT TIME ZONE 'UTC'
-                AT TIME ZONE 'W. Europe Standard Time'
-        ) AS TimetabledArrivalLocal
-    FROM wrk.vwCologneRealtimeStopEnriched AS realtime
-)
 SELECT
-    localized.*,
-    CONVERT(DATE, localized.TimetabledArrivalLocal) AS ServiceDateLocal,
-    CONVERT
-    (
-        INT,
-        DATEDIFF
-        (
-            SECOND,
-            CONVERT(DATE, localized.TimetabledArrivalLocal),
-            localized.TimetabledArrivalLocal
-        )
-    ) AS ScheduledArrivalSecondsLocal
-FROM Localized AS localized;
+    r.*,
+
+    CAST(
+        r.TimetabledArrivalUtc
+            AT TIME ZONE 'UTC'
+            AT TIME ZONE 'W. Europe Standard Time'
+        AS DATETIME2(0)
+    ) AS TimetabledArrivalLocal,
+
+    CAST(
+        r.TimetabledArrivalUtc
+            AT TIME ZONE 'UTC'
+            AT TIME ZONE 'W. Europe Standard Time'
+        AS DATE
+    ) AS ServiceDateLocal,
+
+    CASE
+        WHEN r.TimetabledArrivalUtc IS NOT NULL
+        THEN
+            DATEPART(
+                HOUR,
+                r.TimetabledArrivalUtc
+                    AT TIME ZONE 'UTC'
+                    AT TIME ZONE 'W. Europe Standard Time'
+            ) * 3600
+            +
+            DATEPART(
+                MINUTE,
+                r.TimetabledArrivalUtc
+                    AT TIME ZONE 'UTC'
+                    AT TIME ZONE 'W. Europe Standard Time'
+            ) * 60
+            +
+            DATEPART(
+                SECOND,
+                r.TimetabledArrivalUtc
+                    AT TIME ZONE 'UTC'
+                    AT TIME ZONE 'W. Europe Standard Time'
+            )
+        ELSE NULL
+    END AS ScheduledArrivalSecondsLocal
+
+FROM wrk.vwCologneRealtimeStopEnriched AS r;
 GO
 
-/*
-    Preserve the current production matching path through the validated
-    scheduled-stop-event working view.  The warehouse-direct replacement is a
-    future, separately validated change and is intentionally not implemented
-    here.
-*/
 CREATE OR ALTER VIEW wrk.vwCologneRealtimeTripMatch
 AS
-WITH RealtimeLineKey AS
+
+WITH RouteCoverage AS
 (
-    SELECT
-        realtime.*,
-        REPLACE
-        (
-            UPPER(LTRIM(RTRIM(COALESCE(NULLIF(realtime.LineName, N''), N'')))),
-            N' ',
-            N''
-        ) AS NormalizedLineName
-    FROM wrk.vwCologneRealtimeTripMatchKey AS realtime
+    SELECT DISTINCT
+        REPLACE(RouteShortName, N' ', N'') AS NormalizedRouteName
+    FROM wrk.vwCologneServingRoute
+    WHERE RouteShortName IS NOT NULL
 ),
-RouteCoverage AS
+
+Candidate AS
 (
     SELECT
-        route.RouteId,
-        REPLACE
-        (
-            UPPER
-            (
-                LTRIM
-                (
-                    RTRIM
-                    (
-                        COALESCE
-                        (
-                            NULLIF(route.RouteShortName, N''),
-                            NULLIF(route.RouteLongName, N''),
-                            N''
-                        )
-                    )
-                )
-            ),
-            N' ',
-            N''
-        ) AS NormalizedRouteLabel
-    FROM wrk.vwCologneServingRoute AS route
-),
-LineCoverage AS
-(
-    SELECT
-        realtime.ObservationKey,
-        COUNT_BIG(route.RouteId) AS StaticRouteCoverageCount
-    FROM RealtimeLineKey AS realtime
-    LEFT JOIN RouteCoverage AS route
-        ON route.NormalizedRouteLabel = realtime.NormalizedLineName
-    GROUP BY realtime.ObservationKey
-),
-ExactCandidates AS
-(
-    SELECT
-        realtime.ObservationKey,
-        scheduled.TripId,
-        scheduled.RouteId,
-        scheduled.ServiceId,
-        scheduled.StopId,
-        ROW_NUMBER() OVER
-        (
-            PARTITION BY realtime.ObservationKey
-            ORDER BY
-                scheduled.TripId,
-                scheduled.RouteId,
-                scheduled.ServiceId,
-                scheduled.StopId,
-                scheduled.StopSequence
-        ) AS CandidateOrder
-    FROM RealtimeLineKey AS realtime
-    JOIN wrk.vwCologneScheduledStopEvent AS scheduled
-        ON scheduled.StopId = realtime.StopPointRef
-       AND REPLACE
-           (
-               UPPER
-               (
-                   LTRIM
-                   (
-                       RTRIM
-                       (
-                           COALESCE
-                           (
-                               NULLIF(scheduled.RouteShortName, N''),
-                               NULLIF(scheduled.RouteLongName, N''),
-                               N''
-                           )
-                       )
-                   )
-               ),
-               N' ',
-               N''
-           ) = realtime.NormalizedLineName
-       AND scheduled.ScheduledArrivalSeconds =
-           realtime.ScheduledArrivalSecondsLocal
-             + (scheduled.ArrivalDayOffset * 86400)
-    JOIN dw.DimService AS service
-        ON service.ServiceId = scheduled.ServiceId
-    JOIN dw.BridgeServiceDate AS service_date
-        ON service_date.ServiceKey = service.ServiceKey
-    JOIN dw.DimDate AS calendar_date
-        ON calendar_date.DateKey = service_date.DateKey
-       AND calendar_date.DateValue =
-           DATEADD(DAY, -scheduled.ArrivalDayOffset, realtime.ServiceDateLocal)
-),
-ParentStationCandidates AS
-(
-    SELECT
-        realtime.ObservationKey,
-        scheduled.TripId,
-        scheduled.RouteId,
-        scheduled.ServiceId,
-        scheduled.StopId,
-        ROW_NUMBER() OVER
-        (
-            PARTITION BY realtime.ObservationKey
-            ORDER BY
-                scheduled.TripId,
-                scheduled.RouteId,
-                scheduled.ServiceId,
-                scheduled.StopId,
-                scheduled.StopSequence
-        ) AS CandidateOrder
-    FROM RealtimeLineKey AS realtime
-    JOIN wrk.vwCologneScheduledStopEvent AS scheduled
-        ON scheduled.ParentStationId = realtime.StaticParentStationId
-       AND REPLACE
-           (
-               UPPER
-               (
-                   LTRIM
-                   (
-                       RTRIM
-                       (
-                           COALESCE
-                           (
-                               NULLIF(scheduled.RouteShortName, N''),
-                               NULLIF(scheduled.RouteLongName, N''),
-                               N''
-                           )
-                       )
-                   )
-               ),
-               N' ',
-               N''
-           ) = realtime.NormalizedLineName
-       AND scheduled.ScheduledArrivalSeconds =
-           realtime.ScheduledArrivalSecondsLocal
-             + (scheduled.ArrivalDayOffset * 86400)
-    JOIN dw.DimService AS service
-        ON service.ServiceId = scheduled.ServiceId
-    JOIN dw.BridgeServiceDate AS service_date
-        ON service_date.ServiceKey = service.ServiceKey
-    JOIN dw.DimDate AS calendar_date
-        ON calendar_date.DateKey = service_date.DateKey
-       AND calendar_date.DateValue =
-           DATEADD(DAY, -scheduled.ArrivalDayOffset, realtime.ServiceDateLocal)
-),
-ExactCounts AS
-(
-    SELECT
-        ObservationKey,
-        COUNT_BIG(*) AS ExactStopCandidateCount
-    FROM ExactCandidates
-    GROUP BY ObservationKey
-),
-ParentStationCounts AS
-(
-    SELECT
-        ObservationKey,
-        COUNT_BIG(*) AS ParentStationCandidateCount
-    FROM ParentStationCandidates
-    GROUP BY ObservationKey
-),
-ExactSelection AS
-(
-    SELECT
-        candidate.ObservationKey,
-        candidate.TripId,
-        candidate.RouteId,
-        candidate.ServiceId,
-        candidate.StopId
-    FROM ExactCandidates AS candidate
-    WHERE candidate.CandidateOrder = 1
-),
-ParentStationSelection AS
-(
-    SELECT
-        candidate.ObservationKey,
-        candidate.TripId,
-        candidate.RouteId,
-        candidate.ServiceId,
-        candidate.StopId
-    FROM ParentStationCandidates AS candidate
-    WHERE candidate.CandidateOrder = 1
-),
-CandidateStats AS
-(
-    SELECT
-        realtime.ObservationKey,
-        COALESCE(line_coverage.StaticRouteCoverageCount, 0) AS StaticRouteCoverageCount,
-        COALESCE(exact_count.ExactStopCandidateCount, 0) AS ExactStopCandidateCount,
-        COALESCE(parent_count.ParentStationCandidateCount, 0) AS ParentStationCandidateCount
-    FROM wrk.vwCologneRealtimeTripMatchKey AS realtime
-    LEFT JOIN LineCoverage AS line_coverage
-        ON line_coverage.ObservationKey = realtime.ObservationKey
-    LEFT JOIN ExactCounts AS exact_count
-        ON exact_count.ObservationKey = realtime.ObservationKey
-    LEFT JOIN ParentStationCounts AS parent_count
-        ON parent_count.ObservationKey = realtime.ObservationKey
-),
-MatchDecision AS
-(
-    SELECT
-        stats.*,
+        r.ObservationKey,
+
+        se.TripId,
+        se.RouteId,
+        se.ServiceId,
+        se.RouteShortName,
+        se.TripHeadsign,
+
+        se.StopId AS StaticMatchedStopId,
+        se.StopName AS StaticMatchedStopName,
+        se.ParentStationId,
+
         CASE
-            WHEN stats.StaticRouteCoverageCount = 0
-                THEN N'StaticCoverageMissing'
-            WHEN stats.ExactStopCandidateCount = 1
-                THEN N'ExactStopMatch'
-            WHEN stats.ExactStopCandidateCount = 0
-                 AND stats.ParentStationCandidateCount = 1
-                THEN N'ParentStationFallback'
-            ELSE N'Unresolved'
-        END AS MatchStatus
-    FROM CandidateStats AS stats
+            WHEN se.StopId = r.StopPointRef
+            THEN 1
+            ELSE 0
+        END AS IsExactStopMatch,
+
+        CASE
+            WHEN se.ParentStationId = r.StaticParentStationId
+            THEN 1
+            ELSE 0
+        END AS IsParentStationMatch
+
+    FROM wrk.vwCologneRealtimeTripMatchKey AS r
+
+    INNER JOIN wrk.vwCologneScheduledStopEvent AS se
+        ON REPLACE(se.RouteShortName, N' ', N'')
+         = REPLACE(r.LineName, N' ', N'')
+
+       AND se.ScheduledArrivalSeconds =
+             r.ScheduledArrivalSecondsLocal
+             + (se.ArrivalDayOffset * 86400)
+
+    INNER JOIN dw.DimService AS ds
+        ON ds.ServiceId COLLATE Latin1_General_100_BIN2
+         = se.ServiceId COLLATE Latin1_General_100_BIN2
+
+    INNER JOIN dw.BridgeServiceDate AS b
+        ON b.ServiceKey = ds.ServiceKey
+
+    INNER JOIN dw.DimDate AS d
+        ON d.DateKey = b.DateKey
+
+       AND d.DateValue =
+           DATEADD(
+               DAY,
+               -se.ArrivalDayOffset,
+               r.ServiceDateLocal
+           )
+),
+
+CandidateSummary AS
+(
+    SELECT
+        ObservationKey,
+
+        SUM(IsExactStopMatch) AS ExactStopCandidateCount,
+        SUM(IsParentStationMatch) AS ParentStationCandidateCount,
+
+        MAX(
+            CASE WHEN IsExactStopMatch = 1
+                 THEN TripId END
+        ) AS ExactTripId,
+
+        MAX(
+            CASE WHEN IsParentStationMatch = 1
+                 THEN TripId END
+        ) AS ParentTripId,
+
+        MAX(
+            CASE WHEN IsExactStopMatch = 1
+                 THEN RouteId END
+        ) AS ExactRouteId,
+
+        MAX(
+            CASE WHEN IsParentStationMatch = 1
+                 THEN RouteId END
+        ) AS ParentRouteId,
+
+        MAX(
+            CASE WHEN IsExactStopMatch = 1
+                 THEN ServiceId END
+        ) AS ExactServiceId,
+
+        MAX(
+            CASE WHEN IsParentStationMatch = 1
+                 THEN ServiceId END
+        ) AS ParentServiceId,
+
+        MAX(
+            CASE WHEN IsExactStopMatch = 1
+                 THEN StaticMatchedStopId END
+        ) AS ExactStaticStopId,
+
+        MAX(
+            CASE WHEN IsParentStationMatch = 1
+                 THEN StaticMatchedStopId END
+        ) AS ParentStaticStopId
+
+    FROM Candidate
+    GROUP BY ObservationKey
 )
+
 SELECT
-    realtime.*,
-    decision.ExactStopCandidateCount,
-    decision.ParentStationCandidateCount,
-    decision.MatchStatus,
+    r.*,
+
+    ISNULL(cs.ExactStopCandidateCount, 0)
+        AS ExactStopCandidateCount,
+
+    ISNULL(cs.ParentStationCandidateCount, 0)
+        AS ParentStationCandidateCount,
+
     CASE
-        WHEN decision.MatchStatus = N'ExactStopMatch' THEN exact_match.TripId
-        WHEN decision.MatchStatus = N'ParentStationFallback' THEN parent_match.TripId
-        ELSE NULL
+        WHEN rc.NormalizedRouteName IS NULL
+            THEN N'StaticCoverageMissing'
+
+        WHEN ISNULL(cs.ExactStopCandidateCount, 0) = 1
+            THEN N'ExactStopMatch'
+
+        WHEN ISNULL(cs.ExactStopCandidateCount, 0) = 0
+         AND ISNULL(cs.ParentStationCandidateCount, 0) = 1
+            THEN N'ParentStationFallback'
+
+        ELSE N'Unresolved'
+    END AS MatchStatus,
+
+    CASE
+        WHEN ISNULL(cs.ExactStopCandidateCount, 0) = 1
+            THEN cs.ExactTripId
+
+        WHEN ISNULL(cs.ExactStopCandidateCount, 0) = 0
+         AND ISNULL(cs.ParentStationCandidateCount, 0) = 1
+            THEN cs.ParentTripId
     END AS MatchedTripId,
+
     CASE
-        WHEN decision.MatchStatus = N'ExactStopMatch' THEN exact_match.RouteId
-        WHEN decision.MatchStatus = N'ParentStationFallback' THEN parent_match.RouteId
-        ELSE NULL
+        WHEN ISNULL(cs.ExactStopCandidateCount, 0) = 1
+            THEN cs.ExactRouteId
+
+        WHEN ISNULL(cs.ExactStopCandidateCount, 0) = 0
+         AND ISNULL(cs.ParentStationCandidateCount, 0) = 1
+            THEN cs.ParentRouteId
     END AS MatchedRouteId,
+
     CASE
-        WHEN decision.MatchStatus = N'ExactStopMatch' THEN exact_match.ServiceId
-        WHEN decision.MatchStatus = N'ParentStationFallback' THEN parent_match.ServiceId
-        ELSE NULL
+        WHEN ISNULL(cs.ExactStopCandidateCount, 0) = 1
+            THEN cs.ExactServiceId
+
+        WHEN ISNULL(cs.ExactStopCandidateCount, 0) = 0
+         AND ISNULL(cs.ParentStationCandidateCount, 0) = 1
+            THEN cs.ParentServiceId
     END AS MatchedServiceId,
+
     CASE
-        WHEN decision.MatchStatus = N'ExactStopMatch' THEN exact_match.StopId
-        WHEN decision.MatchStatus = N'ParentStationFallback' THEN parent_match.StopId
-        ELSE NULL
+        WHEN ISNULL(cs.ExactStopCandidateCount, 0) = 1
+            THEN cs.ExactStaticStopId
+
+        WHEN ISNULL(cs.ExactStopCandidateCount, 0) = 0
+         AND ISNULL(cs.ParentStationCandidateCount, 0) = 1
+            THEN cs.ParentStaticStopId
     END AS MatchedStaticStopId
-FROM wrk.vwCologneRealtimeTripMatchKey AS realtime
-JOIN MatchDecision AS decision
-    ON decision.ObservationKey = realtime.ObservationKey
-LEFT JOIN ExactSelection AS exact_match
-    ON exact_match.ObservationKey = realtime.ObservationKey
-   AND decision.MatchStatus = N'ExactStopMatch'
-LEFT JOIN ParentStationSelection AS parent_match
-    ON parent_match.ObservationKey = realtime.ObservationKey
-   AND decision.MatchStatus = N'ParentStationFallback';
+
+FROM wrk.vwCologneRealtimeTripMatchKey AS r
+
+LEFT JOIN CandidateSummary AS cs
+    ON cs.ObservationKey = r.ObservationKey
+
+LEFT JOIN RouteCoverage AS rc
+    ON rc.NormalizedRouteName =
+       REPLACE(r.LineName, N' ', N'');
 GO
 
-/* Expose linked source situations as evidence, not confirmed causality. */
 CREATE OR ALTER VIEW wrk.vwCologneRealtimeEvidenceSituation
 AS
 SELECT
-    realtime_match.*,
-    ISNULL
-    (
-        CONVERT
-        (
-            BIT,
-            CASE
-                WHEN realtime_match.MatchStatus IN
-                     (N'ExactStopMatch', N'ParentStationFallback') THEN 1
-                ELSE 0
-            END
-        ),
-        CONVERT(BIT, 0)
+    o.ObservationKey,
+    o.ObservedAtUtc,
+
+    o.ResultId,
+    o.StopPointRef,
+    o.StopName,
+
+    o.StaticParentStationId,
+    o.StaticStopName,
+    o.StaticStopMatched,
+
+    o.LineName,
+    o.LineRef,
+    o.JourneyRef,
+
+    o.TimetabledArrivalUtc,
+    o.EstimatedArrivalUtc,
+    o.ArrivalDelayMinutes,
+
+    o.TimetabledArrivalLocal,
+    o.ServiceDateLocal,
+    o.ScheduledArrivalSecondsLocal,
+
+    o.PlannedBay,
+    o.EstimatedBay,
+    o.PlatformChanged,
+
+    o.ExactStopCandidateCount,
+    o.ParentStationCandidateCount,
+    o.MatchStatus,
+
+    ISNULL(
+        CASE
+            WHEN o.MatchStatus IN
+            (
+                N'ExactStopMatch',
+                N'ParentStationFallback'
+            )
+            THEN CAST(1 AS bit)
+            ELSE CAST(0 AS bit)
+        END,
+        CAST(0 AS bit)
     ) AS HasUsableStaticMatch,
-    link.SituationObservationKey,
-    link.RelationScope,
-    situation.ObservedAtUtc AS SituationObservedAtUtc,
-    situation.ParticipantRef,
-    situation.SituationNumber,
-    situation.Summary AS SituationSummary,
-    situation.Description AS SituationDescription,
-    situation.Detail AS SituationDetail,
-    situation.ValidFromUtc AS SituationValidFromUtc,
-    situation.ValidToUtc AS SituationValidToUtc,
-    situation.CreatedAtUtc AS SituationCreatedAtUtc
-FROM wrk.vwCologneRealtimeTripMatch AS realtime_match
-LEFT JOIN stg.MddRealtimeStopSituationLink AS link
-    ON link.ObservationKey = realtime_match.ObservationKey
-LEFT JOIN stg.MddRealtimeSituationObservation AS situation
-    ON situation.SituationObservationKey = link.SituationObservationKey;
+
+    o.MatchedTripId,
+    o.MatchedRouteId,
+    o.MatchedServiceId,
+    o.MatchedStaticStopId,
+
+    l.RelationScope,
+
+    s.SituationObservationKey,
+    s.ParticipantRef,
+    s.SituationNumber,
+    s.Summary AS SituationSummary,
+    s.Description AS SituationDescription,
+    s.Detail AS SituationDetail,
+    s.ValidFromUtc AS SituationValidFromUtc,
+    s.ValidToUtc AS SituationValidToUtc
+
+FROM wrk.vwCologneRealtimeTripMatch AS o
+
+LEFT JOIN stg.MddRealtimeStopSituationLink AS l
+    ON l.ObservationKey = o.ObservationKey
+
+LEFT JOIN stg.MddRealtimeSituationObservation AS s
+    ON s.SituationObservationKey = l.SituationObservationKey;
 GO
