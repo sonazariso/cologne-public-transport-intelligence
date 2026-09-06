@@ -44,6 +44,35 @@ BEGIN
 END;
 GO
 
+IF OBJECT_ID(N'ctl.GtfsValidationResult', N'U') IS NULL
+BEGIN
+    CREATE TABLE ctl.GtfsValidationResult
+    (
+        ValidationResultId BIGINT IDENTITY(1,1) NOT NULL
+            CONSTRAINT PK_ctl_GtfsValidationResult PRIMARY KEY,
+        LoadBatchId BIGINT NOT NULL,
+        CheckName NVARCHAR(200) NOT NULL,
+        Severity VARCHAR(10) NOT NULL,
+        FailedRows BIGINT NOT NULL,
+        ExpectedResult NVARCHAR(200) NOT NULL,
+        ActualResult NVARCHAR(200) NOT NULL,
+        CheckStatus VARCHAR(20) NOT NULL,
+        ValidatedAtUtc DATETIME2(0) NOT NULL
+            CONSTRAINT DF_ctl_GtfsValidationResult_ValidatedAtUtc DEFAULT SYSUTCDATETIME(),
+        CONSTRAINT FK_ctl_GtfsValidationResult_GtfsLoadBatch
+            FOREIGN KEY (LoadBatchId) REFERENCES ctl.GtfsLoadBatch (LoadBatchId),
+        CONSTRAINT UQ_ctl_GtfsValidationResult_LoadBatch_CheckName
+            UNIQUE (LoadBatchId, CheckName),
+        CONSTRAINT CK_ctl_GtfsValidationResult_Severity
+            CHECK (Severity IN ('Error', 'Warning')),
+        CONSTRAINT CK_ctl_GtfsValidationResult_FailedRows
+            CHECK (FailedRows >= 0),
+        CONSTRAINT CK_ctl_GtfsValidationResult_CheckStatus
+            CHECK (CheckStatus IN ('PASS', 'REVIEW', 'EXPECTED WARNING'))
+    );
+END;
+GO
+
 /*
     The static GTFS staging tables contain one replaceable feed snapshot.
     Keep its owner in one small control row rather than repeating the batch ID

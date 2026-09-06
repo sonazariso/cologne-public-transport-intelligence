@@ -113,7 +113,8 @@ CREATE TABLE #ValidationResults
     CheckName NVARCHAR(200) NOT NULL,
     Severity VARCHAR(10) NOT NULL,
     FailedRows BIGINT NOT NULL,
-    ExpectedResult NVARCHAR(200) NOT NULL
+    ExpectedResult NVARCHAR(200) NOT NULL,
+    ActualResult NVARCHAR(200) NOT NULL
 );
 
 /* Include expected staging row-count mismatches in the batch validation decision. */
@@ -121,46 +122,79 @@ INSERT INTO #ValidationResults
 SELECT N'Staging row count: ' + expected.TableName,
        'Error',
        CASE WHEN actual.ActualRows = expected.ExpectedRows THEN 0 ELSE 1 END,
-       N'Actual rows = ' + CONVERT(NVARCHAR(30), expected.ExpectedRows)
+       N'Actual rows = ' + CONVERT(NVARCHAR(30), expected.ExpectedRows),
+       N'Actual rows = ' + CONVERT(NVARCHAR(30), actual.ActualRows)
 FROM @Expected AS expected
 JOIN @Actual AS actual
     ON actual.TableName = expected.TableName;
 
 INSERT INTO #ValidationResults
-SELECT N'Duplicate agency_id', 'Error', COUNT_BIG(*) - COUNT_BIG(DISTINCT AgencyId), N'0'
+SELECT N'Duplicate agency_id',
+       'Error',
+       COUNT_BIG(*) - COUNT_BIG(DISTINCT AgencyId),
+       N'0',
+       N'Failed rows = ' + CONVERT(NVARCHAR(30), COUNT_BIG(*) - COUNT_BIG(DISTINCT AgencyId))
 FROM stg.GtfsAgency;
 
 INSERT INTO #ValidationResults
-SELECT N'Duplicate route_id', 'Warning', COUNT_BIG(*) - COUNT_BIG(DISTINCT RouteId), N'1 known source duplicate'
+SELECT N'Duplicate route_id',
+       'Warning',
+       COUNT_BIG(*) - COUNT_BIG(DISTINCT RouteId),
+       N'1 known source duplicate',
+       N'Failed rows = ' + CONVERT(NVARCHAR(30), COUNT_BIG(*) - COUNT_BIG(DISTINCT RouteId))
 FROM stg.GtfsRoutes;
 
 INSERT INTO #ValidationResults
-SELECT N'Duplicate trip_id', 'Error', COUNT_BIG(*) - COUNT_BIG(DISTINCT TripId), N'0'
+SELECT N'Duplicate trip_id',
+       'Error',
+       COUNT_BIG(*) - COUNT_BIG(DISTINCT TripId),
+       N'0',
+       N'Failed rows = ' + CONVERT(NVARCHAR(30), COUNT_BIG(*) - COUNT_BIG(DISTINCT TripId))
 FROM stg.GtfsTrips;
 
 INSERT INTO #ValidationResults
-SELECT N'Duplicate stop_id', 'Error', COUNT_BIG(*) - COUNT_BIG(DISTINCT StopId), N'0'
+SELECT N'Duplicate stop_id',
+       'Error',
+       COUNT_BIG(*) - COUNT_BIG(DISTINCT StopId),
+       N'0',
+       N'Failed rows = ' + CONVERT(NVARCHAR(30), COUNT_BIG(*) - COUNT_BIG(DISTINCT StopId))
 FROM stg.GtfsStops;
 
 INSERT INTO #ValidationResults
-SELECT N'Duplicate calendar service_id', 'Error', COUNT_BIG(*) - COUNT_BIG(DISTINCT ServiceId), N'0'
+SELECT N'Duplicate calendar service_id',
+       'Error',
+       COUNT_BIG(*) - COUNT_BIG(DISTINCT ServiceId),
+       N'0',
+       N'Failed rows = ' + CONVERT(NVARCHAR(30), COUNT_BIG(*) - COUNT_BIG(DISTINCT ServiceId))
 FROM stg.GtfsCalendar;
 
 INSERT INTO #ValidationResults
-SELECT N'Routes with missing agency', 'Error', COUNT_BIG(*), N'0'
+SELECT N'Routes with missing agency',
+       'Error',
+       COUNT_BIG(*),
+       N'0',
+       N'Failed rows = ' + CONVERT(NVARCHAR(30), COUNT_BIG(*))
 FROM stg.GtfsRoutes AS route
 WHERE NULLIF(route.AgencyId, N'') IS NOT NULL
   AND NOT EXISTS
       (SELECT 1 FROM stg.GtfsAgency AS agency WHERE agency.AgencyId = route.AgencyId);
 
 INSERT INTO #ValidationResults
-SELECT N'Trips with missing route', 'Error', COUNT_BIG(*), N'0'
+SELECT N'Trips with missing route',
+       'Error',
+       COUNT_BIG(*),
+       N'0',
+       N'Failed rows = ' + CONVERT(NVARCHAR(30), COUNT_BIG(*))
 FROM stg.GtfsTrips AS trip
 WHERE NOT EXISTS
       (SELECT 1 FROM stg.GtfsRoutes AS route WHERE route.RouteId = trip.RouteId);
 
 INSERT INTO #ValidationResults
-SELECT N'Trips with missing service', 'Error', COUNT_BIG(*), N'0'
+SELECT N'Trips with missing service',
+       'Error',
+       COUNT_BIG(*),
+       N'0',
+       N'Failed rows = ' + CONVERT(NVARCHAR(30), COUNT_BIG(*))
 FROM stg.GtfsTrips AS trip
 WHERE NOT EXISTS
       (SELECT 1 FROM stg.GtfsCalendar AS calendar WHERE calendar.ServiceId = trip.ServiceId)
@@ -168,40 +202,73 @@ WHERE NOT EXISTS
       (SELECT 1 FROM stg.GtfsCalendarDates AS calendar_date WHERE calendar_date.ServiceId = trip.ServiceId);
 
 INSERT INTO #ValidationResults
-SELECT N'Stop times with missing trip', 'Error', COUNT_BIG(*), N'0'
+SELECT N'Stop times with missing trip',
+       'Error',
+       COUNT_BIG(*),
+       N'0',
+       N'Failed rows = ' + CONVERT(NVARCHAR(30), COUNT_BIG(*))
 FROM stg.GtfsStopTimes AS stop_time
 WHERE NOT EXISTS
       (SELECT 1 FROM stg.GtfsTrips AS trip WHERE trip.TripId = stop_time.TripId);
 
 INSERT INTO #ValidationResults
-SELECT N'Stop times with missing stop', 'Error', COUNT_BIG(*), N'0'
+SELECT N'Stop times with missing stop',
+       'Error',
+       COUNT_BIG(*),
+       N'0',
+       N'Failed rows = ' + CONVERT(NVARCHAR(30), COUNT_BIG(*))
 FROM stg.GtfsStopTimes AS stop_time
 WHERE NOT EXISTS
       (SELECT 1 FROM stg.GtfsStops AS stop WHERE stop.StopId = stop_time.StopId);
 
 INSERT INTO #ValidationResults
-SELECT N'Invalid calendar dates', 'Error', COUNT_BIG(*), N'0'
+SELECT N'Invalid calendar dates',
+       'Error',
+       COUNT_BIG(*),
+       N'0',
+       N'Failed rows = ' + CONVERT(NVARCHAR(30), COUNT_BIG(*))
 FROM stg.GtfsCalendar
 WHERE TRY_CONVERT(DATE, StartDate, 112) IS NULL
    OR TRY_CONVERT(DATE, EndDate, 112) IS NULL;
 
 INSERT INTO #ValidationResults
-SELECT N'Stop times missing required identifiers', 'Error', COUNT_BIG(*), N'0'
+SELECT N'Stop times missing required identifiers',
+       'Error',
+       COUNT_BIG(*),
+       N'0',
+       N'Failed rows = ' + CONVERT(NVARCHAR(30), COUNT_BIG(*))
 FROM stg.GtfsStopTimes
 WHERE NULLIF(TripId, N'') IS NULL
    OR NULLIF(StopId, N'') IS NULL
    OR TRY_CONVERT(INT, StopSequence) IS NULL;
+
+ALTER TABLE #ValidationResults
+ADD CheckStatus VARCHAR(20) NULL;
+
+UPDATE result
+SET CheckStatus = CASE
+    WHEN CheckName = N'Duplicate route_id' AND FailedRows = 1 THEN 'EXPECTED WARNING'
+    WHEN FailedRows = 0 THEN 'PASS'
+    ELSE 'REVIEW'
+END
+FROM #ValidationResults AS result;
+
+IF EXISTS
+(
+    SELECT 1
+    FROM #ValidationResults
+    WHERE CheckStatus IS NULL
+)
+BEGIN
+    THROW 50026, 'A GTFS validation check did not receive a status.', 1;
+END;
 
 SELECT
     CheckName,
     Severity,
     FailedRows,
     ExpectedResult,
-    CASE
-        WHEN CheckName = N'Duplicate route_id' AND FailedRows = 1 THEN 'EXPECTED WARNING'
-        WHEN FailedRows = 0 THEN 'PASS'
-        ELSE 'REVIEW'
-    END AS CheckStatus
+    CheckStatus
 FROM #ValidationResults
 ORDER BY
     CASE Severity WHEN 'Error' THEN 1 ELSE 2 END,
@@ -228,6 +295,47 @@ DECLARE @ErrorFailures BIGINT =
     WHERE Severity = 'Error'
 );
 
+DECLARE @ValidationResultCount BIGINT =
+(
+    SELECT COUNT_BIG(*)
+    FROM #ValidationResults
+);
+
+BEGIN TRANSACTION;
+
+DECLARE @ValidatedAtUtc DATETIME2(0) = SYSUTCDATETIME();
+
+/* Replace this batch's current results and status as one logical outcome. */
+DELETE FROM ctl.GtfsValidationResult
+WHERE LoadBatchId = @GtfsLoadBatchId;
+
+INSERT INTO ctl.GtfsValidationResult
+(
+    LoadBatchId,
+    CheckName,
+    Severity,
+    FailedRows,
+    ExpectedResult,
+    ActualResult,
+    CheckStatus,
+    ValidatedAtUtc
+)
+SELECT
+    @GtfsLoadBatchId,
+    result.CheckName,
+    result.Severity,
+    result.FailedRows,
+    result.ExpectedResult,
+    result.ActualResult,
+    result.CheckStatus,
+    @ValidatedAtUtc
+FROM #ValidationResults AS result;
+
+IF @@ROWCOUNT <> @ValidationResultCount
+BEGIN
+    THROW 50027, 'The persisted GTFS validation-result count does not match the calculated result count.', 1;
+END;
+
 UPDATE batch
 SET Status = CASE WHEN @ErrorFailures = 0 THEN 'Validated' ELSE 'ValidationFailed' END
 FROM ctl.GtfsLoadBatch AS batch
@@ -237,6 +345,8 @@ IF @@ROWCOUNT <> 1
 BEGIN
     THROW 50025, 'The current GTFS staging batch could not be updated by validation.', 1;
 END;
+
+COMMIT TRANSACTION;
 
 SELECT
     LoadBatchId,
@@ -257,6 +367,11 @@ EXEC sys.sp_releaseapplock
 SET @StagingLockAcquired = 0;
 END TRY
 BEGIN CATCH
+    IF XACT_STATE() <> 0
+    BEGIN
+        ROLLBACK TRANSACTION;
+    END;
+
     IF @StagingLockAcquired = 1
     BEGIN
         EXEC sys.sp_releaseapplock
