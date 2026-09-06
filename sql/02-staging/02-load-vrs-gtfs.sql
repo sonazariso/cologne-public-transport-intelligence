@@ -53,6 +53,8 @@ VALUES (@GtfsRoot, 'Loading');
 SET @LoadBatchId = SCOPE_IDENTITY();
 
 BEGIN TRY
+    BEGIN TRANSACTION;
+
     DECLARE FileCursor CURSOR LOCAL FAST_FORWARD FOR
         SELECT TargetTable, FileName
         FROM @Files
@@ -88,10 +90,15 @@ BEGIN TRY
     FROM ctl.GtfsLoadBatch AS batch
     CROSS JOIN stg.GtfsFeedInfo AS feed
     WHERE batch.LoadBatchId = @LoadBatchId;
+
+    COMMIT TRANSACTION;
 END TRY
 BEGIN CATCH
     IF CURSOR_STATUS('local', 'FileCursor') >= 0 CLOSE FileCursor;
     IF CURSOR_STATUS('local', 'FileCursor') > -3 DEALLOCATE FileCursor;
+
+    IF XACT_STATE() <> 0
+        ROLLBACK TRANSACTION;
 
     UPDATE ctl.GtfsLoadBatch
     SET
