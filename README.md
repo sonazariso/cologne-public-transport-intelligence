@@ -107,5 +107,6 @@ Read in order:
 7. [Static Analytics and Power BI Baseline](docs/07-STATIC-ANALYTICS-AND-POWER-BI-BASELINE.md)
 8. [Power BI Static Baseline Build Guide](docs/08-POWER-BI-STATIC-BASELINE-BUILD-GUIDE.md)
 9. [Realtime MDD/TRIAS Integration and GTFS Matching](docs/09-REALTIME-MDD-TRIAS-INTEGRATION-AND-GTFS-MATCHING.md)
+10. [Local SQL Server Connection Guide](docs/10-LOCAL-SQL-SERVER-CONNECTION-GUIDE.md)
 
 For realtime behavior, **document 09 is authoritative** if an older document conflicts with it.

@@ -30,3 +30,6 @@ __pycache__/
 
 # Local prompts
 prompts/
+
+# Workspace-local VS Code settings, including the machine-specific MSSQL profile
+.vscode/settings.json
