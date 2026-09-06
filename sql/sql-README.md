@@ -1,6 +1,6 @@
 # SQL Server Implementation
 
-**Last updated:** 2026-09-05
+**Last updated:** 2026-09-06
 
 This directory contains the SQL Server implementation for the **Cologne Public Transport Intelligence** project.
 
@@ -34,9 +34,9 @@ The final realtime warehouse fact and realtime `analytics` views are **not yet a
 
 ---
 
-## Current Checked-In Static SQL Execution Order
+## Current Checked-In SQL Execution Order
 
-The currently checked-in SQL scripts reproduce the validated static baseline in this order:
+The checked-in scripts reproduce the validated static baseline and the synchronized realtime SQL objects in this order:
 
 1. `01-database/01-create-database-and-schemas.sql`
 2. `02-staging/01-create-gtfs-staging-tables.sql`
@@ -52,16 +52,17 @@ The currently checked-in SQL scripts reproduce the validated static baseline in 
 12. `04-warehouse/03-validate-static-warehouse.sql`
 13. `05-analytics/01-create-static-analytics-views.sql`
 14. `05-analytics/02-validate-static-analytics-views.sql`
+15. `02-staging/05-create-mdd-realtime-staging-tables.sql`
+16. `04-warehouse/04-add-realtime-match-performance-support.sql`
+17. `03-working/03-create-cologne-realtime-working-layer.sql`
 
-The realtime database objects and the latest realtime performance changes were validated interactively during the realtime implementation phase and must be synchronized into reproducible checked-in SQL scripts before the realtime SQL execution order is declared complete.
+The realtime steps are listed after the static warehouse and analytics steps so every dependency of the realtime working views exists before those views are created. The folder numbering remains organized by schema/layer rather than by this global dependency order.
 
 ---
 
-## Important Reproducibility Gap — Realtime SQL
+## Synchronized Realtime SQL
 
-As of 2026-09-05, the local database contains validated realtime structures and performance changes that are newer than the checked-in static SQL script set.
-
-The repository SQL must next be updated to reproduce at least these already-applied database changes:
+The repository now contains reproducible SQL for the validated realtime structures and performance changes:
 
 ### Realtime staging
 
@@ -77,13 +78,13 @@ The repository SQL must next be updated to reproduce at least these already-appl
 - `wrk.vwCologneRealtimeTripMatch`
 - `wrk.vwCologneRealtimeEvidenceSituation`
 
-### Realtime performance changes already applied locally
+### Realtime performance support
 
-1. Optimized `wrk.vwCologneRealtimeStopEnriched`
+1. Optimized `wrk.vwCologneRealtimeStopEnriched` definition
 2. Persisted computed column: `dw.FactScheduledStopEvent.ScheduledArrivalSecondOfDay`
 3. Nonclustered index: `IX_FactScheduledStopEvent_RealtimeMatch`
 
-The next development session should synchronize these changes into repository SQL before making further production-view changes.
+`wrk.vwCologneRealtimeTripMatch` remains the current production implementation. The planned warehouse-direct replacement remains a future change requiring separate benchmarking and row-by-row semantic-equivalence validation.
 
 ---
 
@@ -402,6 +403,4 @@ Current `MDD_API_KEY` runtime configuration is external to SQL and source code.
 
 ## Next SQL Repository Step
 
-Before further production matching changes, update the checked-in SQL scripts so a fresh database build can reproduce the realtime structures and the validated performance changes already present in the local database.
-
-That reproducibility step should happen **before** replacing `wrk.vwCologneRealtimeTripMatch`.
+Repository synchronization is complete. Before replacing `wrk.vwCologneRealtimeTripMatch`, complete and validate the separate warehouse-direct prototype, benchmark it, and compare it row by row with the current production definition.

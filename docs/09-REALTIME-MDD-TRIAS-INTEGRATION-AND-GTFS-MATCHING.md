@@ -433,14 +433,13 @@ wrk.vwCologneRealtimeTripMatch
 
 has **not yet been rewritten** to the warehouse-direct version.
 
-Required next sequence:
+Future sequence:
 
-1. synchronize already-applied DB performance changes into checked-in SQL scripts;
-2. complete warehouse-direct matching using `DimRoute`, `FactScheduledStopEvent`, `FactScheduledTrip`, `DimStop`, and active service-date objects;
-3. benchmark after the new index;
-4. compare current vs proposed output row-by-row;
-5. verify `ExactStopCandidateCount`, `ParentStationCandidateCount`, `MatchStatus`, `MatchedTripId`, `MatchedRouteId`, `MatchedServiceId`, `MatchedStaticStopId`;
-6. only with semantic equivalence proven, alter the production view.
+1. complete warehouse-direct matching using `DimRoute`, `FactScheduledStopEvent`, `FactScheduledTrip`, `DimStop`, and active service-date objects;
+2. benchmark after the new index;
+3. compare current vs proposed output row-by-row;
+4. verify `ExactStopCandidateCount`, `ParentStationCandidateCount`, `MatchStatus`, `MatchedTripId`, `MatchedRouteId`, `MatchedServiceId`, `MatchedStaticStopId`;
+5. only with semantic equivalence proven, alter the production view.
 
 ## 22. Grain warnings
 
@@ -474,7 +473,7 @@ Realtime KPIs require a later consolidation grain.
 
 ## 24. Exact handoff checkpoint
 
-At end of the 2026-09-05 session:
+At the end of the 2026-09-06 repository-synchronization session:
 
 Completed:
 
@@ -485,12 +484,12 @@ Completed:
 - stop-enrichment semantic-preserving performance rewrite;
 - persisted `ScheduledArrivalSecondOfDay`;
 - `IX_FactScheduledStopEvent_RealtimeMatch`;
+- repository SQL synchronization = completed for the validated realtime tables, views, computed column, and index;
 - route/time lookup ~4 ms;
 - route/time + active service-date lookup ~17 ms.
 
 Not yet completed:
 
-- repository SQL scripts reproducing the performance DB changes;
 - full warehouse-direct `vwCologneRealtimeTripMatch` prototype after the new index;
 - row-by-row semantic-equivalence comparison;
 - production trip-match alteration;
