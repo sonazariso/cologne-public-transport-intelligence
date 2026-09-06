@@ -358,7 +358,7 @@ matching columns/candidate counts -> slow
 
 Therefore cheap counts did not prove that matching expressions were fast.
 
-`wrk.vwCologneRealtimeTripMatch` candidate logic relied on `wrk.vwCologneScheduledStopEvent`, which originates from the large static staging path.
+Before the rewrite, `wrk.vwCologneRealtimeTripMatch` candidate logic relied on `wrk.vwCologneScheduledStopEvent`, which originates from the large static staging path.
 
 Route-name normalization alone was fast (~3 ms). The schedule route/time lookup was the real bottleneck.
 
@@ -431,15 +431,22 @@ The production view:
 wrk.vwCologneRealtimeTripMatch
 ```
 
-has **not yet been rewritten** to the warehouse-direct version.
+now resolves static candidates directly from the warehouse schedule model. Its candidate path uses `DimRoute`, `FactScheduledStopEvent`, `FactScheduledTrip`, `DimStop`, `DimService`, `BridgeServiceDate`, and `DimDate`; it no longer depends on `wrk.vwCologneScheduledStopEvent`.
 
-Future sequence:
+The frozen-scope semantic regression captured the old production output before alteration and compared it with the warehouse-direct prototype:
 
-1. complete warehouse-direct matching using `DimRoute`, `FactScheduledStopEvent`, `FactScheduledTrip`, `DimStop`, and active service-date objects;
-2. benchmark after the new index;
-3. compare current vs proposed output row-by-row;
-4. verify `ExactStopCandidateCount`, `ParentStationCandidateCount`, `MatchStatus`, `MatchedTripId`, `MatchedRouteId`, `MatchedServiceId`, `MatchedStaticStopId`;
-5. only with semantic equivalence proven, alter the production view.
+```text
+frozen observations: 450
+baseline rows / direct rows: 450 / 450
+duplicate observation-grain rows: 0 / 0
+critical and complete DifferenceCount: 0 in both directions
+status counts: ExactStopMatch 145, ParentStationFallback 27,
+               StaticCoverageMissing 278
+```
+
+The same frozen baseline was rechecked against the altered production view with zero critical and complete-row differences in both directions and no grain/cardinality change.
+
+The paired materialization benchmark was approximately 494.9 seconds for the old production path versus 3.6 seconds for the warehouse-direct implementation. After alteration, a forced-field projection returned 530 rows in approximately 1.6 seconds; the compiled plan referenced `IX_FactScheduledStopEvent_RealtimeMatch` and not the old scheduled-stop-event view. The focused regression script is checked in at `sql/03-working/04-validate-realtime-trip-match-rewrite.sql`.
 
 ## 22. Grain warnings
 
@@ -490,9 +497,6 @@ Completed:
 
 Not yet completed:
 
-- full warehouse-direct `vwCologneRealtimeTripMatch` prototype after the new index;
-- row-by-row semantic-equivalence comparison;
-- production trip-match alteration;
 - consolidated realtime DW/analytics grain.
 
-**The next session should continue exactly here.**
+The trip-match rewrite and its semantic validation are complete; future work remains at the separate realtime DW/analytics consolidation grain.

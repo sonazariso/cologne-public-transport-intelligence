@@ -171,52 +171,63 @@ Candidate AS
     SELECT
         r.ObservationKey,
 
-        se.TripId,
-        se.RouteId,
-        se.ServiceId,
-        se.RouteShortName,
-        se.TripHeadsign,
+        trip.TripId,
+        route.RouteId,
+        service.ServiceId,
+        route.RouteShortName,
+        trip.TripHeadsign,
 
-        se.StopId AS StaticMatchedStopId,
-        se.StopName AS StaticMatchedStopName,
-        se.ParentStationId,
+        stop.StopId AS StaticMatchedStopId,
+        stop.StopName AS StaticMatchedStopName,
+        stop.ParentStationId,
 
         CASE
-            WHEN se.StopId = r.StopPointRef
+            WHEN stop.StopId = r.StopPointRef
             THEN 1
             ELSE 0
         END AS IsExactStopMatch,
 
         CASE
-            WHEN se.ParentStationId = r.StaticParentStationId
+            WHEN stop.ParentStationId = r.StaticParentStationId
             THEN 1
             ELSE 0
         END AS IsParentStationMatch
 
     FROM wrk.vwCologneRealtimeTripMatchKey AS r
 
-    INNER JOIN wrk.vwCologneScheduledStopEvent AS se
-        ON REPLACE(se.RouteShortName, N' ', N'')
+    /*
+        Resolve static candidates directly from the warehouse. The persisted
+        local seconds-of-day value keeps the existing ArrivalDayOffset
+        service-day rule while allowing the realtime-match index to be used.
+    */
+    INNER JOIN dw.DimRoute AS route
+        ON REPLACE(route.RouteShortName, N' ', N'')
          = REPLACE(r.LineName, N' ', N'')
 
-       AND se.ScheduledArrivalSeconds =
+    INNER JOIN dw.FactScheduledStopEvent AS stop_event
+        ON stop_event.RouteKey = route.RouteKey
+       AND stop_event.ScheduledArrivalSecondOfDay =
              r.ScheduledArrivalSecondsLocal
-             + (se.ArrivalDayOffset * 86400)
 
-    INNER JOIN dw.DimService AS ds
-        ON ds.ServiceId COLLATE Latin1_General_100_BIN2
-         = se.ServiceId COLLATE Latin1_General_100_BIN2
+    INNER JOIN dw.FactScheduledTrip AS trip
+        ON trip.TripKey = stop_event.TripKey
 
-    INNER JOIN dw.BridgeServiceDate AS b
-        ON b.ServiceKey = ds.ServiceKey
+    INNER JOIN dw.DimStop AS stop
+        ON stop.StopKey = stop_event.StopKey
 
-    INNER JOIN dw.DimDate AS d
-        ON d.DateKey = b.DateKey
+    INNER JOIN dw.DimService AS service
+        ON service.ServiceKey = stop_event.ServiceKey
 
-       AND d.DateValue =
+    INNER JOIN dw.BridgeServiceDate AS bridge_service_date
+        ON bridge_service_date.ServiceKey = service.ServiceKey
+
+    INNER JOIN dw.DimDate AS date_dimension
+        ON date_dimension.DateKey = bridge_service_date.DateKey
+
+       AND date_dimension.DateValue =
            DATEADD(
                DAY,
-               -se.ArrivalDayOffset,
+               -stop_event.ArrivalDayOffset,
                r.ServiceDateLocal
            )
 ),

@@ -89,7 +89,7 @@ Validated staging indexes:
 2. Persisted computed column: `dw.FactScheduledStopEvent.ScheduledArrivalSecondOfDay`
 3. Nonclustered index: `IX_FactScheduledStopEvent_RealtimeMatch`
 
-`wrk.vwCologneRealtimeTripMatch` remains the current production implementation. The planned warehouse-direct replacement remains a future change requiring separate benchmarking and row-by-row semantic-equivalence validation.
+`wrk.vwCologneRealtimeTripMatch` now resolves static candidates directly from the warehouse schedule model and no longer uses `wrk.vwCologneScheduledStopEvent` for candidate search. The focused validation script `03-working/04-validate-realtime-trip-match-rewrite.sql` freezes observation keys, captures the production baseline, compares critical and complete output rows, and checks grain/cardinality before a deployment change.
 
 ---
 
@@ -329,26 +329,11 @@ These are local engineering measurements, not production SLA commitments.
 
 ## Current Trip-Matching Performance Checkpoint
 
-`wrk.vwCologneRealtimeTripMatch` still uses the previously validated production semantics.
+`wrk.vwCologneRealtimeTripMatch` now uses the warehouse-direct candidate path while preserving the previously validated production semantics.
 
-A warehouse-direct rewrite is under investigation because materializing candidate counts and matched IDs through the older scheduled-stop-event path is expensive.
+Validation on a frozen 450-observation scope returned `DifferenceCount = 0` in both directions for the seven critical matching fields and for the complete 32-column output, with identical row grain/cardinality. The same frozen baseline was rechecked against the altered production view with zero critical/full differences. Status counts were 145 `ExactStopMatch`, 27 `ParentStationFallback`, and 278 `StaticCoverageMissing`.
 
-Do **not** replace the production view merely because the warehouse-direct path is faster.
-
-Required validation order:
-
-1. complete the warehouse-direct matching prototype;
-2. benchmark it;
-3. compare output row-by-row with the current production view;
-4. validate:
-   - `ExactStopCandidateCount`
-   - `ParentStationCandidateCount`
-   - `MatchStatus`
-   - `MatchedTripId`
-   - `MatchedRouteId`
-   - `MatchedServiceId`
-   - `MatchedStaticStopId`
-5. alter the production view only after semantic equivalence is proven.
+The paired materialization benchmark was approximately 494.9 seconds for the production baseline versus 3.6 seconds for the direct implementation. A final live forced-field projection returned 530 rows in approximately 1.6 seconds, and its plan used `IX_FactScheduledStopEvent_RealtimeMatch`.
 
 ---
 
@@ -410,4 +395,4 @@ Current `MDD_API_KEY` runtime configuration is external to SQL and source code.
 
 ## Next SQL Repository Step
 
-Repository synchronization is complete. Before replacing `wrk.vwCologneRealtimeTripMatch`, complete and validate the separate warehouse-direct prototype, benchmark it, and compare it row by row with the current production definition.
+Repository synchronization now includes the warehouse-direct `wrk.vwCologneRealtimeTripMatch` definition and the focused frozen-scope regression script. The validation script is the deployment/upgrade check for preserving the existing matching contract.

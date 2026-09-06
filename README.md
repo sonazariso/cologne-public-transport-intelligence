@@ -92,7 +92,7 @@ Two important performance improvements were validated:
 1. `wrk.vwCologneRealtimeStopEnriched` no longer rebuilds its stop lookup through ~1.55M scheduled stop-event rows. A warehouse-based equivalent was validated with `DifferenceCount = 0`, reducing the tested elapsed time from about 6.9 seconds to effectively immediate execution.
 2. `dw.FactScheduledStopEvent` now has persisted `ScheduledArrivalSecondOfDay` plus `IX_FactScheduledStopEvent_RealtimeMatch`. The isolated route/time lookup improved from ~1647 ms to ~4 ms; with active service-date validation it completed in ~17 ms.
 
-The production `wrk.vwCologneRealtimeTripMatch` has **not yet been rewritten**. The next step is a warehouse-direct prototype plus row-by-row semantic-equivalence comparison before any production alteration.
+`wrk.vwCologneRealtimeTripMatch` now resolves static candidates directly from the warehouse schedule model and no longer uses `wrk.vwCologneScheduledStopEvent` for candidate search. On a frozen 450-observation regression scope, the warehouse-direct prototype matched the captured production baseline in both directions (`DifferenceCount = 0` for critical and complete output comparisons), with identical row grain and status counts of 145 `ExactStopMatch`, 27 `ParentStationFallback`, and 278 `StaticCoverageMissing`; the same frozen baseline was rechecked against the altered production view with zero critical/full differences. Materialized client elapsed time was approximately 494.9 seconds for the baseline versus 3.6 seconds for the direct implementation; a final forced-field projection returned 530 rows in approximately 1.6 seconds.
 
 ## Documentation
 
