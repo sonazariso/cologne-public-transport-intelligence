@@ -368,12 +368,10 @@ BEGIN TRY
         ON service.ServiceId = trip.ServiceId;
 
     /*
-        Commit dimensions and trip patterns before loading the 1.55M-row fact.
-        The large fact is loaded in restartable transaction-log-safe batches.
-        The audit row remains Loading until every batch completes.
+        Keep the complete warehouse replacement in one transaction.
+        TripKey batches control INSERT size and progress reporting only; they
+        do not commit independently.
     */
-    COMMIT TRANSACTION;
-    CHECKPOINT;
 
     SELECT
         @FirstTripKey = MIN(TripKey),
@@ -383,8 +381,6 @@ BEGIN TRY
     WHILE @FirstTripKey IS NOT NULL AND @FirstTripKey <= @MaximumTripKey
     BEGIN
         SET @LastTripKey = @FirstTripKey + @TripBatchSize - 1;
-
-        BEGIN TRANSACTION;
 
         INSERT INTO dw.FactScheduledStopEvent
         (
@@ -436,9 +432,6 @@ BEGIN TRY
         SET @RowsInserted = @@ROWCOUNT;
         SET @TotalRowsInserted += @RowsInserted;
 
-        COMMIT TRANSACTION;
-        CHECKPOINT;
-
         SET @ProgressMessage = CONCAT
         (
             N'Loaded TripKey batch ',
@@ -470,6 +463,8 @@ BEGIN TRY
         TripRows = (SELECT COUNT_BIG(*) FROM dw.FactScheduledTrip),
         ScheduledStopEventRows = (SELECT COUNT_BIG(*) FROM dw.FactScheduledStopEvent)
     WHERE WarehouseLoadBatchId = @WarehouseLoadBatchId;
+
+    COMMIT TRANSACTION;
 
 END TRY
 BEGIN CATCH
