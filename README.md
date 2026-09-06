@@ -96,6 +96,8 @@ The production `wrk.vwCologneRealtimeTripMatch` has **not yet been rewritten**. 
 
 ## Documentation
 
+The [Mac-to-VMware SQL Server and VS Code setup guide](docs/guides/Mac_VMware_SQLServer_VSCode_Guide.pdf) is the public visual companion for configuring SQL Server inside a VMware Fusion Windows VM and connecting to it from macOS.
+
 Read in order:
 
 1. [Project Definition](docs/01-PROJECT-DEFINITION.md)

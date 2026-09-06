@@ -4,6 +4,8 @@
 
 This project uses the **SQL Server (mssql)** VS Code extension to connect to the SQL Server running in the local VMware environment.
 
+For the complete visual walkthrough—from VMware NAT networking and SQL Server TCP/IP through Windows Firewall, Mixed Mode authentication, and VS Code—see the [Mac-to-VMware SQL Server and VS Code setup guide](guides/Mac_VMware_SQLServer_VSCode_Guide.pdf).
+
 ## What was saved on this Mac
 
 The connection profile currently used by VS Code is:
