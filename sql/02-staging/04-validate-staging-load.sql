@@ -2,6 +2,60 @@ USE CologneTransitIntelligence;
 GO
 
 SET NOCOUNT ON;
+SET XACT_ABORT ON;
+
+DECLARE @GtfsLoadBatchId BIGINT;
+DECLARE @GtfsBatchStatus VARCHAR(30);
+DECLARE @StagingStateRowCount INT;
+DECLARE @StagingLockResult INT;
+DECLARE @StagingLockAcquired BIT = 0;
+
+BEGIN TRY
+    /* Keep the staging snapshot stable while it is being validated. */
+    EXEC @StagingLockResult = sys.sp_getapplock
+        @Resource = N'GtfsStaticStaging',
+        @LockMode = N'Shared',
+        @LockOwner = N'Session',
+        @LockTimeout = 0;
+
+    IF @StagingLockResult < 0
+    BEGIN
+        THROW 50020, 'A GTFS staging replacement is already in progress.', 1;
+    END;
+
+    SET @StagingLockAcquired = 1;
+
+    SELECT @StagingStateRowCount = COUNT(*)
+    FROM ctl.GtfsStagingState
+    WHERE StagingStateId = 1;
+
+    IF @StagingStateRowCount <> 1
+    BEGIN
+        THROW 50021, 'The singleton GTFS staging-state row is missing.', 1;
+    END;
+
+    SELECT @GtfsLoadBatchId = CurrentLoadBatchId
+    FROM ctl.GtfsStagingState
+    WHERE StagingStateId = 1;
+
+    IF @GtfsLoadBatchId IS NULL
+    BEGIN
+        THROW 50022, 'No current GTFS staging batch is recorded.', 1;
+    END;
+
+    SELECT @GtfsBatchStatus = Status
+    FROM ctl.GtfsLoadBatch
+    WHERE LoadBatchId = @GtfsLoadBatchId;
+
+    IF @GtfsBatchStatus IS NULL
+    BEGIN
+        THROW 50023, 'The current GTFS staging batch does not exist.', 1;
+    END;
+
+    IF @GtfsBatchStatus NOT IN ('Loaded', 'Validated', 'ValidationFailed')
+    BEGIN
+        THROW 50024, 'The current GTFS staging batch is not eligible for validation.', 1;
+    END;
 
 /* Snapshot row counts from VRS feed VERSION__20260829_0050. */
 DECLARE @Expected TABLE
@@ -174,20 +228,17 @@ DECLARE @ErrorFailures BIGINT =
     WHERE Severity = 'Error'
 );
 
-;WITH LatestLoadedBatch AS
-(
-    SELECT TOP (1) LoadBatchId
-    FROM ctl.GtfsLoadBatch
-    WHERE Status IN ('Loaded', 'Validated', 'ValidationFailed')
-    ORDER BY LoadBatchId DESC
-)
 UPDATE batch
 SET Status = CASE WHEN @ErrorFailures = 0 THEN 'Validated' ELSE 'ValidationFailed' END
 FROM ctl.GtfsLoadBatch AS batch
-JOIN LatestLoadedBatch AS latest
-    ON latest.LoadBatchId = batch.LoadBatchId;
+WHERE batch.LoadBatchId = @GtfsLoadBatchId;
 
-SELECT TOP (1)
+IF @@ROWCOUNT <> 1
+BEGIN
+    THROW 50025, 'The current GTFS staging batch could not be updated by validation.', 1;
+END;
+
+SELECT
     LoadBatchId,
     FeedVersion,
     FeedStartDate,
@@ -197,5 +248,22 @@ SELECT TOP (1)
     CompletedAtUtc,
     ErrorMessage
 FROM ctl.GtfsLoadBatch
-ORDER BY LoadBatchId DESC;
+WHERE LoadBatchId = @GtfsLoadBatchId;
+
+EXEC sys.sp_releaseapplock
+    @Resource = N'GtfsStaticStaging',
+    @LockOwner = N'Session';
+
+SET @StagingLockAcquired = 0;
+END TRY
+BEGIN CATCH
+    IF @StagingLockAcquired = 1
+    BEGIN
+        EXEC sys.sp_releaseapplock
+            @Resource = N'GtfsStaticStaging',
+            @LockOwner = N'Session';
+    END;
+
+    THROW;
+END CATCH;
 GO

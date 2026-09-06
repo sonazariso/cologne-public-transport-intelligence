@@ -46,6 +46,26 @@ DECLARE @TargetTable NVARCHAR(261);
 DECLARE @FileName NVARCHAR(255);
 DECLARE @FilePath NVARCHAR(4000);
 DECLARE @Sql NVARCHAR(MAX);
+DECLARE @FeedInfoRowCount BIGINT;
+DECLARE @FeedVersion NVARCHAR(100);
+DECLARE @FeedStartDate DATE;
+DECLARE @FeedEndDate DATE;
+DECLARE @StagingLockResult INT;
+
+IF OBJECT_ID(N'ctl.GtfsStagingState', N'U') IS NULL
+BEGIN
+    THROW 50002, 'ctl.GtfsStagingState does not exist. Run the database creation script before loading GTFS.', 1;
+END;
+
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM ctl.GtfsStagingState
+    WHERE StagingStateId = 1
+)
+BEGIN
+    THROW 50003, 'The singleton GTFS staging-state row is missing.', 1;
+END;
 
 INSERT INTO ctl.GtfsLoadBatch (SourcePath, Status)
 VALUES (@GtfsRoot, 'Loading');
@@ -54,6 +74,18 @@ SET @LoadBatchId = SCOPE_IDENTITY();
 
 BEGIN TRY
     BEGIN TRANSACTION;
+
+    /* Serialize staging replacements and keep the ownership update atomic. */
+    EXEC @StagingLockResult = sys.sp_getapplock
+        @Resource = N'GtfsStaticStaging',
+        @LockMode = N'Exclusive',
+        @LockOwner = N'Transaction',
+        @LockTimeout = 0;
+
+    IF @StagingLockResult < 0
+    BEGIN
+        THROW 50006, 'Another GTFS staging load is already in progress.', 1;
+    END;
 
     DECLARE FileCursor CURSOR LOCAL FAST_FORWARD FOR
         SELECT TargetTable, FileName
@@ -80,16 +112,44 @@ BEGIN TRY
     CLOSE FileCursor;
     DEALLOCATE FileCursor;
 
-    UPDATE batch
+    SELECT @FeedInfoRowCount = COUNT_BIG(*)
+    FROM stg.GtfsFeedInfo;
+
+    IF @FeedInfoRowCount <> 1
+    BEGIN
+        THROW 50007, 'A successful GTFS staging load must contain exactly one stg.GtfsFeedInfo row.', 1;
+    END;
+
+    SELECT
+        @FeedVersion = FeedVersion,
+        @FeedStartDate = TRY_CONVERT(DATE, FeedStartDate, 112),
+        @FeedEndDate = TRY_CONVERT(DATE, FeedEndDate, 112)
+    FROM stg.GtfsFeedInfo;
+
+    UPDATE ctl.GtfsStagingState
     SET
-        FeedVersion = feed.FeedVersion,
-        FeedStartDate = TRY_CONVERT(DATE, feed.FeedStartDate, 112),
-        FeedEndDate = TRY_CONVERT(DATE, feed.FeedEndDate, 112),
+        CurrentLoadBatchId = @LoadBatchId,
+        UpdatedAtUtc = SYSUTCDATETIME()
+    WHERE StagingStateId = 1;
+
+    IF @@ROWCOUNT <> 1
+    BEGIN
+        THROW 50008, 'The singleton GTFS staging-state row could not be updated.', 1;
+    END;
+
+    UPDATE ctl.GtfsLoadBatch
+    SET
+        FeedVersion = @FeedVersion,
+        FeedStartDate = @FeedStartDate,
+        FeedEndDate = @FeedEndDate,
         CompletedAtUtc = SYSUTCDATETIME(),
         Status = 'Loaded'
-    FROM ctl.GtfsLoadBatch AS batch
-    CROSS JOIN stg.GtfsFeedInfo AS feed
-    WHERE batch.LoadBatchId = @LoadBatchId;
+    WHERE LoadBatchId = @LoadBatchId;
+
+    IF @@ROWCOUNT <> 1
+    BEGIN
+        THROW 50009, 'The GTFS load batch could not be marked Loaded.', 1;
+    END;
 
     COMMIT TRANSACTION;
 END TRY

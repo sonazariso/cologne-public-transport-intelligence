@@ -9,19 +9,6 @@ BEGIN
     THROW 50013, 'For local development, run 00-configure-development-database.sql before this loader.', 1;
 END;
 
-DECLARE @GtfsLoadBatchId BIGINT =
-(
-    SELECT TOP (1) LoadBatchId
-    FROM ctl.GtfsLoadBatch
-    WHERE Status = 'Validated'
-    ORDER BY LoadBatchId DESC
-);
-
-IF @GtfsLoadBatchId IS NULL
-BEGIN
-    THROW 50010, 'No validated GTFS load batch is available.', 1;
-END;
-
 DECLARE @FeedStartDate DATE;
 DECLARE @FeedEndDate DATE;
 DECLARE @WarehouseLoadBatchId BIGINT;
@@ -32,24 +19,80 @@ DECLARE @MaximumTripKey BIGINT;
 DECLARE @RowsInserted BIGINT;
 DECLARE @TotalRowsInserted BIGINT = 0;
 DECLARE @ProgressMessage NVARCHAR(4000);
-
-SELECT
-    @FeedStartDate = FeedStartDate,
-    @FeedEndDate = FeedEndDate
-FROM ctl.GtfsLoadBatch
-WHERE LoadBatchId = @GtfsLoadBatchId;
-
-IF @FeedStartDate IS NULL OR @FeedEndDate IS NULL OR @FeedStartDate > @FeedEndDate
-BEGIN
-    THROW 50011, 'The validated GTFS batch has an invalid feed date range.', 1;
-END;
-
-INSERT INTO ctl.StaticWarehouseLoadBatch (GtfsLoadBatchId, Status)
-VALUES (@GtfsLoadBatchId, 'Loading');
-
-SET @WarehouseLoadBatchId = SCOPE_IDENTITY();
+DECLARE @GtfsLoadBatchId BIGINT;
+DECLARE @GtfsBatchStatus VARCHAR(30);
+DECLARE @StagingStateRowCount INT;
+DECLARE @StagingLockResult INT;
+DECLARE @StagingLockAcquired BIT = 0;
 
 BEGIN TRY
+    /* Prevent a staging replacement while this warehouse load reads it. */
+    EXEC @StagingLockResult = sys.sp_getapplock
+        @Resource = N'GtfsStaticStaging',
+        @LockMode = N'Shared',
+        @LockOwner = N'Session',
+        @LockTimeout = 0;
+
+    IF @StagingLockResult < 0
+    BEGIN
+        THROW 50014, 'A GTFS staging replacement is already in progress.', 1;
+    END;
+
+    SET @StagingLockAcquired = 1;
+
+    SELECT @StagingStateRowCount = COUNT(*)
+    FROM ctl.GtfsStagingState
+    WHERE StagingStateId = 1;
+
+    IF @StagingStateRowCount <> 1
+    BEGIN
+        THROW 50015, 'The singleton GTFS staging-state row is missing.', 1;
+    END;
+
+    SELECT @GtfsLoadBatchId = CurrentLoadBatchId
+    FROM ctl.GtfsStagingState
+    WHERE StagingStateId = 1;
+
+    IF @GtfsLoadBatchId IS NULL
+    BEGIN
+        THROW 50010, 'No current GTFS staging batch is recorded.', 1;
+    END;
+
+    SELECT
+        @GtfsBatchStatus = Status,
+        @FeedStartDate = FeedStartDate,
+        @FeedEndDate = FeedEndDate
+    FROM ctl.GtfsLoadBatch
+    WHERE LoadBatchId = @GtfsLoadBatchId;
+
+    IF @GtfsBatchStatus IS NULL
+    BEGIN
+        THROW 50011, 'The current GTFS staging batch does not exist.', 1;
+    END;
+
+    IF @GtfsBatchStatus <> 'Validated'
+    BEGIN
+        DECLARE @LineageErrorMessage NVARCHAR(2048) = CONCAT
+        (
+            'The current GTFS staging batch (',
+            @GtfsLoadBatchId,
+            ') has status ',
+            @GtfsBatchStatus,
+            '; warehouse loading requires Status = Validated.'
+        );
+        THROW 50012, @LineageErrorMessage, 1;
+    END;
+
+    IF @FeedStartDate IS NULL OR @FeedEndDate IS NULL OR @FeedStartDate > @FeedEndDate
+    BEGIN
+        THROW 50013, 'The validated GTFS batch has an invalid feed date range.', 1;
+    END;
+
+    INSERT INTO ctl.StaticWarehouseLoadBatch (GtfsLoadBatchId, Status)
+    VALUES (@GtfsLoadBatchId, 'Loading');
+
+    SET @WarehouseLoadBatchId = SCOPE_IDENTITY();
+
     BEGIN TRANSACTION;
 
     TRUNCATE TABLE dw.FactScheduledStopEvent;
@@ -466,6 +509,12 @@ BEGIN TRY
 
     COMMIT TRANSACTION;
 
+    EXEC sys.sp_releaseapplock
+        @Resource = N'GtfsStaticStaging',
+        @LockOwner = N'Session';
+
+    SET @StagingLockAcquired = 0;
+
 END TRY
 BEGIN CATCH
     IF XACT_STATE() <> 0 ROLLBACK TRANSACTION;
@@ -476,6 +525,13 @@ BEGIN CATCH
         Status = 'Failed',
         ErrorMessage = ERROR_MESSAGE()
     WHERE WarehouseLoadBatchId = @WarehouseLoadBatchId;
+
+    IF @StagingLockAcquired = 1
+    BEGIN
+        EXEC sys.sp_releaseapplock
+            @Resource = N'GtfsStaticStaging',
+            @LockOwner = N'Session';
+    END;
 
     THROW;
 END CATCH;

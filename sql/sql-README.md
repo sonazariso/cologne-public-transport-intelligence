@@ -152,6 +152,8 @@ CologneTransitIntelligence
 - Do not assume source identifiers are unique until validated.
 - Keep GTFS identifiers under exact/binary matching semantics where required.
 - The current static staging layer represents one replaceable GTFS feed snapshot.
+- `ctl.GtfsStagingState` records the single `ctl.GtfsLoadBatch` that owns that snapshot; the loader updates the pointer in the same transaction as the staging replacement.
+- Validation and warehouse loading use that pointer exactly. A warehouse load is refused unless the current pointer targets a `Validated` batch; it never falls back to an older validated batch.
 - Historical static feed retention is handled outside the current staging tables.
 - Realtime snapshots are append-only observations, not replacements of static data.
 - Realtime staging stores source-aligned values; derived delays and matching logic belong in `wrk`.
