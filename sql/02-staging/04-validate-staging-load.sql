@@ -62,6 +62,16 @@ CREATE TABLE #ValidationResults
     ExpectedResult NVARCHAR(200) NOT NULL
 );
 
+/* Include expected staging row-count mismatches in the batch validation decision. */
+INSERT INTO #ValidationResults
+SELECT N'Staging row count: ' + expected.TableName,
+       'Error',
+       CASE WHEN actual.ActualRows = expected.ExpectedRows THEN 0 ELSE 1 END,
+       N'Actual rows = ' + CONVERT(NVARCHAR(30), expected.ExpectedRows)
+FROM @Expected AS expected
+JOIN @Actual AS actual
+    ON actual.TableName = expected.TableName;
+
 INSERT INTO #ValidationResults
 SELECT N'Duplicate agency_id', 'Error', COUNT_BIG(*) - COUNT_BIG(DISTINCT AgencyId), N'0'
 FROM stg.GtfsAgency;
