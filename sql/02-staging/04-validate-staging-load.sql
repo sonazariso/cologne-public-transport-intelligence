@@ -122,7 +122,7 @@ INSERT INTO #ValidationResults
 SELECT N'Staging row count: ' + expected.TableName,
        'Error',
        CASE WHEN actual.ActualRows = expected.ExpectedRows THEN 0 ELSE 1 END,
-       N'Actual rows = ' + CONVERT(NVARCHAR(30), expected.ExpectedRows),
+       N'Expected rows = ' + CONVERT(NVARCHAR(30), expected.ExpectedRows),
        N'Actual rows = ' + CONVERT(NVARCHAR(30), actual.ActualRows)
 FROM @Expected AS expected
 JOIN @Actual AS actual
