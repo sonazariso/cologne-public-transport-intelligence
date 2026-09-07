@@ -8,16 +8,19 @@ GO
 /*
     Frozen-scope semantic regression for wrk.vwCologneRealtimeTripMatch.
 
-    Run this script in one SQL Server session before deploying the rewritten
-    view. It freezes the append-only realtime observation keys first, captures
-    the current production rows as the baseline, and compares them with the
-    warehouse-direct prototype. Do not accept a changed result: the current
-    production view is the matching contract for this performance rewrite.
+    Run this script in one SQL Server session. It freezes the append-only
+    realtime observation keys first, reconstructs the preserved pre-rewrite
+    implementation from Git commit 81ddb85 as the historical baseline, and
+    compares it with the warehouse-direct implementation.
+
+    The baseline deliberately references wrk.vwCologneScheduledStopEvent only
+    as the preserved historical implementation. The production view under
+    test must never use that working view for candidate lookup.
 
     The final CREATE OR ALTER VIEW is kept in
-    03-create-cologne-realtime-working-layer.sql. After this script returns
-    PASS, apply that script and rerun the same comparison in this session
-    against the frozen baseline before closing the session.
+    03-create-cologne-realtime-working-layer.sql. If the production view is
+    changed in this session, rerun the post-change block below against the
+    same frozen baseline before closing the session.
 */
 
 CREATE TABLE #TripMatchRegressionScope
@@ -27,7 +30,7 @@ CREATE TABLE #TripMatchRegressionScope
 );
 
 INSERT INTO #TripMatchRegressionScope (ObservationKey)
-SELECT ObservationKey
+SELECT DISTINCT ObservationKey
 FROM stg.MddRealtimeStopObservation;
 
 DECLARE @BaselineStartedAtUtc DATETIME2(7) = SYSUTCDATETIME();
@@ -35,12 +38,192 @@ DECLARE @BaselineStartedAtUtc DATETIME2(7) = SYSUTCDATETIME();
 SET STATISTICS TIME ON;
 SET STATISTICS IO ON;
 
-/* Capture every output column from the current production view. */
-SELECT production_match.*
+/*
+    Materialize the preserved pre-rewrite baseline from Git commit 81ddb85.
+    This is intentionally independent of the current production view, so the
+    test remains valid when the live database is already warehouse-direct.
+*/
+;WITH RouteCoverage AS
+(
+    SELECT DISTINCT
+        REPLACE(RouteShortName, N' ', N'') AS NormalizedRouteName
+    FROM wrk.vwCologneServingRoute
+    WHERE RouteShortName IS NOT NULL
+),
+Candidate AS
+(
+    SELECT
+        r.ObservationKey,
+
+        se.TripId,
+        se.RouteId,
+        se.ServiceId,
+        se.RouteShortName,
+        se.TripHeadsign,
+
+        se.StopId AS StaticMatchedStopId,
+        se.StopName AS StaticMatchedStopName,
+        se.ParentStationId,
+
+        CASE
+            WHEN se.StopId = r.StopPointRef
+            THEN 1
+            ELSE 0
+        END AS IsExactStopMatch,
+
+        CASE
+            WHEN se.ParentStationId = r.StaticParentStationId
+            THEN 1
+            ELSE 0
+        END AS IsParentStationMatch
+
+    FROM wrk.vwCologneRealtimeTripMatchKey AS r
+
+    INNER JOIN #TripMatchRegressionScope AS scope
+        ON scope.ObservationKey = r.ObservationKey
+
+    INNER JOIN wrk.vwCologneScheduledStopEvent AS se
+        ON REPLACE(se.RouteShortName, N' ', N'')
+         = REPLACE(r.LineName, N' ', N'')
+
+       AND se.ScheduledArrivalSeconds =
+             r.ScheduledArrivalSecondsLocal
+             + (se.ArrivalDayOffset * 86400)
+
+    INNER JOIN dw.DimService AS ds
+        ON ds.ServiceId COLLATE Latin1_General_100_BIN2
+         = se.ServiceId COLLATE Latin1_General_100_BIN2
+
+    INNER JOIN dw.BridgeServiceDate AS b
+        ON b.ServiceKey = ds.ServiceKey
+
+    INNER JOIN dw.DimDate AS d
+        ON d.DateKey = b.DateKey
+
+       AND d.DateValue =
+           DATEADD(
+               DAY,
+               -se.ArrivalDayOffset,
+               r.ServiceDateLocal
+           )
+),
+CandidateSummary AS
+(
+    SELECT
+        ObservationKey,
+
+        SUM(IsExactStopMatch) AS ExactStopCandidateCount,
+        SUM(IsParentStationMatch) AS ParentStationCandidateCount,
+
+        MAX(
+            CASE WHEN IsExactStopMatch = 1
+                 THEN TripId END
+        ) AS ExactTripId,
+
+        MAX(
+            CASE WHEN IsParentStationMatch = 1
+                 THEN TripId END
+        ) AS ParentTripId,
+
+        MAX(
+            CASE WHEN IsExactStopMatch = 1
+                 THEN RouteId END
+        ) AS ExactRouteId,
+
+        MAX(
+            CASE WHEN IsParentStationMatch = 1
+                 THEN RouteId END
+        ) AS ParentRouteId,
+
+        MAX(
+            CASE WHEN IsExactStopMatch = 1
+                 THEN ServiceId END
+        ) AS ExactServiceId,
+
+        MAX(
+            CASE WHEN IsParentStationMatch = 1
+                 THEN ServiceId END
+        ) AS ParentServiceId,
+
+        MAX(
+            CASE WHEN IsExactStopMatch = 1
+                 THEN StaticMatchedStopId END
+        ) AS ExactStaticStopId,
+
+        MAX(
+            CASE WHEN IsParentStationMatch = 1
+                 THEN StaticMatchedStopId END
+        ) AS ParentStaticStopId
+
+    FROM Candidate
+    GROUP BY ObservationKey
+)
+SELECT
+    r.*,
+
+    ISNULL(cs.ExactStopCandidateCount, 0)
+        AS ExactStopCandidateCount,
+
+    ISNULL(cs.ParentStationCandidateCount, 0)
+        AS ParentStationCandidateCount,
+
+    CASE
+        WHEN rc.NormalizedRouteName IS NULL
+            THEN N'StaticCoverageMissing'
+
+        WHEN ISNULL(cs.ExactStopCandidateCount, 0) = 1
+            THEN N'ExactStopMatch'
+
+        WHEN ISNULL(cs.ExactStopCandidateCount, 0) = 0
+         AND ISNULL(cs.ParentStationCandidateCount, 0) = 1
+            THEN N'ParentStationFallback'
+
+        ELSE N'Unresolved'
+    END AS MatchStatus,
+
+    CASE
+        WHEN ISNULL(cs.ExactStopCandidateCount, 0) = 1
+            THEN cs.ExactTripId
+
+        WHEN ISNULL(cs.ExactStopCandidateCount, 0) = 0
+         AND ISNULL(cs.ParentStationCandidateCount, 0) = 1
+            THEN cs.ParentTripId
+    END AS MatchedTripId,
+
+    CASE
+        WHEN ISNULL(cs.ExactStopCandidateCount, 0) = 1
+            THEN cs.ExactRouteId
+
+        WHEN ISNULL(cs.ExactStopCandidateCount, 0) = 0
+         AND ISNULL(cs.ParentStationCandidateCount, 0) = 1
+            THEN cs.ParentRouteId
+    END AS MatchedRouteId,
+
+    CASE
+        WHEN ISNULL(cs.ExactStopCandidateCount, 0) = 1
+            THEN cs.ExactServiceId
+
+        WHEN ISNULL(cs.ExactStopCandidateCount, 0) = 0
+         AND ISNULL(cs.ParentStationCandidateCount, 0) = 1
+            THEN cs.ParentServiceId
+    END AS MatchedServiceId,
+
+    CASE
+        WHEN ISNULL(cs.ExactStopCandidateCount, 0) = 1
+            THEN cs.ExactStaticStopId
+
+        WHEN ISNULL(cs.ExactStopCandidateCount, 0) = 0
+         AND ISNULL(cs.ParentStationCandidateCount, 0) = 1
+            THEN cs.ParentStaticStopId
+    END AS MatchedStaticStopId
 INTO #TripMatchBaseline
-FROM wrk.vwCologneRealtimeTripMatch AS production_match
+FROM wrk.vwCologneRealtimeTripMatchKey AS r
 JOIN #TripMatchRegressionScope AS scope
-    ON scope.ObservationKey = production_match.ObservationKey;
+    ON scope.ObservationKey = r.ObservationKey
+LEFT JOIN CandidateSummary AS cs
+    ON cs.ObservationKey = r.ObservationKey
+LEFT JOIN RouteCoverage AS rc
+    ON rc.NormalizedRouteName = REPLACE(r.LineName, N' ', N'');
 
 DECLARE @BaselineElapsedMilliseconds BIGINT =
     DATEDIFF_BIG(MILLISECOND, @BaselineStartedAtUtc, SYSUTCDATETIME());
@@ -253,6 +436,7 @@ DECLARE @CriticalProposedOnly BIGINT;
 DECLARE @CompleteBaselineOnly BIGINT;
 DECLARE @CompleteProposedOnly BIGINT;
 DECLARE @GrainDifferenceCount BIGINT;
+DECLARE @CriticalFieldDifferenceCount BIGINT;
 
 SELECT @FrozenObservationCount = COUNT_BIG(*)
 FROM #TripMatchRegressionScope;
@@ -327,6 +511,9 @@ FROM
         MatchedStaticStopId
     FROM #TripMatchBaseline
 ) AS difference;
+
+SET @CriticalFieldDifferenceCount =
+    @CriticalBaselineOnly + @CriticalProposedOnly;
 
 /* Compare every output column, including NULL/value differences. */
 SELECT @CompleteBaselineOnly = COUNT_BIG(*)
@@ -519,6 +706,7 @@ SELECT
     @ProposedRowCount - @ProposedDistinctObservationCount AS NewDuplicateGrainRows,
     @CriticalBaselineOnly AS CriticalBaselineOnlyRows,
     @CriticalProposedOnly AS CriticalNewOnlyRows,
+    @CriticalFieldDifferenceCount AS CriticalFieldDifferenceCount,
     @CompleteBaselineOnly AS BaselineOnlyRows,
     @CompleteProposedOnly AS NewOnlyRows,
     @GrainDifferenceCount AS GrainDifferenceCount,
@@ -536,22 +724,56 @@ SELECT
         ELSE 'FAIL'
     END AS RegressionResult;
 
-SELECT
-    'Baseline' AS Implementation,
-    MatchStatus,
-    COUNT_BIG(*) AS ObservationCount
-FROM #TripMatchBaseline
-GROUP BY MatchStatus
+WITH StatusValues AS
+(
+    SELECT *
+    FROM
+    (
+        VALUES
+            (N'StaticCoverageMissing'),
+            (N'ExactStopMatch'),
+            (N'ParentStationFallback'),
+            (N'Unresolved')
+    ) AS statuses(MatchStatus)
+),
+StatusCounts AS
+(
+    SELECT
+        N'Baseline' AS Implementation,
+        MatchStatus,
+        COUNT_BIG(*) AS ObservationCount
+    FROM #TripMatchBaseline
+    GROUP BY MatchStatus
 
-UNION ALL
+    UNION ALL
 
+    SELECT
+        N'Proposed' AS Implementation,
+        MatchStatus,
+        COUNT_BIG(*) AS ObservationCount
+    FROM #TripMatchProposed
+    GROUP BY MatchStatus
+),
+Implementations AS
+(
+    SELECT *
+    FROM
+    (
+        VALUES
+            (N'Baseline'),
+            (N'Proposed')
+    ) AS implementations(Implementation)
+)
 SELECT
-    'Proposed' AS Implementation,
-    MatchStatus,
-    COUNT_BIG(*) AS ObservationCount
-FROM #TripMatchProposed
-GROUP BY MatchStatus
-ORDER BY Implementation, MatchStatus;
+    implementations.Implementation,
+    status_values.MatchStatus,
+    ISNULL(status_counts.ObservationCount, 0) AS ObservationCount
+FROM Implementations AS implementations
+CROSS JOIN StatusValues AS status_values
+LEFT JOIN StatusCounts AS status_counts
+    ON status_counts.Implementation = implementations.Implementation
+   AND status_counts.MatchStatus = status_values.MatchStatus
+ORDER BY implementations.Implementation, status_values.MatchStatus;
 
 /*
     Validate the known examples only when their observations are present.
@@ -636,12 +858,40 @@ BEGIN
     THROW 51001, 'Run the pre-change regression block first in this same session.', 1;
 END;
 
-DECLARE @CurrentTripMatchDefinition NVARCHAR(MAX) =
-    OBJECT_DEFINITION(OBJECT_ID(N'wrk.vwCologneRealtimeTripMatch'));
+DECLARE @CurrentTripMatchObjectId INT =
+    OBJECT_ID(N'wrk.vwCologneRealtimeTripMatch');
+DECLARE @WarehouseStopEventObjectId INT =
+    OBJECT_ID(N'dw.FactScheduledStopEvent');
+DECLARE @LegacyScheduledStopEventObjectId INT =
+    OBJECT_ID(N'wrk.vwCologneScheduledStopEvent');
+DECLARE @HasWarehouseCandidateDependency BIT =
+    CASE
+        WHEN EXISTS
+        (
+            SELECT 1
+            FROM sys.sql_expression_dependencies
+            WHERE referencing_id = @CurrentTripMatchObjectId
+              AND referenced_id = @WarehouseStopEventObjectId
+        )
+        THEN 1
+        ELSE 0
+    END;
+DECLARE @HasLegacyCandidateDependency BIT =
+    CASE
+        WHEN EXISTS
+        (
+            SELECT 1
+            FROM sys.sql_expression_dependencies
+            WHERE referencing_id = @CurrentTripMatchObjectId
+              AND referenced_id = @LegacyScheduledStopEventObjectId
+        )
+        THEN 1
+        ELSE 0
+    END;
 
-IF @CurrentTripMatchDefinition IS NULL
-   OR @CurrentTripMatchDefinition NOT LIKE N'%dw.FactScheduledStopEvent%'
-   OR @CurrentTripMatchDefinition LIKE N'%wrk.vwCologneScheduledStopEvent%'
+IF @CurrentTripMatchObjectId IS NULL
+   OR @HasWarehouseCandidateDependency = 0
+   OR @HasLegacyCandidateDependency = 1
 BEGIN
     PRINT 'Realtime trip-match post-change validation SKIPPED: the warehouse-direct view is not active yet.';
     RETURN;
@@ -671,6 +921,7 @@ DECLARE @PostChangeDistinctObservationCount BIGINT;
 DECLARE @PostChangeDuplicateGrainRows BIGINT;
 DECLARE @PostCriticalBaselineOnly BIGINT;
 DECLARE @PostCriticalOnly BIGINT;
+DECLARE @PostCriticalFieldDifferenceCount BIGINT;
 DECLARE @PostCompleteBaselineOnly BIGINT;
 DECLARE @PostCompleteOnly BIGINT;
 DECLARE @PostGrainDifferenceCount BIGINT;
@@ -739,6 +990,9 @@ FROM
     FROM #TripMatchBaseline
 ) AS difference;
 
+SET @PostCriticalFieldDifferenceCount =
+    @PostCriticalBaselineOnly + @PostCriticalOnly;
+
 /* The temp tables have the same 32-column contract, so SELECT * compares all columns. */
 SELECT @PostCompleteBaselineOnly = COUNT_BIG(*)
 FROM
@@ -791,6 +1045,7 @@ SELECT
     @PostChangeDuplicateGrainRows AS FinalViewDuplicateGrainRows,
     @PostCriticalBaselineOnly AS CriticalBaselineOnlyRows,
     @PostCriticalOnly AS CriticalFinalOnlyRows,
+    @PostCriticalFieldDifferenceCount AS CriticalFieldDifferenceCount,
     @PostCompleteBaselineOnly AS BaselineOnlyRows,
     @PostCompleteOnly AS FinalOnlyRows,
     @PostGrainDifferenceCount AS GrainDifferenceCount,
@@ -807,22 +1062,56 @@ SELECT
     END AS FinalRegressionResult
 FROM #TripMatchRegressionScope;
 
-SELECT
-    'Baseline' AS Implementation,
-    MatchStatus,
-    COUNT_BIG(*) AS ObservationCount
-FROM #TripMatchBaseline
-GROUP BY MatchStatus
+WITH StatusValues AS
+(
+    SELECT *
+    FROM
+    (
+        VALUES
+            (N'StaticCoverageMissing'),
+            (N'ExactStopMatch'),
+            (N'ParentStationFallback'),
+            (N'Unresolved')
+    ) AS statuses(MatchStatus)
+),
+StatusCounts AS
+(
+    SELECT
+        N'Baseline' AS Implementation,
+        MatchStatus,
+        COUNT_BIG(*) AS ObservationCount
+    FROM #TripMatchBaseline
+    GROUP BY MatchStatus
 
-UNION ALL
+    UNION ALL
 
+    SELECT
+        N'FinalView' AS Implementation,
+        MatchStatus,
+        COUNT_BIG(*) AS ObservationCount
+    FROM #TripMatchPostChange
+    GROUP BY MatchStatus
+),
+Implementations AS
+(
+    SELECT *
+    FROM
+    (
+        VALUES
+            (N'Baseline'),
+            (N'FinalView')
+    ) AS implementations(Implementation)
+)
 SELECT
-    'FinalView' AS Implementation,
-    MatchStatus,
-    COUNT_BIG(*) AS ObservationCount
-FROM #TripMatchPostChange
-GROUP BY MatchStatus
-ORDER BY Implementation, MatchStatus;
+    implementations.Implementation,
+    status_values.MatchStatus,
+    ISNULL(status_counts.ObservationCount, 0) AS ObservationCount
+FROM Implementations AS implementations
+CROSS JOIN StatusValues AS status_values
+LEFT JOIN StatusCounts AS status_counts
+    ON status_counts.Implementation = implementations.Implementation
+   AND status_counts.MatchStatus = status_values.MatchStatus
+ORDER BY implementations.Implementation, status_values.MatchStatus;
 
 IF @PostCriticalBaselineOnly <> 0
    OR @PostCriticalOnly <> 0
