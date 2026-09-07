@@ -6,6 +6,43 @@
 
 This is the **canonical source of truth for the realtime phase**. If an older project document conflicts with this file on realtime behavior, this file takes precedence.
 
+## Current historical collection phase
+
+The project is now accumulating genuine MDD/TRIAS observations for a future
+historical realtime analysis phase. The useful-history target is a minimum of
+14 actual calendar days, with 28 days preferred. The Collector must accumulate
+the data naturally; missing periods are not generated or backfilled.
+
+The live SQL Server baseline checked at 2026-09-07 17:39 UTC contained 780 stop
+observations across 156 snapshots and 3 UTC collection dates. The observed
+range was 2026-09-05 08:27:28 UTC through 2026-09-07 17:38:48 UTC, with gaps
+up to approximately 21 hours. Existing rows were associated only with Köln Hbf
+so far, including source child/platform references, and all had source mode
+`RAIL`; the other six configured panel targets had no historical observations.
+This baseline is therefore not yet a 14- or 28-day dataset and does not prove
+continuous scheduled collection.
+
+Counting inclusive calendar dates from the first usable date, the 14-date and
+28-date milestones are 2026-09-18 and 2026-10-02 respectively, subject to
+natural runtime availability and visible gaps.
+
+The repository-managed `ctl.MddCollectorRun` table and procedures were missing
+from the live database at this checkpoint and were deployed from
+`sql/02-staging/09-create-mdd-collector-run-audit.sql` without changing
+existing realtime observations. Direct VMware guest operations remain blocked by
+the encrypted VM credentials, so the actual Task Scheduler definition,
+principal/API-key access, and a live automatic-mode smoke run remain
+unverified. Read-only inspection through the SQL Server host showed that the
+deployed `Run-MddRealtimeCollector.ps1` matches the repository wrapper, but the
+deployed `Invoke-MddRealtimeCollector.ps1` is a 557-line legacy Hbf-only script
+and `C:\Collector\MddRealtimeCollector.psm1` is absent. Its 218 logs contain
+143 successful and 75 failed wrapper runs, including 73 legacy
+missing-optional-`estimatedTime` failures and 2 strict-mode `Count` failures.
+The checked-in parser fix is not yet synchronized to `C:\Collector`; this
+deployment mismatch explains the Hbf-only history and zero audit rows. The
+local pilot remains dependent on the Windows VM and interactive user context
+being available.
+
 ## 1. Source and quota
 
 ```text
@@ -243,7 +280,8 @@ The operational audit grain is one row per Collector execution in
 `ctl.MddCollectorRun`, created by `ctl.uspStartMddCollectorRun` and completed
 by `ctl.uspCompleteMddCollectorRun`. The repository deployment script is
 `sql/02-staging/09-create-mdd-collector-run-audit.sql`; the focused diagnostic
-script is `sql/02-staging/10-validate-mdd-collector-run-audit.sql`.
+scripts are `sql/02-staging/10-validate-mdd-collector-run-audit.sql` and
+`sql/02-staging/11-validate-realtime-collection-health.sql`.
 
 The row starts as `Started` before sampling, authentication, the MDD request,
 parsing, or realtime snapshot persistence. A successful run becomes
@@ -345,6 +383,14 @@ coverage claims are verified from the live warehouse; endpoint validation for
 the six new parent references must be performed from the configured Windows
 collector context, at most once per newly selected target.
 
+The live sampling tables themselves were verified on 2026-09-07: all seven
+targets were enabled, each had `NumberOfResults = 5`, the ten slots were
+present with the intended 2/2/2/1/1/1/1 weighting, and the stored procedure
+returned the expected deterministic ten-slot rotation. Historical source rows
+have so far only participated at the Köln Hbf parent station; this is a
+collection-coverage finding, not evidence that the configured panel should be
+redesigned.
+
 ## 13. Collector logging and scheduler diagnostics
 
 Wrapper logs every run under:
@@ -364,6 +410,17 @@ or `STATUS: FAILED`.
 Task Scheduler Operational logging was enabled so task/process events can be inspected independently of collector logs.
 
 A prior task event returned nonzero process code `2147942401`, demonstrating that scheduler “completed” text is not sufficient application-level evidence. This motivated collector-level logs.
+
+For the 2026-09-07 historical-collection checkpoint, direct Task Scheduler
+inspection and guest operations remained unavailable because the VMware guest
+requires encrypted-VM credentials. Read-only SQL Server host inspection did
+confirm the deployed Run wrapper and exposed the stale Invoke/Hbf-only
+deployment described above; it also found 218 runtime logs with 143 successful
+and 75 failed wrapper statuses. The SQL observation timeline and those logs are
+not treated as proof that the current five-minute automatic task is healthy;
+the next runtime check must confirm the task action, principal,
+`MDD_API_KEY` availability, synchronized module files, and a successful
+automatic-mode audit row.
 
 ## 14. Strict-mode collection-count bug
 

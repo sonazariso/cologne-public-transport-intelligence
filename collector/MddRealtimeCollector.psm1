@@ -66,6 +66,25 @@ function Get-TriasText {
     return $null
 }
 
+function Get-TriasPropertyValue {
+    param(
+        $Object,
+
+        [Parameter(Mandatory = $true)]
+        [string]$PropertyName
+    )
+
+    if ($null -eq $Object) {
+        return $null
+    }
+
+    if ($Object.PSObject.Properties.Name -contains $PropertyName) {
+        return $Object.$PropertyName
+    }
+
+    return $null
+}
+
 function Convert-TriasUtc {
     param($Value)
 
@@ -559,24 +578,31 @@ function ConvertFrom-MddTriasResponse {
     $parsedStops = @(
         foreach ($result in $results) {
             $event = $result.stopEvent
-            $call = $event.thisCall.callAtStop
-            $section = @($event.service.serviceSection)[0]
+            $service = Get-TriasPropertyValue -Object $event -PropertyName "service"
+            $thisCall = Get-TriasPropertyValue -Object $event -PropertyName "thisCall"
+            $call = Get-TriasPropertyValue -Object $thisCall -PropertyName "callAtStop"
+            $section = @(Get-TriasPropertyValue -Object $service -PropertyName "serviceSection")[0]
+            $mode = Get-TriasPropertyValue -Object $section -PropertyName "mode"
+            $serviceArrival = Get-TriasPropertyValue -Object $call -PropertyName "serviceArrival"
 
+            # These TRIAS fields are optional. Missing estimates, bays, mode
+            # details, or line metadata remain NULL instead of aborting the
+            # whole source snapshot under StrictMode.
             $parsed = [PSCustomObject]@{
-                ResultId             = Get-SourceValue $result.resultId
-                StopPointRef         = Get-SourceValue $call.stopPointRef
-                StopName             = Get-TriasText $call.stopPointName
-                LineName             = Get-TriasText $section.publishedLineName
-                LineRef              = Get-SourceValue $section.lineRef
-                JourneyRef           = Get-SourceValue $event.service.journeyRef
-                DirectionRef         = Get-SourceValue $section.directionRef
-                OperatorRef          = Get-SourceValue $section.operatorRef
-                PtMode               = $section.mode.ptMode
-                RailSubmode          = $section.mode.railSubmode
-                TimetabledArrivalUtc = $call.serviceArrival.timetabledTime
-                EstimatedArrivalUtc  = $call.serviceArrival.estimatedTime
-                PlannedBay           = Get-TriasText $call.plannedBay
-                EstimatedBay         = Get-TriasText $call.estimatedBay
+                ResultId             = Get-SourceValue (Get-TriasPropertyValue -Object $result -PropertyName "resultId")
+                StopPointRef         = Get-SourceValue (Get-TriasPropertyValue -Object $call -PropertyName "stopPointRef")
+                StopName             = Get-TriasText (Get-TriasPropertyValue -Object $call -PropertyName "stopPointName")
+                LineName             = Get-TriasText (Get-TriasPropertyValue -Object $section -PropertyName "publishedLineName")
+                LineRef              = Get-SourceValue (Get-TriasPropertyValue -Object $section -PropertyName "lineRef")
+                JourneyRef           = Get-SourceValue (Get-TriasPropertyValue -Object $service -PropertyName "journeyRef")
+                DirectionRef         = Get-SourceValue (Get-TriasPropertyValue -Object $section -PropertyName "directionRef")
+                OperatorRef          = Get-SourceValue (Get-TriasPropertyValue -Object $section -PropertyName "operatorRef")
+                PtMode               = Get-TriasPropertyValue -Object $mode -PropertyName "ptMode"
+                RailSubmode          = Get-TriasPropertyValue -Object $mode -PropertyName "railSubmode"
+                TimetabledArrivalUtc = Get-TriasPropertyValue -Object $serviceArrival -PropertyName "timetabledTime"
+                EstimatedArrivalUtc  = Get-TriasPropertyValue -Object $serviceArrival -PropertyName "estimatedTime"
+                PlannedBay           = Get-TriasText (Get-TriasPropertyValue -Object $call -PropertyName "plannedBay")
+                EstimatedBay         = Get-TriasText (Get-TriasPropertyValue -Object $call -PropertyName "estimatedBay")
             }
 
             if ([string]::IsNullOrWhiteSpace($parsed.ResultId) -or
@@ -590,26 +616,42 @@ function ConvertFrom-MddTriasResponse {
     )
 
     # Parse identifiable context situations.
-    $context = $json.serviceDelivery.deliveryPayload.stopEventResponse.stopEventResponseContext
-    $allSituations = @($context.situations.ptSituation)
+    $deliveryPayload = Get-TriasPropertyValue -Object $json.serviceDelivery -PropertyName "deliveryPayload"
+    $stopEventResponse = Get-TriasPropertyValue -Object $deliveryPayload -PropertyName "stopEventResponse"
+    $context = Get-TriasPropertyValue -Object $stopEventResponse -PropertyName "stopEventResponseContext"
+    $situations = Get-TriasPropertyValue -Object $context -PropertyName "situations"
+    $allSituations = @(
+        foreach ($situation in @(Get-TriasPropertyValue -Object $situations -PropertyName "ptSituation")) {
+            if ($null -ne $situation) {
+                $situation
+            }
+        }
+    )
 
     $parsedSituations = @(
         foreach ($situation in $allSituations) {
-            $validity = @($situation.validityPeriod)
+            $validityPeriod = Get-TriasPropertyValue -Object $situation -PropertyName "validityPeriod"
+            $validity = @(
+                foreach ($period in @($validityPeriod)) {
+                    if ($null -ne $period) {
+                        $period
+                    }
+                }
+            )
             $validFrom = $null
             $validTo = $null
 
             if ($validity.Count -gt 0) {
-                $validFrom = $validity[0].startTime
-                $validTo = $validity[0].endTime
+                $validFrom = Get-TriasPropertyValue -Object $validity[0] -PropertyName "startTime"
+                $validTo = Get-TriasPropertyValue -Object $validity[0] -PropertyName "endTime"
             }
 
             [PSCustomObject]@{
-                ParticipantRef  = Get-SourceValue $situation.participantRef
-                SituationNumber = Get-SourceValue $situation.situationNumber
-                Summary         = Get-TriasText $situation.summary
-                Description     = Get-TriasText $situation.description
-                Detail          = Get-TriasText $situation.detail
+                ParticipantRef  = Get-SourceValue (Get-TriasPropertyValue -Object $situation -PropertyName "participantRef")
+                SituationNumber = Get-SourceValue (Get-TriasPropertyValue -Object $situation -PropertyName "situationNumber")
+                Summary         = Get-TriasText (Get-TriasPropertyValue -Object $situation -PropertyName "summary")
+                Description     = Get-TriasText (Get-TriasPropertyValue -Object $situation -PropertyName "description")
+                Detail          = Get-TriasText (Get-TriasPropertyValue -Object $situation -PropertyName "detail")
                 ValidFromUtc    = $validFrom
                 ValidToUtc      = $validTo
             }
@@ -634,16 +676,20 @@ function ConvertFrom-MddTriasResponse {
     $parsedLinks = @(
         foreach ($result in $results) {
             $event = $result.stopEvent
-            $call = $event.thisCall.callAtStop
-            $resultId = Get-SourceValue $result.resultId
+            $service = Get-TriasPropertyValue -Object $event -PropertyName "service"
+            $thisCall = Get-TriasPropertyValue -Object $event -PropertyName "thisCall"
+            $call = Get-TriasPropertyValue -Object $thisCall -PropertyName "callAtStop"
+            $resultId = Get-SourceValue (Get-TriasPropertyValue -Object $result -PropertyName "resultId")
 
-            foreach ($ref in @($event.service.situationFullRef)) {
+            foreach ($ref in @(
+                Get-TriasPropertyValue -Object $service -PropertyName "situationFullRef"
+            )) {
                 if ($null -eq $ref) {
                     continue
                 }
 
-                $participantRef = Get-SourceValue $ref.participantRef
-                $situationNumber = Get-SourceValue $ref.situationNumber
+                $participantRef = Get-SourceValue (Get-TriasPropertyValue -Object $ref -PropertyName "participantRef")
+                $situationNumber = Get-SourceValue (Get-TriasPropertyValue -Object $ref -PropertyName "situationNumber")
 
                 if (-not [string]::IsNullOrWhiteSpace($participantRef) -and
                     -not [string]::IsNullOrWhiteSpace($situationNumber)) {
@@ -656,13 +702,15 @@ function ConvertFrom-MddTriasResponse {
                 }
             }
 
-            foreach ($ref in @($call.situationFullRef)) {
+            foreach ($ref in @(
+                Get-TriasPropertyValue -Object $call -PropertyName "situationFullRef"
+            )) {
                 if ($null -eq $ref) {
                     continue
                 }
 
-                $participantRef = Get-SourceValue $ref.participantRef
-                $situationNumber = Get-SourceValue $ref.situationNumber
+                $participantRef = Get-SourceValue (Get-TriasPropertyValue -Object $ref -PropertyName "participantRef")
+                $situationNumber = Get-SourceValue (Get-TriasPropertyValue -Object $ref -PropertyName "situationNumber")
 
                 if (-not [string]::IsNullOrWhiteSpace($participantRef) -and
                     -not [string]::IsNullOrWhiteSpace($situationNumber)) {

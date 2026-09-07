@@ -34,6 +34,19 @@ The realtime phase now includes:
 
 The final realtime warehouse fact and realtime `analytics` views are **not yet approved**.
 
+The project is now in the historical realtime collection phase. The useful
+history target is a minimum of 14 actual calendar days, with 28 days preferred.
+The live SQL Server baseline checked at 2026-09-07 17:39 UTC contained 780 stop
+observations across 156 snapshots and 3 UTC collection dates, spanning
+2026-09-05 08:27:28 UTC through 2026-09-07 17:38:48 UTC. The observed timeline
+had gaps up to approximately 21 hours and all existing observations were from
+Köln Hbf (including source child/platform references) with source mode `RAIL`.
+The other six enabled panel targets had no historical observations at that
+checkpoint, so the minimum observation window has not yet elapsed.
+Counting inclusive calendar dates from the first usable date, the 14-date and
+28-date milestones are 2026-09-18 and 2026-10-02 respectively, subject to
+natural runtime availability and visible gaps.
+
 ---
 
 ## Current Checked-In SQL Execution Order
@@ -62,6 +75,7 @@ The checked-in scripts reproduce the validated static baseline and the synchroni
 20. `03-working/03-create-cologne-realtime-working-layer.sql`
 21. `02-staging/08-validate-mdd-realtime-sampling.sql` — focused sampling report after the warehouse and realtime objects exist
 22. `02-staging/10-validate-mdd-collector-run-audit.sql` — focused Collector run audit report
+23. `02-staging/11-validate-realtime-collection-health.sql` — read-only historical collection-health report
 
 The realtime steps are listed after the static warehouse and analytics steps so every dependency of the realtime working views exists before those views are created. The folder numbering remains organized by schema/layer rather than by this global dependency order.
 
@@ -139,6 +153,14 @@ no database audit row can exist; the existing Collector wrapper/file log and
 exit-code behavior remain the fallback evidence for that case. API keys,
 authorization headers, passwords, and connection-string credentials are not
 stored in the audit table.
+
+`02-staging/11-validate-realtime-collection-health.sql` is the focused
+read-only report for the historical collection phase. It reports the actual
+observation range and daily/hourly coverage, configured-target participation,
+snapshot gaps against the expected five-minute cadence, Collector run status
+and source counts, stale `Started` rows, and the existing matching-status
+distribution. It does not create analytics objects or fabricate missing
+history.
 
 ### Realtime working views
 
@@ -474,6 +496,26 @@ Current `MDD_API_KEY` runtime configuration is external to SQL and source code.
 
 ---
 
-## Next SQL Repository Step
+## Historical Collection Health
 
-Repository synchronization now includes the warehouse-direct `wrk.vwCologneRealtimeTripMatch` definition and the focused frozen-scope regression script. The validation script is the deployment/upgrade check for preserving the existing matching contract.
+Use `02-staging/11-validate-realtime-collection-health.sql` as the focused
+read-only collection report. It keeps the actual date range, daily/hourly
+coverage, enabled-target participation, five-minute snapshot gaps, Collector
+run status/source counts, stale `Started` rows, and current matching-status
+distribution visible without creating realtime analytics objects or filling
+missing history.
+
+The live database was missing the repository-managed Collector audit objects
+at the 2026-09-07 checkpoint. The existing idempotent deployment script
+`02-staging/09-create-mdd-collector-run-audit.sql` was applied; no realtime
+observation data was deleted or backfilled. Direct verification of the Windows
+Task Scheduler definition, principal, API-key access, and live automatic smoke
+run remains pending until the encrypted VMware guest can be queried with its
+required credentials. Read-only inspection through the SQL Server host found
+that the deployed Run wrapper matches the repository, but the deployed Invoke
+script is a 557-line legacy Hbf-only script and `C:\Collector\MddRealtimeCollector.psm1`
+is absent. Its 218 logs contain 143 successful and 75 failed runs, including
+73 legacy missing-optional-`estimatedTime` failures and 2 strict-mode `Count`
+failures. The repository parser fix is checked in but has not been synchronized
+to `C:\Collector`, so the runtime is not yet ready for verified multimodal
+collection.

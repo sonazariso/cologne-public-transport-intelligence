@@ -41,9 +41,43 @@ Validated static scope:
 
 The existing Power BI model remains a **planned supply baseline**, not a reliability dashboard.
 
+### Historical realtime collection phase
+
+The project is now in the historical realtime collection phase. The intended
+window is a minimum of **14 actual calendar days**, with **28 days preferred**;
+missing periods must remain visible rather than being backfilled.
+
+The live SQL Server baseline checked at 2026-09-07 17:39 UTC contains 780
+genuine stop observations across 156 snapshots and 3 UTC collection dates.
+Usable history currently spans 2026-09-05 08:27:28 UTC through 2026-09-07
+17:38:48 UTC, with gaps up to approximately 21 hours. Existing observations
+are associated only with Köln Hbf so far (including its source child/platform
+references) and are `RAIL`; the other six configured targets have no historical
+observations yet.
+This is not yet a 14- or 28-day dataset.
+
+Counting inclusive calendar dates from the first usable date, the 14-date and
+28-date milestones are 2026-09-18 and 2026-10-02 respectively, subject to
+natural runtime availability and visible gaps.
+
+The live database was missing the repository-managed `ctl.MddCollectorRun`
+audit objects; `sql/02-staging/09-create-mdd-collector-run-audit.sql` was
+deployed without changing existing realtime data. Direct VMware guest
+operations remain blocked by the encrypted VM credentials, so the actual
+Task Scheduler definition/principal/API-key access and a live automatic-mode
+smoke run remain unverified. Read-only inspection through the SQL Server host
+showed that the deployed `Run-MddRealtimeCollector.ps1` matches the repository
+wrapper, but the deployed `Invoke-MddRealtimeCollector.ps1` is a 557-line
+legacy Hbf-only script and `MddRealtimeCollector.psm1` is absent. Its 218 logs
+contain 143 successful and 75 failed wrapper runs; 73 failed logs report the
+legacy missing-optional-`estimatedTime` defect and 2 report the legacy
+strict-mode `Count` defect. This explains the Hbf-only history and zero audit
+rows. The repository parser fix is checked in but still needs synchronization
+to `C:\Collector`.
+
 ### Realtime collector
 
-The realtime pilot is operational:
+The repository realtime collector is configured for the local pilot:
 
 - `POST https://mdd.gorheinland.com/delfi`
 - TRIAS 1.2 with `x-api-key`
