@@ -47,33 +47,39 @@ The project is now in the historical realtime collection phase. The intended
 window is a minimum of **14 actual calendar days**, with **28 days preferred**;
 missing periods must remain visible rather than being backfilled.
 
-The live SQL Server baseline checked at 2026-09-07 17:39 UTC contains 780
-genuine stop observations across 156 snapshots and 3 UTC collection dates.
-Usable history currently spans 2026-09-05 08:27:28 UTC through 2026-09-07
-17:38:48 UTC, with gaps up to approximately 21 hours. Existing observations
-are associated only with Köln Hbf so far (including its source child/platform
-references) and are `RAIL`; the other six configured targets have no historical
-observations yet.
-This is not yet a 14- or 28-day dataset.
+The live SQL Server baseline checked at 2026-09-07 20:12 UTC contains 855
+genuine stop observations across 171 snapshots and 3 UTC collection dates,
+spanning 2026-09-05 08:27:28 UTC through 2026-09-07 20:08:41 UTC. The maximum
+snapshot gap is 76,759 seconds, so this is not yet a 14- or 28-day dataset and
+missing periods remain visible.
 
-Counting inclusive calendar dates from the first usable date, the 14-date and
-28-date milestones are 2026-09-18 and 2026-10-02 respectively, subject to
-natural runtime availability and visible gaps.
+Historical multi-target collection verified from: **2026-09-07 20:03:53 UTC**.
+Before that verified run, the preserved legacy Hbf-only history contained 845
+observations across 169 snapshots. The first verified automatic multi-target
+run selected Köln Porz Markt (slot 5) and persisted five genuine observations;
+the next scheduled run selected Köln Hbf (slot 6) and also succeeded. The
+configured targets are not being treated as complete until real calendar time
+and genuine observations support that claim.
 
-The live database was missing the repository-managed `ctl.MddCollectorRun`
-audit objects; `sql/02-staging/09-create-mdd-collector-run-audit.sql` was
-deployed without changing existing realtime data. Direct VMware guest
-operations remain blocked by the encrypted VM credentials, so the actual
-Task Scheduler definition/principal/API-key access and a live automatic-mode
-smoke run remain unverified. Read-only inspection through the SQL Server host
-showed that the deployed `Run-MddRealtimeCollector.ps1` matches the repository
-wrapper, but the deployed `Invoke-MddRealtimeCollector.ps1` is a 557-line
-legacy Hbf-only script and `MddRealtimeCollector.psm1` is absent. Its 218 logs
-contain 143 successful and 75 failed wrapper runs; 73 failed logs report the
-legacy missing-optional-`estimatedTime` defect and 2 report the legacy
-strict-mode `Count` defect. This explains the Hbf-only history and zero audit
-rows. The repository parser fix is checked in but still needs synchronization
-to `C:\Collector`.
+The minimum target is 14 actual calendar days from that verified start; the
+preferred target is 28 actual calendar days. The corresponding earliest
+milestone dates are 2026-09-21 and 2026-10-05 respectively, subject to natural
+runtime availability and visible gaps.
+
+The repository-managed `ctl.MddCollectorRun` audit objects are deployed. The
+three deployed runtime files now match the repository SHA-256 hashes, the
+existing `C:\Collector\Logs` directory was preserved, and the corrected
+scheduled task produced two `Succeeded` / `Automatic` audit rows with HTTP
+200, one attempt, five source events, and five inserted observations each.
+Task Scheduler history shows `Cologne Transit Realtime Collector` running as
+`DATAANALYST-VM\Somaye` every five minutes with return code 0; the successful
+wrapper logs prove that the runtime account can read `MDD_API_KEY` without
+exposing its value.
+
+A separate `\NRW DB Realtime Collector` task is also active in Task Scheduler
+history. It produced no new `ctl.MddCollectorRun` rows in this verification,
+so it is treated as a legacy/duplicate-task candidate. It was not disabled
+without explicit task-owner authorization.
 
 ### Realtime collector
 
@@ -92,6 +98,7 @@ The repository realtime collector is configured for the local pilot:
 Current runtime:
 
 ```text
+C:\Collector\MddRealtimeCollector.psm1
 C:\Collector\Invoke-MddRealtimeCollector.ps1
 C:\Collector\Run-MddRealtimeCollector.ps1
 C:\Collector\Logs\

@@ -8,40 +8,34 @@ This is the **canonical source of truth for the realtime phase**. If an older pr
 
 ## Current historical collection phase
 
-The project is now accumulating genuine MDD/TRIAS observations for a future
-historical realtime analysis phase. The useful-history target is a minimum of
+The project is accumulating genuine MDD/TRIAS observations for a future
+historical realtime analysis phase. Historical multi-target collection verified
+from: **2026-09-07 20:03:53 UTC**. The useful-history target is a minimum of
 14 actual calendar days, with 28 days preferred. The Collector must accumulate
 the data naturally; missing periods are not generated or backfilled.
 
-The live SQL Server baseline checked at 2026-09-07 17:39 UTC contained 780 stop
-observations across 156 snapshots and 3 UTC collection dates. The observed
-range was 2026-09-05 08:27:28 UTC through 2026-09-07 17:38:48 UTC, with gaps
-up to approximately 21 hours. Existing rows were associated only with Köln Hbf
-so far, including source child/platform references, and all had source mode
-`RAIL`; the other six configured panel targets had no historical observations.
-This baseline is therefore not yet a 14- or 28-day dataset and does not prove
-continuous scheduled collection.
+The live SQL Server baseline checked at 2026-09-07 20:12 UTC contains 855 stop
+observations across 171 snapshots and 3 UTC collection dates. The observed range
+is 2026-09-05 08:27:28 UTC through 2026-09-07 20:08:41 UTC; the maximum
+snapshot gap is 76,759 seconds. This is not yet a 14- or 28-day dataset.
 
-Counting inclusive calendar dates from the first usable date, the 14-date and
-28-date milestones are 2026-09-18 and 2026-10-02 respectively, subject to
-natural runtime availability and visible gaps.
+Before the verified start, preserved legacy Hbf-only history contained 845
+observations across 169 snapshots. The first verified automatic run selected
+Köln Porz Markt (slot 5) and inserted five genuine source observations. The
+next scheduled run selected Köln Hbf (slot 6) and inserted five more. The
+earliest 14-day and 28-day milestone dates from the verified start are
+2026-09-21 and 2026-10-05 respectively; neither target is complete yet.
 
-The repository-managed `ctl.MddCollectorRun` table and procedures were missing
-from the live database at this checkpoint and were deployed from
-`sql/02-staging/09-create-mdd-collector-run-audit.sql` without changing
-existing realtime observations. Direct VMware guest operations remain blocked by
-the encrypted VM credentials, so the actual Task Scheduler definition,
-principal/API-key access, and a live automatic-mode smoke run remain
-unverified. Read-only inspection through the SQL Server host showed that the
-deployed `Run-MddRealtimeCollector.ps1` matches the repository wrapper, but the
-deployed `Invoke-MddRealtimeCollector.ps1` is a 557-line legacy Hbf-only script
-and `C:\Collector\MddRealtimeCollector.psm1` is absent. Its 218 logs contain
-143 successful and 75 failed wrapper runs, including 73 legacy
-missing-optional-`estimatedTime` failures and 2 strict-mode `Count` failures.
-The checked-in parser fix is not yet synchronized to `C:\Collector`; this
-deployment mismatch explains the Hbf-only history and zero audit rows. The
-local pilot remains dependent on the Windows VM and interactive user context
-being available.
+The repository-managed `ctl.MddCollectorRun` table and procedures are deployed.
+All three files under `C:\Collector` now match the repository source by
+SHA-256, and the existing `C:\Collector\Logs` directory was preserved. Task
+Scheduler history shows `\Cologne Transit Realtime Collector` running as
+`DATAANALYST-VM\Somaye` every five minutes with return code 0. Its corrected
+wrapper logs and audit rows prove the scheduled runtime can read the external
+`MDD_API_KEY` without exposing it. A separate `\NRW DB Realtime Collector` task
+is also active in history but produced no new `ctl.MddCollectorRun` rows during
+this check; it is recorded as a legacy/duplicate-task candidate and was not
+disabled without explicit task-owner authorization.
 
 ## 1. Source and quota
 
@@ -234,6 +228,7 @@ collector/Run-MddRealtimeCollector.ps1
 Windows runtime:
 
 ```text
+C:\Collector\MddRealtimeCollector.psm1
 C:\Collector\Invoke-MddRealtimeCollector.ps1
 C:\Collector\Run-MddRealtimeCollector.ps1
 C:\Collector\Logs\
@@ -324,9 +319,14 @@ Cadence:
 every 5 minutes
 ```
 
-Configured with non-interactive PowerShell, `MultipleInstances IgnoreNew`, `StartWhenAvailable`, and a bounded execution limit.
-
-Current principal is the interactive Windows user context. Therefore the local pilot requires the VM/user context to be available. It does not collect while the VM is powered off.
+Task Scheduler history verifies a five-minute time-triggered PowerShell action,
+the intended interactive principal `DATAANALYST-VM\Somaye`, and successful
+completion with return code 0. The synchronized wrapper's `STATUS: SUCCESS`
+marker plus the automatic audit rows verify that the action reaches
+`C:\Collector\Run-MddRealtimeCollector.ps1`, which then invokes the current
+module-backed Collector. The main task has not overlapped in the observed
+successful interval; the local pilot still requires the VM/user context to be
+available and does not collect while the VM is powered off.
 
 The five-minute cadence would be ~8,640 normal HTTP attempts/month if continuous for 30 days, below the 250,000 project limit. Transient retries are bounded and are reported because they consume additional MDD requests.
 
@@ -376,20 +376,16 @@ existing bounded retry behavior and can add HTTP attempts. The repository
 validation report is
 `sql/02-staging/08-validate-mdd-realtime-sampling.sql`.
 
-The current Mac execution context did not have the Windows User
-`MDD_API_KEY`, so no new live MDD target-validation requests were issued while
-this panel was added. The static identities, parent-station relationships, and
-coverage claims are verified from the live warehouse; endpoint validation for
-the six new parent references must be performed from the configured Windows
-collector context, at most once per newly selected target.
-
-The live sampling tables themselves were verified on 2026-09-07: all seven
-targets were enabled, each had `NumberOfResults = 5`, the ten slots were
-present with the intended 2/2/2/1/1/1/1 weighting, and the stored procedure
-returned the expected deterministic ten-slot rotation. Historical source rows
-have so far only participated at the Köln Hbf parent station; this is a
-collection-coverage finding, not evidence that the configured panel should be
-redesigned.
+The synchronized Windows scheduled context successfully read the external
+`MDD_API_KEY` and made genuine MDD requests without a manual `-StopPointRef`.
+The first verified automatic run selected Köln Porz Markt (slot 5), and the
+next selected Köln Hbf (slot 6); both returned HTTP 200 and persisted five
+source observations. The live sampling tables remain configured with all seven
+enabled targets, `NumberOfResults = 5`, and the intended
+2/2/2/1/1/1/1 weighting. At the current checkpoint, preserved Hbf history
+contains 850 observations and the verified Porz run contributes 5; the other
+five targets have not yet returned persisted observations. This is a genuine
+accumulation checkpoint, not a reason to redesign the panel.
 
 ## 13. Collector logging and scheduler diagnostics
 
@@ -411,16 +407,19 @@ Task Scheduler Operational logging was enabled so task/process events can be ins
 
 A prior task event returned nonzero process code `2147942401`, demonstrating that scheduler “completed” text is not sufficient application-level evidence. This motivated collector-level logs.
 
-For the 2026-09-07 historical-collection checkpoint, direct Task Scheduler
-inspection and guest operations remained unavailable because the VMware guest
-requires encrypted-VM credentials. Read-only SQL Server host inspection did
-confirm the deployed Run wrapper and exposed the stale Invoke/Hbf-only
-deployment described above; it also found 218 runtime logs with 143 successful
-and 75 failed wrapper statuses. The SQL observation timeline and those logs are
-not treated as proof that the current five-minute automatic task is healthy;
-the next runtime check must confirm the task action, principal,
-`MDD_API_KEY` availability, synchronized module files, and a successful
-automatic-mode audit row.
+For the 2026-09-07 runtime checkpoint, the deployed module, Invoke script, and
+Run wrapper were synchronized from the repository and matched by SHA-256. The
+new log `collector-20260907-220352.log` records automatic slot 5 / Köln Porz
+Markt, a successful HTTP 200 request, one attempt, five source events, five
+inserts, `CollectorRunId = 1`, and `STATUS: SUCCESS`. The next scheduled log
+`collector-20260907-220852.log` records automatic slot 6 / Köln Hbf with the
+same successful source/persistence evidence and `CollectorRunId = 2`.
+
+The separate `\NRW DB Realtime Collector` task remains active in Task Scheduler
+history and is a legacy/duplicate-task candidate because it produced no new
+`ctl.MddCollectorRun` row during this check. It was not disabled without
+explicit task-owner authorization; only the named Cologne task is treated as
+the verified current Collector task.
 
 ## 14. Strict-mode collection-count bug
 

@@ -34,18 +34,21 @@ The realtime phase now includes:
 
 The final realtime warehouse fact and realtime `analytics` views are **not yet approved**.
 
-The project is now in the historical realtime collection phase. The useful
+The project is now in the historical realtime collection phase. Historical
+multi-target collection verified from: **2026-09-07 20:03:53 UTC**. The useful
 history target is a minimum of 14 actual calendar days, with 28 days preferred.
-The live SQL Server baseline checked at 2026-09-07 17:39 UTC contained 780 stop
-observations across 156 snapshots and 3 UTC collection dates, spanning
-2026-09-05 08:27:28 UTC through 2026-09-07 17:38:48 UTC. The observed timeline
-had gaps up to approximately 21 hours and all existing observations were from
-Köln Hbf (including source child/platform references) with source mode `RAIL`.
-The other six enabled panel targets had no historical observations at that
-checkpoint, so the minimum observation window has not yet elapsed.
-Counting inclusive calendar dates from the first usable date, the 14-date and
-28-date milestones are 2026-09-18 and 2026-10-02 respectively, subject to
-natural runtime availability and visible gaps.
+The earliest corresponding milestone dates are 2026-09-21 and 2026-10-05;
+neither target is complete until real calendar time and genuine observations
+support it.
+
+The live SQL Server baseline checked at 2026-09-07 20:12 UTC contains 855 stop
+observations across 171 snapshots and 3 UTC collection dates, spanning
+2026-09-05 08:27:28 UTC through 2026-09-07 20:08:41 UTC. The maximum snapshot
+gap is 76,759 seconds. Preserved legacy Hbf-only history contributed 845
+observations across 169 snapshots before the verified start. The first verified
+automatic run selected Köln Porz Markt (slot 5); the next selected Köln Hbf
+(slot 6). Both completed as `Succeeded` with HTTP 200 and five inserted source
+observations. Missing periods remain visible and are not backfilled.
 
 ---
 
@@ -505,17 +508,13 @@ run status/source counts, stale `Started` rows, and current matching-status
 distribution visible without creating realtime analytics objects or filling
 missing history.
 
-The live database was missing the repository-managed Collector audit objects
-at the 2026-09-07 checkpoint. The existing idempotent deployment script
-`02-staging/09-create-mdd-collector-run-audit.sql` was applied; no realtime
-observation data was deleted or backfilled. Direct verification of the Windows
-Task Scheduler definition, principal, API-key access, and live automatic smoke
-run remains pending until the encrypted VMware guest can be queried with its
-required credentials. Read-only inspection through the SQL Server host found
-that the deployed Run wrapper matches the repository, but the deployed Invoke
-script is a 557-line legacy Hbf-only script and `C:\Collector\MddRealtimeCollector.psm1`
-is absent. Its 218 logs contain 143 successful and 75 failed runs, including
-73 legacy missing-optional-`estimatedTime` failures and 2 strict-mode `Count`
-failures. The repository parser fix is checked in but has not been synchronized
-to `C:\Collector`, so the runtime is not yet ready for verified multimodal
-collection.
+The repository-managed Collector audit objects are deployed and the three
+runtime files under `C:\Collector` match the repository source by SHA-256. The
+existing `C:\Collector\Logs` directory was preserved. Task Scheduler history
+shows `Cologne Transit Realtime Collector` running as
+`DATAANALYST-VM\Somaye` every five minutes with return code 0, and the two
+successful wrapper logs prove that the scheduled runtime can read the external
+`MDD_API_KEY` without storing or exposing it. A separate `\NRW DB Realtime
+Collector` task remains active in history but produced no new audit rows during
+this check; it is recorded as a legacy/duplicate-task candidate and was not
+disabled without explicit task-owner authorization.
