@@ -29,6 +29,7 @@ The realtime phase now includes:
 - situation/disruption evidence linking;
 - automated PowerShell collection every five minutes in the local VM pilot;
 - database-backed deterministic realtime sampling across a small multi-mode Cologne panel;
+- one-row-per-execution Collector run auditing;
 - SQL performance work for realtime stop enrichment and schedule candidate lookup.
 
 The final realtime warehouse fact and realtime `analytics` views are **not yet approved**.
@@ -56,9 +57,11 @@ The checked-in scripts reproduce the validated static baseline and the synchroni
 15. `02-staging/05-create-mdd-realtime-staging-tables.sql`
 16. `02-staging/06-create-mdd-realtime-persistence-api.sql`
 17. `02-staging/07-create-mdd-realtime-sampling.sql`
-18. `04-warehouse/04-add-realtime-match-performance-support.sql`
-19. `03-working/03-create-cologne-realtime-working-layer.sql`
-20. `02-staging/08-validate-mdd-realtime-sampling.sql` — focused sampling report after the warehouse and realtime objects exist
+18. `02-staging/09-create-mdd-collector-run-audit.sql`
+19. `04-warehouse/04-add-realtime-match-performance-support.sql`
+20. `03-working/03-create-cologne-realtime-working-layer.sql`
+21. `02-staging/08-validate-mdd-realtime-sampling.sql` — focused sampling report after the warehouse and realtime objects exist
+22. `02-staging/10-validate-mdd-collector-run-audit.sql` — focused Collector run audit report
 
 The realtime steps are listed after the static warehouse and analytics steps so every dependency of the realtime working views exists before those views are created. The folder numbering remains organized by schema/layer rather than by this global dependency order.
 
@@ -66,7 +69,7 @@ The realtime steps are listed after the static warehouse and analytics steps so 
 
 ## Synchronized Realtime SQL
 
-The repository now contains reproducible SQL for the validated realtime structures and performance changes:
+The repository now contains reproducible SQL for the validated realtime structures, Collector run audit, and performance changes:
 
 ### Realtime staging
 
@@ -110,6 +113,32 @@ retained as opportunistic static context rather than a required target mode.
 `02-staging/08-validate-mdd-realtime-sampling.sql` reports target identity,
 slot frequency, warehouse mode/route coverage, geography, realtime counts, and
 a simulated deterministic rotation without creating reliability KPIs.
+
+### Collector run audit
+
+`02-staging/09-create-mdd-collector-run-audit.sql` creates the operational
+control table `ctl.MddCollectorRun` and the procedures
+`ctl.uspStartMddCollectorRun` and `ctl.uspCompleteMddCollectorRun`. Its grain
+is exactly one row per Collector execution; it does not add a run key to the
+realtime observation, situation, or link tables.
+
+The Collector creates a `Started` row before sampling, authentication, HTTP,
+parsing, or snapshot persistence. On a normal completion it updates that same
+row to `Succeeded` with the resolved sampling context, HTTP telemetry, parsed
+source counts, and the statistics returned by
+`stg.uspPersistMddRealtimeSnapshot`. A failure updates the row to `Failed`,
+records the simple stage in `ErrorCategory`, and stores only a redacted safe
+error message plus information obtained before the failure. An abruptly
+terminated process can leave the row in `Started`, which is evidence of an
+incomplete execution rather than a success or an inferred failure. A valid
+response with little or no returned data remains `Succeeded`; the recorded
+source and persistence counts distinguish that case from a failure.
+
+If SQL Server is unavailable before the start procedure can insert the row,
+no database audit row can exist; the existing Collector wrapper/file log and
+exit-code behavior remain the fallback evidence for that case. API keys,
+authorization headers, passwords, and connection-string credentials are not
+stored in the audit table.
 
 ### Realtime working views
 
@@ -419,6 +448,9 @@ attempts.
 Parsed stop observations, identifiable situations, and source SERVICE/CALL
 links are constructed as typed TVPs and persisted with one call to
 `stg.uspPersistMddRealtimeSnapshot`.
+
+Each execution also reports its `CollectorRunId` in the normal success summary
+and module result, and completes the matching `ctl.MddCollectorRun` audit row.
 
 Collector source, runtime behavior, permission status, and realtime matching details are documented in:
 

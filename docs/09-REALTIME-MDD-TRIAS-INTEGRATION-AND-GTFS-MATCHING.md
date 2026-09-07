@@ -205,13 +205,17 @@ C:\Collector\Logs\
 One execution:
 
 ```text
-build TRIAS request
+start ctl.MddCollectorRun as Started
+-> resolve automatic/manual sampling context
+-> resolve API key
+-> build TRIAS request
 -> HTTP request with timeout and bounded transient retry
 -> parse stop events
 -> parse identifiable situations
 -> parse SERVICE/CALL links
 -> construct typed TVPs
 -> one set-based SQL persistence procedure/transaction
+-> complete ctl.MddCollectorRun as Succeeded
 -> status/log
 ```
 
@@ -232,6 +236,35 @@ Properties:
 - unresolved source links are skipped rather than assigned fabricated identity;
 - NULL arrival/bay semantics preserved;
 - no inferred cancellation/departure.
+
+### Collector run audit
+
+The operational audit grain is one row per Collector execution in
+`ctl.MddCollectorRun`, created by `ctl.uspStartMddCollectorRun` and completed
+by `ctl.uspCompleteMddCollectorRun`. The repository deployment script is
+`sql/02-staging/09-create-mdd-collector-run-audit.sql`; the focused diagnostic
+script is `sql/02-staging/10-validate-mdd-collector-run-audit.sql`.
+
+The row starts as `Started` before sampling, authentication, the MDD request,
+parsing, or realtime snapshot persistence. A successful run becomes
+`Succeeded` and records its resolved sampling target, HTTP status and attempt
+count, parsed source counts, and the persistence statistics already returned
+by `stg.uspPersistMddRealtimeSnapshot`. A failure updates the row to `Failed`
+with the last available context and a simple stage such as `Sampling`,
+`Authentication`, `Request`, `Parse`, `Persistence`, `AuditStart`, or
+`AuditComplete`; the original Collector exception is rethrown if the audit
+update itself fails.
+An execution killed after the start insert may remain `Started`, indicating
+that completion was not observed. A valid response with little or no returned
+data remains `Succeeded`; its zero or low source/persistence counts make that
+case distinguishable from a failure.
+
+If SQL Server is unavailable before the initial start insert, the database
+cannot contain an audit row for that execution. The existing wrapper log and
+nonzero exit behavior remain the fallback evidence. The audit implementation
+does not store the MDD API key, authorization headers, passwords, or
+connection-string credentials, and it does not add `CollectorRunId` to any
+realtime staging table.
 
 ## 11. API key
 

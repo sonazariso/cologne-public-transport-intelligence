@@ -91,6 +91,29 @@ function Get-DbValue {
     return $Value
 }
 
+function Get-MddSafeErrorMessage {
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Exception]$Exception
+    )
+
+    $message = [string]$Exception.Message
+    if ([string]::IsNullOrWhiteSpace($message)) {
+        $message = $Exception.GetType().FullName
+    }
+
+    # Only exception messages are recorded, and known credential/header forms
+    # are redacted before the value can reach SQL or a warning.
+    $message = $message -replace '(?i)(x-api-key|authorization|api[\s-]?key)\s*[:=]\s*[^;\r\n]+', '$1=<redacted>'
+    $message = $message -replace '(?i)(data source|server|initial catalog|database|user id|uid|password|pwd)\s*=\s*[^;\r\n]+', '$1=<redacted>'
+
+    if ($message.Length -gt 4000) {
+        $message = $message.Substring(0, 4000)
+    }
+
+    return $message
+}
+
 function Write-MddCollectorMessage {
     param(
         [string]$Message,
@@ -366,7 +389,9 @@ function Invoke-MddTriasRequest {
 
         [scriptblock]$Logger,
 
-        [scriptblock]$SleepAction
+        [scriptblock]$SleepAction,
+
+        [hashtable]$Telemetry
     )
 
     Assert-MddRetryConfiguration `
@@ -388,6 +413,11 @@ function Invoke-MddTriasRequest {
     $lastStatusCode = $null
     $lastFailureCategory = $null
 
+    if ($null -ne $Telemetry) {
+        $Telemetry.HttpStatus = $null
+        $Telemetry.HttpAttempts = 0
+    }
+
     for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
         $response = $null
         $exception = $null
@@ -408,6 +438,11 @@ function Invoke-MddTriasRequest {
 
             $statusCode = Get-MddResponseStatusCode $response
             if ($statusCode -eq 200) {
+                if ($null -ne $Telemetry) {
+                    $Telemetry.HttpStatus = $statusCode
+                    $Telemetry.HttpAttempts = $attempt
+                }
+
                 return [PSCustomObject]@{
                     Content    = $response.Content
                     StatusCode = $statusCode
@@ -442,6 +477,11 @@ function Invoke-MddTriasRequest {
 
         $lastStatusCode = $statusCode
         $lastFailureCategory = $failureCategory
+
+        if ($null -ne $Telemetry) {
+            $Telemetry.HttpStatus = $statusCode
+            $Telemetry.HttpAttempts = $attempt
+        }
 
         if (-not $retryable) {
             if ($statusCode -eq 401 -or $statusCode -eq 403) {
@@ -846,6 +886,214 @@ function Read-MddSamplingTarget {
     return [PSCustomObject]$values
 }
 
+function Add-MddCollectorRunParameter {
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Data.SqlClient.SqlCommand]$Command,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Name,
+
+        [Parameter(Mandatory = $true)]
+        [System.Data.SqlDbType]$Type,
+
+        [object]$Value,
+
+        [int]$Size = 0
+    )
+
+    $parameter = $Command.Parameters.Add($Name, $Type)
+    if ($Size -gt 0) {
+        $parameter.Size = $Size
+    }
+
+    if ($Type -eq [System.Data.SqlDbType]::DateTime2) {
+        $parameter.Scale = 0
+    }
+
+    $parameter.Value = Get-DbValue $Value
+    return $parameter
+}
+
+function Start-MddCollectorRun {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$ConnectionString,
+
+        [Parameter(Mandatory = $true)]
+        [datetime]$StartedAtUtc,
+
+        [ValidateSet("Automatic", "Manual")]
+        [string]$SamplingMode,
+
+        [string]$StopPointRef,
+
+        [object]$NumberOfResults
+    )
+
+    $connection = New-Object System.Data.SqlClient.SqlConnection
+    $connection.ConnectionString = $ConnectionString
+    $command = $null
+
+    try {
+        $connection.Open()
+        $command = $connection.CreateCommand()
+        $command.CommandType = [System.Data.CommandType]::StoredProcedure
+        $command.CommandText = "ctl.uspStartMddCollectorRun"
+
+        $null = Add-MddCollectorRunParameter `
+            -Command $command `
+            -Name "@StartedAtUtc" `
+            -Type ([System.Data.SqlDbType]::DateTime2) `
+            -Value ($StartedAtUtc.ToUniversalTime())
+
+        $null = Add-MddCollectorRunParameter `
+            -Command $command `
+            -Name "@SamplingMode" `
+            -Type ([System.Data.SqlDbType]::VarChar) `
+            -Size 20 `
+            -Value $SamplingMode
+
+        $null = Add-MddCollectorRunParameter `
+            -Command $command `
+            -Name "@StopPointRef" `
+            -Type ([System.Data.SqlDbType]::NVarChar) `
+            -Size 100 `
+            -Value $StopPointRef
+
+        $null = Add-MddCollectorRunParameter `
+            -Command $command `
+            -Name "@NumberOfResults" `
+            -Type ([System.Data.SqlDbType]::TinyInt) `
+            -Value $NumberOfResults
+
+        $runIdValue = $command.ExecuteScalar()
+        if ($null -eq $runIdValue -or $runIdValue -is [DBNull]) {
+            throw "MDD Collector run start procedure returned no CollectorRunId."
+        }
+
+        return [long]$runIdValue
+    }
+    finally {
+        if ($null -ne $command) {
+            $command.Dispose()
+        }
+
+        $connection.Close()
+        $connection.Dispose()
+    }
+}
+
+function Complete-MddCollectorRun {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$ConnectionString,
+
+        [Parameter(Mandatory = $true)]
+        [long]$CollectorRunId,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet("Succeeded", "Failed")]
+        [string]$Status,
+
+        [Parameter(Mandatory = $true)]
+        [datetime]$CompletedAtUtc,
+
+        [Parameter(Mandatory = $true)]
+        [long]$DurationMs,
+
+        [ValidateSet("Automatic", "Manual")]
+        [string]$SamplingMode,
+
+        [object]$SamplingBucketUtc,
+        [object]$SamplingSlot,
+        [object]$SamplingTargetId,
+        [string]$SamplingTargetName,
+        [string]$StopPointRef,
+        [object]$NumberOfResults,
+        [object]$ObservedAtUtc,
+        [object]$HttpStatus,
+        [object]$HttpAttempts,
+        [object]$StopEventsReturned,
+        [object]$SituationsInContext,
+        [object]$UnidentifiedSituations,
+        [object]$LinksObserved,
+        [object]$StopsInserted,
+        [object]$StopsAlreadyPresent,
+        [object]$SituationsInserted,
+        [object]$SituationsAlreadyPresent,
+        [object]$LinksInserted,
+        [object]$LinksAlreadyPresent,
+        [object]$LinksSkippedUnresolved,
+        [string]$ErrorCategory,
+        [string]$ErrorMessage
+    )
+
+    $connection = New-Object System.Data.SqlClient.SqlConnection
+    $connection.ConnectionString = $ConnectionString
+    $command = $null
+
+    try {
+        $connection.Open()
+        $command = $connection.CreateCommand()
+        $command.CommandType = [System.Data.CommandType]::StoredProcedure
+        $command.CommandText = "ctl.uspCompleteMddCollectorRun"
+
+        $parameterDefinitions = @(
+            @{ Name = "@CollectorRunId"; Type = [System.Data.SqlDbType]::BigInt; Value = $CollectorRunId; Size = 0 },
+            @{ Name = "@Status"; Type = [System.Data.SqlDbType]::VarChar; Value = $Status; Size = 20 },
+            @{ Name = "@CompletedAtUtc"; Type = [System.Data.SqlDbType]::DateTime2; Value = $CompletedAtUtc.ToUniversalTime(); Size = 0 },
+            @{ Name = "@DurationMs"; Type = [System.Data.SqlDbType]::BigInt; Value = $DurationMs; Size = 0 },
+            @{ Name = "@SamplingMode"; Type = [System.Data.SqlDbType]::VarChar; Value = $SamplingMode; Size = 20 },
+            @{ Name = "@SamplingBucketUtc"; Type = [System.Data.SqlDbType]::DateTime2; Value = $SamplingBucketUtc; Size = 0 },
+            @{ Name = "@SamplingSlot"; Type = [System.Data.SqlDbType]::SmallInt; Value = $SamplingSlot; Size = 0 },
+            @{ Name = "@SamplingTargetId"; Type = [System.Data.SqlDbType]::Int; Value = $SamplingTargetId; Size = 0 },
+            @{ Name = "@SamplingTargetName"; Type = [System.Data.SqlDbType]::NVarChar; Value = $SamplingTargetName; Size = 200 },
+            @{ Name = "@StopPointRef"; Type = [System.Data.SqlDbType]::NVarChar; Value = $StopPointRef; Size = 100 },
+            @{ Name = "@NumberOfResults"; Type = [System.Data.SqlDbType]::TinyInt; Value = $NumberOfResults; Size = 0 },
+            @{ Name = "@ObservedAtUtc"; Type = [System.Data.SqlDbType]::DateTime2; Value = $ObservedAtUtc; Size = 0 },
+            @{ Name = "@HttpStatus"; Type = [System.Data.SqlDbType]::Int; Value = $HttpStatus; Size = 0 },
+            @{ Name = "@HttpAttempts"; Type = [System.Data.SqlDbType]::Int; Value = $HttpAttempts; Size = 0 },
+            @{ Name = "@StopEventsReturned"; Type = [System.Data.SqlDbType]::BigInt; Value = $StopEventsReturned; Size = 0 },
+            @{ Name = "@SituationsInContext"; Type = [System.Data.SqlDbType]::BigInt; Value = $SituationsInContext; Size = 0 },
+            @{ Name = "@UnidentifiedSituations"; Type = [System.Data.SqlDbType]::BigInt; Value = $UnidentifiedSituations; Size = 0 },
+            @{ Name = "@LinksObserved"; Type = [System.Data.SqlDbType]::BigInt; Value = $LinksObserved; Size = 0 },
+            @{ Name = "@StopsInserted"; Type = [System.Data.SqlDbType]::BigInt; Value = $StopsInserted; Size = 0 },
+            @{ Name = "@StopsAlreadyPresent"; Type = [System.Data.SqlDbType]::BigInt; Value = $StopsAlreadyPresent; Size = 0 },
+            @{ Name = "@SituationsInserted"; Type = [System.Data.SqlDbType]::BigInt; Value = $SituationsInserted; Size = 0 },
+            @{ Name = "@SituationsAlreadyPresent"; Type = [System.Data.SqlDbType]::BigInt; Value = $SituationsAlreadyPresent; Size = 0 },
+            @{ Name = "@LinksInserted"; Type = [System.Data.SqlDbType]::BigInt; Value = $LinksInserted; Size = 0 },
+            @{ Name = "@LinksAlreadyPresent"; Type = [System.Data.SqlDbType]::BigInt; Value = $LinksAlreadyPresent; Size = 0 },
+            @{ Name = "@LinksSkippedUnresolved"; Type = [System.Data.SqlDbType]::BigInt; Value = $LinksSkippedUnresolved; Size = 0 },
+            @{ Name = "@ErrorCategory"; Type = [System.Data.SqlDbType]::VarChar; Value = $ErrorCategory; Size = 50 },
+            @{ Name = "@ErrorMessage"; Type = [System.Data.SqlDbType]::NVarChar; Value = $ErrorMessage; Size = 4000 }
+        )
+
+        foreach ($definition in $parameterDefinitions) {
+            $null = Add-MddCollectorRunParameter `
+                -Command $command `
+                -Name $definition.Name `
+                -Type $definition.Type `
+                -Value $definition.Value `
+                -Size $definition.Size
+        }
+
+        $null = $command.ExecuteNonQuery()
+    }
+    finally {
+        if ($null -ne $command) {
+            $command.Dispose()
+        }
+
+        $connection.Close()
+        $connection.Dispose()
+    }
+}
+
 function Get-MddRealtimeSamplingTarget {
     [CmdletBinding()]
     param(
@@ -1011,38 +1259,89 @@ function Invoke-MddRealtimeCollector {
         [string]$ApiKey
     )
 
-    Assert-MddRetryConfiguration `
-        -RequestTimeoutSeconds $RequestTimeoutSeconds `
-        -MaxAttempts $MaxAttempts `
-        -MaxRetryDelaySeconds $MaxRetryDelaySeconds
-
-    $requestTimestampUtc = (Get-Date).ToUniversalTime()
+    $collectorStartedAtUtc = (Get-Date).ToUniversalTime()
+    $requestTimestampUtc = $collectorStartedAtUtc
     $samplingTarget = $null
-    $effectiveNumberOfResults = $NumberOfResults
+    $manualSampling = -not [string]::IsNullOrWhiteSpace($StopPointRef)
+    $samplingMode = if ($manualSampling) { "Manual" } else { "Automatic" }
     $numberOfResultsWasSpecified = $PSBoundParameters.ContainsKey("NumberOfResults")
+    $effectiveNumberOfResults = if ($manualSampling -or $numberOfResultsWasSpecified) { $NumberOfResults } else { $null }
+    $resolvedStopPointRef = if ($manualSampling) { $StopPointRef } else { $null }
 
-    if ([string]::IsNullOrWhiteSpace($StopPointRef)) {
-        $samplingTarget = Get-MddRealtimeSamplingTarget `
-            -ConnectionString $ConnectionString `
-            -AtUtc $requestTimestampUtc
+    $samplingBucketUtc = $null
+    $samplingSlot = $null
+    $samplingTargetId = $null
+    $samplingTargetName = $null
+    $observedAtUtc = $null
+    $httpStatus = $null
+    $httpAttempts = $null
+    $stopEventsReturned = $null
+    $situationsInContext = $null
+    $unidentifiedSituations = $null
+    $linksObserved = $null
+    $stopsInserted = $null
+    $stopsAlreadyPresent = $null
+    $situationsInserted = $null
+    $situationsAlreadyPresent = $null
+    $linksInserted = $null
+    $linksAlreadyPresent = $null
+    $linksSkippedUnresolved = $null
 
-        $StopPointRef = [string]$samplingTarget.StopPointRef
-
-        if (-not $numberOfResultsWasSpecified) {
-            $effectiveNumberOfResults = [int]$samplingTarget.NumberOfResults
-        }
-
-        Write-Host "Sampling target: slot=$($samplingTarget.SamplingSlot); targetId=$($samplingTarget.SamplingTargetId); targetName=$($samplingTarget.TargetName); StopPointRef=$StopPointRef; NumberOfResults=$effectiveNumberOfResults"
+    $response = $null
+    $snapshot = $null
+    $persistence = $null
+    $resolvedApiKey = $null
+    $requestTelemetry = @{
+        HttpStatus   = $null
+        HttpAttempts = 0
     }
-    else {
-        Write-Host "Sampling target: manual override; StopPointRef=$StopPointRef; NumberOfResults=$effectiveNumberOfResults"
-    }
-
-    $resolvedApiKey = Get-MddApiKey -ApiKey $ApiKey
+    $collectorRunId = $null
+    $stage = "AuditStart"
+    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
     try {
+        # Start auditing before sampling, authentication, or any HTTP work.
+        $collectorRunId = Start-MddCollectorRun `
+            -ConnectionString $ConnectionString `
+            -StartedAtUtc $collectorStartedAtUtc `
+            -SamplingMode $samplingMode `
+            -StopPointRef $resolvedStopPointRef `
+            -NumberOfResults $effectiveNumberOfResults
+
+        $stage = "Request"
+        Assert-MddRetryConfiguration `
+            -RequestTimeoutSeconds $RequestTimeoutSeconds `
+            -MaxAttempts $MaxAttempts `
+            -MaxRetryDelaySeconds $MaxRetryDelaySeconds
+
+        $stage = "Sampling"
+        if (-not $manualSampling) {
+            $samplingTarget = Get-MddRealtimeSamplingTarget `
+                -ConnectionString $ConnectionString `
+                -AtUtc $requestTimestampUtc
+
+            $resolvedStopPointRef = [string]$samplingTarget.StopPointRef
+            $samplingBucketUtc = $samplingTarget.SamplingBucketUtc
+            $samplingSlot = $samplingTarget.SamplingSlot
+            $samplingTargetId = $samplingTarget.SamplingTargetId
+            $samplingTargetName = $samplingTarget.TargetName
+
+            if (-not $numberOfResultsWasSpecified) {
+                $effectiveNumberOfResults = [int]$samplingTarget.NumberOfResults
+            }
+
+            Write-Host "Sampling target: slot=$($samplingTarget.SamplingSlot); targetId=$($samplingTarget.SamplingTargetId); targetName=$($samplingTarget.TargetName); StopPointRef=$resolvedStopPointRef; NumberOfResults=$effectiveNumberOfResults"
+        }
+        else {
+            Write-Host "Sampling target: manual override; StopPointRef=$resolvedStopPointRef; NumberOfResults=$effectiveNumberOfResults"
+        }
+
+        $stage = "Authentication"
+        $resolvedApiKey = Get-MddApiKey -ApiKey $ApiKey
+
+        $stage = "Request"
         $body = New-MddTriasStopEventRequest `
-            -StopPointRef $StopPointRef `
+            -StopPointRef $resolvedStopPointRef `
             -NumberOfResults $effectiveNumberOfResults `
             -RequestTimestampUtc $requestTimestampUtc
 
@@ -1054,54 +1353,163 @@ function Invoke-MddRealtimeCollector {
             -RequestTimeoutSeconds $RequestTimeoutSeconds `
             -MaxAttempts $MaxAttempts `
             -InitialRetryDelaySeconds $InitialRetryDelaySeconds `
-            -MaxRetryDelaySeconds $MaxRetryDelaySeconds
+            -MaxRetryDelaySeconds $MaxRetryDelaySeconds `
+            -Telemetry $requestTelemetry
 
+        $httpStatus = $response.StatusCode
+        $httpAttempts = $response.Attempts
+
+        $stage = "Parse"
         $snapshot = ConvertFrom-MddTriasResponse -ResponseContent $response.Content
+
+        $observedAtUtc = $snapshot.ObservedAtUtc
+        $stopEventsReturned = @($snapshot.Stops).Count
+        $situationsInContext = @($snapshot.Situations).Count
+        $unidentifiedSituations = $snapshot.UnidentifiedSituationCount
+        $linksObserved = @($snapshot.Links).Count
+
+        $stage = "Persistence"
         $persistence = Write-MddRealtimeSnapshot `
             -ConnectionString $ConnectionString `
             -Snapshot $snapshot
 
+        $stopsInserted = $persistence.StopsInserted
+        $stopsAlreadyPresent = $persistence.StopsAlreadyPresent
+        $situationsInserted = $persistence.SituationsInserted
+        $situationsAlreadyPresent = $persistence.SituationsAlreadyPresent
+        $linksInserted = $persistence.LinksInserted
+        $linksAlreadyPresent = $persistence.LinksAlreadyPresent
+        $linksSkippedUnresolved = $persistence.LinksSkippedUnresolved
+
+        $stage = "AuditComplete"
+        $completedAtUtc = (Get-Date).ToUniversalTime()
+        $durationMs = [long]$stopwatch.Elapsed.TotalMilliseconds
+        Complete-MddCollectorRun `
+            -ConnectionString $ConnectionString `
+            -CollectorRunId $collectorRunId `
+            -Status "Succeeded" `
+            -CompletedAtUtc $completedAtUtc `
+            -DurationMs $durationMs `
+            -SamplingMode $samplingMode `
+            -SamplingBucketUtc $samplingBucketUtc `
+            -SamplingSlot $samplingSlot `
+            -SamplingTargetId $samplingTargetId `
+            -SamplingTargetName $samplingTargetName `
+            -StopPointRef $resolvedStopPointRef `
+            -NumberOfResults $effectiveNumberOfResults `
+            -ObservedAtUtc $observedAtUtc `
+            -HttpStatus $httpStatus `
+            -HttpAttempts $httpAttempts `
+            -StopEventsReturned $stopEventsReturned `
+            -SituationsInContext $situationsInContext `
+            -UnidentifiedSituations $unidentifiedSituations `
+            -LinksObserved $linksObserved `
+            -StopsInserted $stopsInserted `
+            -StopsAlreadyPresent $stopsAlreadyPresent `
+            -SituationsInserted $situationsInserted `
+            -SituationsAlreadyPresent $situationsAlreadyPresent `
+            -LinksInserted $linksInserted `
+            -LinksAlreadyPresent $linksAlreadyPresent `
+            -LinksSkippedUnresolved $linksSkippedUnresolved
+
         Write-Host ""
         Write-Host "Snapshot persisted successfully."
-        Write-Host "ObservedAtUtc:               $($snapshot.ObservedAtUtc)"
-        Write-Host "HTTP status:                 $($response.StatusCode)"
-        Write-Host "HTTP attempts:               $($response.Attempts)"
-        Write-Host "Stop events returned:        $(@($snapshot.Stops).Count)"
-        Write-Host "Stops inserted:              $($persistence.StopsInserted)"
-        Write-Host "Stops already present:       $($persistence.StopsAlreadyPresent)"
-        Write-Host "Situations in context:       $(@($snapshot.Situations).Count)"
-        Write-Host "Situations inserted:         $($persistence.SituationsInserted)"
-        Write-Host "Situations already present:  $($persistence.SituationsAlreadyPresent)"
-        Write-Host "Unidentified situations:     $($snapshot.UnidentifiedSituationCount)"
-        Write-Host "Links observed:              $(@($snapshot.Links).Count)"
-        Write-Host "Links inserted:              $($persistence.LinksInserted)"
-        Write-Host "Links already present:       $($persistence.LinksAlreadyPresent)"
-        Write-Host "Links skipped unresolved:    $($persistence.LinksSkippedUnresolved)"
+        Write-Host "CollectorRunId:              $collectorRunId"
+        Write-Host "ObservedAtUtc:               $observedAtUtc"
+        Write-Host "HTTP status:                 $httpStatus"
+        Write-Host "HTTP attempts:               $httpAttempts"
+        Write-Host "Stop events returned:        $stopEventsReturned"
+        Write-Host "Stops inserted:              $stopsInserted"
+        Write-Host "Stops already present:       $stopsAlreadyPresent"
+        Write-Host "Situations in context:       $situationsInContext"
+        Write-Host "Situations inserted:         $situationsInserted"
+        Write-Host "Situations already present:  $situationsAlreadyPresent"
+        Write-Host "Unidentified situations:     $unidentifiedSituations"
+        Write-Host "Links observed:              $linksObserved"
+        Write-Host "Links inserted:              $linksInserted"
+        Write-Host "Links already present:       $linksAlreadyPresent"
+        Write-Host "Links skipped unresolved:    $linksSkippedUnresolved"
 
         return [PSCustomObject]@{
-            SamplingMode               = if ($null -eq $samplingTarget) { "Manual" } else { "Automatic" }
-            SamplingBucketUtc          = if ($null -eq $samplingTarget) { $null } else { $samplingTarget.SamplingBucketUtc }
-            SamplingSlot               = if ($null -eq $samplingTarget) { $null } else { $samplingTarget.SamplingSlot }
+            CollectorRunId              = $collectorRunId
+            SamplingMode               = $samplingMode
+            SamplingBucketUtc          = $samplingBucketUtc
+            SamplingSlot               = $samplingSlot
             SamplingSlotCount          = if ($null -eq $samplingTarget) { $null } else { $samplingTarget.SamplingSlotCount }
-            SamplingTargetId           = if ($null -eq $samplingTarget) { $null } else { $samplingTarget.SamplingTargetId }
-            SamplingTargetName         = if ($null -eq $samplingTarget) { $null } else { $samplingTarget.TargetName }
-            StopPointRef               = $StopPointRef
+            SamplingTargetId           = $samplingTargetId
+            SamplingTargetName         = $samplingTargetName
+            StopPointRef               = $resolvedStopPointRef
             NumberOfResults            = $effectiveNumberOfResults
-            ObservedAtUtc              = $snapshot.ObservedAtUtc
-            HttpStatus                 = $response.StatusCode
-            HttpAttempts               = $response.Attempts
-            StopEventsReturned         = @($snapshot.Stops).Count
-            SituationsInContext        = @($snapshot.Situations).Count
-            UnidentifiedSituations     = $snapshot.UnidentifiedSituationCount
-            LinksObserved              = @($snapshot.Links).Count
-            StopsInserted              = $persistence.StopsInserted
-            StopsAlreadyPresent        = $persistence.StopsAlreadyPresent
-            SituationsInserted         = $persistence.SituationsInserted
-            SituationsAlreadyPresent   = $persistence.SituationsAlreadyPresent
-            LinksInserted              = $persistence.LinksInserted
-            LinksAlreadyPresent        = $persistence.LinksAlreadyPresent
-            LinksSkippedUnresolved     = $persistence.LinksSkippedUnresolved
+            ObservedAtUtc              = $observedAtUtc
+            HttpStatus                 = $httpStatus
+            HttpAttempts               = $httpAttempts
+            StopEventsReturned         = $stopEventsReturned
+            SituationsInContext        = $situationsInContext
+            UnidentifiedSituations     = $unidentifiedSituations
+            LinksObserved              = $linksObserved
+            StopsInserted              = $stopsInserted
+            StopsAlreadyPresent        = $stopsAlreadyPresent
+            SituationsInserted         = $situationsInserted
+            SituationsAlreadyPresent   = $situationsAlreadyPresent
+            LinksInserted              = $linksInserted
+            LinksAlreadyPresent        = $linksAlreadyPresent
+            LinksSkippedUnresolved     = $linksSkippedUnresolved
         }
+    }
+    catch {
+        $originalErrorRecord = $_
+        $originalException = $_.Exception
+
+        if ($stage -eq "Request" -and
+            ($requestTelemetry.HttpStatus -eq 401 -or $requestTelemetry.HttpStatus -eq 403)) {
+            $stage = "Authentication"
+        }
+
+        if ($requestTelemetry.HttpAttempts -gt 0) {
+            $httpAttempts = $requestTelemetry.HttpAttempts
+            $httpStatus = $requestTelemetry.HttpStatus
+        }
+
+        if ($null -ne $collectorRunId) {
+            try {
+                Complete-MddCollectorRun `
+                    -ConnectionString $ConnectionString `
+                    -CollectorRunId $collectorRunId `
+                    -Status "Failed" `
+                    -CompletedAtUtc ((Get-Date).ToUniversalTime()) `
+                    -DurationMs ([long]$stopwatch.Elapsed.TotalMilliseconds) `
+                    -SamplingMode $samplingMode `
+                    -SamplingBucketUtc $samplingBucketUtc `
+                    -SamplingSlot $samplingSlot `
+                    -SamplingTargetId $samplingTargetId `
+                    -SamplingTargetName $samplingTargetName `
+                    -StopPointRef $resolvedStopPointRef `
+                    -NumberOfResults $effectiveNumberOfResults `
+                    -ObservedAtUtc $observedAtUtc `
+                    -HttpStatus $httpStatus `
+                    -HttpAttempts $httpAttempts `
+                    -StopEventsReturned $stopEventsReturned `
+                    -SituationsInContext $situationsInContext `
+                    -UnidentifiedSituations $unidentifiedSituations `
+                    -LinksObserved $linksObserved `
+                    -StopsInserted $stopsInserted `
+                    -StopsAlreadyPresent $stopsAlreadyPresent `
+                    -SituationsInserted $situationsInserted `
+                    -SituationsAlreadyPresent $situationsAlreadyPresent `
+                    -LinksInserted $linksInserted `
+                    -LinksAlreadyPresent $linksAlreadyPresent `
+                    -LinksSkippedUnresolved $linksSkippedUnresolved `
+                    -ErrorCategory $stage `
+                    -ErrorMessage (Get-MddSafeErrorMessage -Exception $originalException)
+            }
+            catch {
+                $auditException = $_.Exception
+                $auditMessage = Get-MddSafeErrorMessage -Exception $auditException
+                Write-Warning ("Collector run audit update failed for CollectorRunId {0}: {1}. Original Collector failure is preserved." -f $collectorRunId, $auditMessage)
+            }
+        }
+
+        throw $originalErrorRecord
     }
     finally {
         $resolvedApiKey = $null
