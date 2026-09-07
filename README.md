@@ -66,6 +66,7 @@ C:\Collector\Logs\
 Repository collector source:
 
 ```text
+collector/MddRealtimeCollector.psm1
 collector/Invoke-MddRealtimeCollector.ps1
 collector/Run-MddRealtimeCollector.ps1
 ```

@@ -189,6 +189,7 @@ This is a historical checkpoint only; the scheduled collector continued afterwar
 Repository source:
 
 ```text
+collector/MddRealtimeCollector.psm1
 collector/Invoke-MddRealtimeCollector.ps1
 collector/Run-MddRealtimeCollector.ps1
 ```
@@ -204,22 +205,31 @@ C:\Collector\Logs\
 One execution:
 
 ```text
-TRIAS request
+build TRIAS request
+-> HTTP request with timeout and bounded transient retry
 -> parse stop events
 -> parse identifiable situations
 -> parse SERVICE/CALL links
--> one SQL transaction
+-> construct typed TVPs
+-> one set-based SQL persistence procedure/transaction
 -> status/log
 ```
 
 Properties:
 
 - one MDD request/execution;
+- configurable 30-second HTTP timeout by default;
+- bounded three-attempt transient retry policy with exponential 2/4-second backoff by default;
+- retries only for HTTP 408, 429, 500, 502, 503, 504 and temporary transport/WebException failures;
+- `Retry-After` seconds and HTTP-date values honored up to the 30-second retry-delay cap by default;
+- actual HTTP attempt count reported in the run summary;
 - API key outside source code;
-- parameterized SQL;
+- typed TVP inputs and one `stg.uspPersistMddRealtimeSnapshot` call;
+- set-based SQL persistence with one atomic snapshot transaction;
+- existing unique indexes, primary keys, and foreign keys remain the idempotency/relationship protection;
 - idempotent observation/situation behavior using validated identities/timestamp;
 - no fabricated situation identity;
-- transactional staging inserts;
+- unresolved source links are skipped rather than assigned fabricated identity;
 - NULL arrival/bay semantics preserved;
 - no inferred cancellation/departure.
 
@@ -247,7 +257,7 @@ Configured with non-interactive PowerShell, `MultipleInstances IgnoreNew`, `Star
 
 Current principal is the interactive Windows user context. Therefore the local pilot requires the VM/user context to be available. It does not collect while the VM is powered off.
 
-The five-minute cadence would be ~8,640 requests/month if continuous for 30 days, below the 250,000 project limit.
+The five-minute cadence would be ~8,640 normal HTTP attempts/month if continuous for 30 days, below the 250,000 project limit. Transient retries are bounded and are reported because they consume additional MDD requests.
 
 ## 13. Collector logging and scheduler diagnostics
 

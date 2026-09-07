@@ -53,8 +53,9 @@ The checked-in scripts reproduce the validated static baseline and the synchroni
 13. `05-analytics/01-create-static-analytics-views.sql`
 14. `05-analytics/02-validate-static-analytics-views.sql`
 15. `02-staging/05-create-mdd-realtime-staging-tables.sql`
-16. `04-warehouse/04-add-realtime-match-performance-support.sql`
-17. `03-working/03-create-cologne-realtime-working-layer.sql`
+16. `02-staging/06-create-mdd-realtime-persistence-api.sql`
+17. `04-warehouse/04-add-realtime-match-performance-support.sql`
+18. `03-working/03-create-cologne-realtime-working-layer.sql`
 
 The realtime steps are listed after the static warehouse and analytics steps so every dependency of the realtime working views exists before those views are created. The folder numbering remains organized by schema/layer rather than by this global dependency order.
 
@@ -74,6 +75,17 @@ Validated staging indexes:
 
 - `UX_MddRealtimeStopObservation_ObservedAt_ResultId`
 - `UX_MddRealtimeSituationObservation_Snapshot`
+
+### Realtime persistence API
+
+`02-staging/06-create-mdd-realtime-persistence-api.sql` creates the three
+source-oriented TVP types and `stg.uspPersistMddRealtimeSnapshot`. The
+PowerShell Collector sends one parsed snapshot through that procedure. The
+procedure owns one `SET XACT_ABORT ON` transaction, performs set-based
+append-only inserts and source-identity link resolution, and returns insert,
+already-present, and unresolved-link counts. Existing realtime unique indexes,
+primary keys, and foreign keys remain the idempotency and relationship
+constraints.
 
 ### Realtime working views
 
@@ -353,6 +365,7 @@ The paired materialization benchmark was approximately 494.9 seconds for the pro
 The realtime collector source is maintained outside the SQL directory:
 
 ```text
+collector/MddRealtimeCollector.psm1
 collector/Invoke-MddRealtimeCollector.ps1
 collector/Run-MddRealtimeCollector.ps1
 ```
@@ -370,6 +383,18 @@ C:\Collector\Logs
 ```
 
 The collector currently runs through Windows Task Scheduler every five minutes while the local VM/user context is available.
+
+The entry point imports the Windows PowerShell 5.1-compatible module. HTTP
+requests use a configurable 30-second timeout, up to three attempts, and
+bounded transient retry backoff. Retryable HTTP statuses are 408, 429, 500,
+502, 503, and 504; retryable transport timeouts and temporary WebExceptions
+are also covered. `Retry-After` seconds or HTTP-date values are honored up to
+the 30-second retry-delay cap by default. Per-run output reports actual HTTP
+attempts.
+
+Parsed stop observations, identifiable situations, and source SERVICE/CALL
+links are constructed as typed TVPs and persisted with one call to
+`stg.uspPersistMddRealtimeSnapshot`.
 
 Collector source, runtime behavior, permission status, and realtime matching details are documented in:
 
