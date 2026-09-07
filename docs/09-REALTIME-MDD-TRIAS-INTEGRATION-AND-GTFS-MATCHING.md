@@ -217,7 +217,7 @@ build TRIAS request
 
 Properties:
 
-- one MDD request/execution;
+- one logical TRIAS collection request per Collector execution, normally one HTTP attempt, with bounded additional HTTP attempts only for transient retryable failures;
 - configurable 30-second HTTP timeout by default;
 - bounded three-attempt transient retry policy with exponential 2/4-second backoff by default;
 - retries only for HTTP 408, 429, 500, 502, 503, 504 and temporary transport/WebException failures;

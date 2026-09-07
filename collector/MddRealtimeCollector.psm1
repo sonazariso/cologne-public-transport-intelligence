@@ -1,5 +1,20 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+$script:MddCollectorExecutionBudgetSeconds = 240
+
+function Assert-MddRetryConfiguration {
+    param(
+        [int]$RequestTimeoutSeconds,
+        [int]$MaxAttempts,
+        [int]$MaxRetryDelaySeconds
+    )
+
+    $worstCaseDurationSeconds = ([long]$MaxAttempts * [long]$RequestTimeoutSeconds) + (([long]$MaxAttempts - 1) * [long]$MaxRetryDelaySeconds)
+
+    if ($worstCaseDurationSeconds -gt $script:MddCollectorExecutionBudgetSeconds) {
+        throw "Invalid Collector timeout/retry configuration: the worst-case HTTP/retry duration is $worstCaseDurationSeconds seconds, exceeding the Collector execution budget of $script:MddCollectorExecutionBudgetSeconds seconds. Reduce RequestTimeoutSeconds, MaxAttempts, or MaxRetryDelaySeconds."
+    }
+}
 
 function Get-SourceValue {
     param($Object)
@@ -353,6 +368,11 @@ function Invoke-MddTriasRequest {
 
         [scriptblock]$SleepAction
     )
+
+    Assert-MddRetryConfiguration `
+        -RequestTimeoutSeconds $RequestTimeoutSeconds `
+        -MaxAttempts $MaxAttempts `
+        -MaxRetryDelaySeconds $MaxRetryDelaySeconds
 
     if ($null -eq $SleepAction) {
         $SleepAction = {
@@ -914,6 +934,11 @@ function Invoke-MddRealtimeCollector {
 
         [string]$ApiKey
     )
+
+    Assert-MddRetryConfiguration `
+        -RequestTimeoutSeconds $RequestTimeoutSeconds `
+        -MaxAttempts $MaxAttempts `
+        -MaxRetryDelaySeconds $MaxRetryDelaySeconds
 
     $resolvedApiKey = Get-MddApiKey -ApiKey $ApiKey
 
