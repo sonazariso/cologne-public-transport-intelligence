@@ -1,7 +1,7 @@
 ﻿[CmdletBinding()]
 param(
     [string]$Endpoint = "https://mdd.gorheinland.com/delfi",
-    [string]$StopPointRef = "de:05315:11201",
+    [string]$StopPointRef,
     [int]$NumberOfResults = 5,
     [string]$ConnectionString = "Server=localhost;Database=CologneTransitIntelligence;Integrated Security=True;TrustServerCertificate=True;",
     [int]$RequestTimeoutSeconds = 30,
@@ -19,12 +19,15 @@ Import-Module $modulePath -Force
 $invokeParameters = @{
     Endpoint                 = $Endpoint
     StopPointRef             = $StopPointRef
-    NumberOfResults          = $NumberOfResults
     ConnectionString         = $ConnectionString
     RequestTimeoutSeconds    = $RequestTimeoutSeconds
     MaxAttempts              = $MaxAttempts
     InitialRetryDelaySeconds = $InitialRetryDelaySeconds
     MaxRetryDelaySeconds     = $MaxRetryDelaySeconds
+}
+
+if ($PSBoundParameters.ContainsKey("NumberOfResults")) {
+    $invokeParameters.NumberOfResults = $NumberOfResults
 }
 
 $null = Invoke-MddRealtimeCollector @invokeParameters

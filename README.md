@@ -25,7 +25,7 @@ The project combines a validated **VRS/go.Rheinland static GTFS baseline** with 
 - GitHub Desktop on the macOS host
 - MDD NRW / DELFI / TRIAS 1.2 realtime source
 
-## Current status — 2026-09-05
+## Current status — 2026-09-07
 
 ### Static baseline
 
@@ -49,7 +49,7 @@ The realtime pilot is operational:
 - TRIAS 1.2 with `x-api-key`
 - current project limit: **250,000 requests/month**
 - non-commercial pilot storage/historical-analysis use reviewed positively in the received permission email
-- one arrival-oriented request every five minutes while the local Windows VM/task context is available
+- one arrival-oriented request every five minutes while the local Windows VM/task context is available, using a database-backed rotating Cologne stop-point panel for scheduled no-target runs
 - parameterized SQL persistence into three realtime staging tables
 - situation observation and `SERVICE` / `CALL` link support
 - per-run collector logging

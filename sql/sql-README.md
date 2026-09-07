@@ -1,6 +1,6 @@
 # SQL Server Implementation
 
-**Last updated:** 2026-09-06
+**Last updated:** 2026-09-07
 
 This directory contains the SQL Server implementation for the **Cologne Public Transport Intelligence** project.
 
@@ -28,6 +28,7 @@ The realtime phase now includes:
 - explicit static-coverage and unresolved statuses;
 - situation/disruption evidence linking;
 - automated PowerShell collection every five minutes in the local VM pilot;
+- database-backed deterministic realtime sampling across a small multi-mode Cologne panel;
 - SQL performance work for realtime stop enrichment and schedule candidate lookup.
 
 The final realtime warehouse fact and realtime `analytics` views are **not yet approved**.
@@ -54,8 +55,10 @@ The checked-in scripts reproduce the validated static baseline and the synchroni
 14. `05-analytics/02-validate-static-analytics-views.sql`
 15. `02-staging/05-create-mdd-realtime-staging-tables.sql`
 16. `02-staging/06-create-mdd-realtime-persistence-api.sql`
-17. `04-warehouse/04-add-realtime-match-performance-support.sql`
-18. `03-working/03-create-cologne-realtime-working-layer.sql`
+17. `02-staging/07-create-mdd-realtime-sampling.sql`
+18. `04-warehouse/04-add-realtime-match-performance-support.sql`
+19. `03-working/03-create-cologne-realtime-working-layer.sql`
+20. `02-staging/08-validate-mdd-realtime-sampling.sql` — focused sampling report after the warehouse and realtime objects exist
 
 The realtime steps are listed after the static warehouse and analytics steps so every dependency of the realtime working views exists before those views are created. The folder numbering remains organized by schema/layer rather than by this global dependency order.
 
@@ -86,6 +89,27 @@ append-only inserts and source-identity link resolution, and returns insert,
 already-present, and unresolved-link counts. Existing realtime unique indexes,
 primary keys, and foreign keys remain the idempotency and relationship
 constraints.
+
+### Deterministic realtime sampling
+
+`02-staging/07-create-mdd-realtime-sampling.sql` creates the persistent `ctl`
+configuration and seeds seven current parent-station `StopPointRef` targets.
+`ctl.uspGetMddRealtimeSamplingTarget` resolves a five-minute UTC bucket against
+the enabled slot table, so the Collector selects the same target after a
+PowerShell or Windows restart and does not replay missed buckets. The ten-slot
+cycle gives Köln Hbf, Köln Bf Mülheim, and Köln Heumarkt two slots each; the
+other four targets receive one slot each. At the unchanged five-minute cadence
+this is an average 25-minute interval for two-slot targets and 50 minutes for
+one-slot targets, while each normal execution still makes one logical TRIAS
+request.
+
+The target panel was selected from the live static warehouse rather than from
+names alone. It covers `Stadtbahn / Tram`, `S-Bahn`, `Regional Express (RE)`,
+`Regional Bahn (RB)`, `Urban Bus (KVB)`, and `Regional / Other Bus`; SEV is
+retained as opportunistic static context rather than a required target mode.
+`02-staging/08-validate-mdd-realtime-sampling.sql` reports target identity,
+slot frequency, warehouse mode/route coverage, geography, realtime counts, and
+a simulated deterministic rotation without creating reliability KPIs.
 
 ### Realtime working views
 

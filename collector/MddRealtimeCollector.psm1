@@ -823,6 +823,82 @@ function Read-MddPersistenceStatistics {
     return [PSCustomObject]$values
 }
 
+function Read-MddSamplingTarget {
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Data.SqlClient.SqlDataReader]$Reader
+    )
+
+    if (-not $Reader.Read()) {
+        throw "MDD realtime sampling procedure returned no target."
+    }
+
+    $values = [ordered]@{}
+    for ($index = 0; $index -lt $Reader.FieldCount; $index++) {
+        $value = $Reader.GetValue($index)
+        if ($value -is [DBNull]) {
+            $value = $null
+        }
+
+        $values[$Reader.GetName($index)] = $value
+    }
+
+    return [PSCustomObject]$values
+}
+
+function Get-MddRealtimeSamplingTarget {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$ConnectionString,
+
+        [datetime]$AtUtc = [datetime]::MinValue
+    )
+
+    if ($AtUtc -eq [datetime]::MinValue) {
+        $AtUtc = (Get-Date).ToUniversalTime()
+    }
+    else {
+        $AtUtc = $AtUtc.ToUniversalTime()
+    }
+
+    $connection = New-Object System.Data.SqlClient.SqlConnection
+    $connection.ConnectionString = $ConnectionString
+    $command = $null
+    $reader = $null
+
+    try {
+        $connection.Open()
+        $command = $connection.CreateCommand()
+        $command.CommandType = [System.Data.CommandType]::StoredProcedure
+        $command.CommandText = "ctl.uspGetMddRealtimeSamplingTarget"
+
+        $atParameter = $command.Parameters.Add(
+            "@AtUtc",
+            [System.Data.SqlDbType]::DateTime2
+        )
+        $atParameter.Value = $AtUtc
+        $atParameter.Scale = 0
+
+        $reader = $command.ExecuteReader()
+        return Read-MddSamplingTarget -Reader $reader
+    }
+    finally {
+        if ($null -ne $reader) {
+            $reader.Close()
+            $reader.Dispose()
+        }
+
+        if ($null -ne $command) {
+            $command.Dispose()
+        }
+
+        $connection.Close()
+        $connection.Dispose()
+    }
+}
+
 function Write-MddRealtimeSnapshot {
     [CmdletBinding()]
     param(
@@ -913,7 +989,7 @@ function Invoke-MddRealtimeCollector {
     param(
         [string]$Endpoint = "https://mdd.gorheinland.com/delfi",
 
-        [string]$StopPointRef = "de:05315:11201",
+        [string]$StopPointRef,
 
         [ValidateRange(1, 100)]
         [int]$NumberOfResults = 5,
@@ -940,13 +1016,34 @@ function Invoke-MddRealtimeCollector {
         -MaxAttempts $MaxAttempts `
         -MaxRetryDelaySeconds $MaxRetryDelaySeconds
 
+    $requestTimestampUtc = (Get-Date).ToUniversalTime()
+    $samplingTarget = $null
+    $effectiveNumberOfResults = $NumberOfResults
+    $numberOfResultsWasSpecified = $PSBoundParameters.ContainsKey("NumberOfResults")
+
+    if ([string]::IsNullOrWhiteSpace($StopPointRef)) {
+        $samplingTarget = Get-MddRealtimeSamplingTarget `
+            -ConnectionString $ConnectionString `
+            -AtUtc $requestTimestampUtc
+
+        $StopPointRef = [string]$samplingTarget.StopPointRef
+
+        if (-not $numberOfResultsWasSpecified) {
+            $effectiveNumberOfResults = [int]$samplingTarget.NumberOfResults
+        }
+
+        Write-Host "Sampling target: slot=$($samplingTarget.SamplingSlot); targetId=$($samplingTarget.SamplingTargetId); targetName=$($samplingTarget.TargetName); StopPointRef=$StopPointRef; NumberOfResults=$effectiveNumberOfResults"
+    }
+    else {
+        Write-Host "Sampling target: manual override; StopPointRef=$StopPointRef; NumberOfResults=$effectiveNumberOfResults"
+    }
+
     $resolvedApiKey = Get-MddApiKey -ApiKey $ApiKey
 
     try {
-        $requestTimestampUtc = (Get-Date).ToUniversalTime()
         $body = New-MddTriasStopEventRequest `
             -StopPointRef $StopPointRef `
-            -NumberOfResults $NumberOfResults `
+            -NumberOfResults $effectiveNumberOfResults `
             -RequestTimestampUtc $requestTimestampUtc
 
         Write-Host "Requesting one TRIAS arrival snapshot..."
@@ -982,6 +1079,14 @@ function Invoke-MddRealtimeCollector {
         Write-Host "Links skipped unresolved:    $($persistence.LinksSkippedUnresolved)"
 
         return [PSCustomObject]@{
+            SamplingMode               = if ($null -eq $samplingTarget) { "Manual" } else { "Automatic" }
+            SamplingBucketUtc          = if ($null -eq $samplingTarget) { $null } else { $samplingTarget.SamplingBucketUtc }
+            SamplingSlot               = if ($null -eq $samplingTarget) { $null } else { $samplingTarget.SamplingSlot }
+            SamplingSlotCount          = if ($null -eq $samplingTarget) { $null } else { $samplingTarget.SamplingSlotCount }
+            SamplingTargetId           = if ($null -eq $samplingTarget) { $null } else { $samplingTarget.SamplingTargetId }
+            SamplingTargetName         = if ($null -eq $samplingTarget) { $null } else { $samplingTarget.TargetName }
+            StopPointRef               = $StopPointRef
+            NumberOfResults            = $effectiveNumberOfResults
             ObservedAtUtc              = $snapshot.ObservedAtUtc
             HttpStatus                 = $response.StatusCode
             HttpAttempts               = $response.Attempts
@@ -1012,6 +1117,7 @@ Export-ModuleMember -Function @(
     "Invoke-MddTriasRequest",
     "ConvertFrom-MddTriasResponse",
     "New-MddRealtimeSnapshotDataTables",
+    "Get-MddRealtimeSamplingTarget",
     "Write-MddRealtimeSnapshot",
     "Invoke-MddRealtimeCollector"
 )

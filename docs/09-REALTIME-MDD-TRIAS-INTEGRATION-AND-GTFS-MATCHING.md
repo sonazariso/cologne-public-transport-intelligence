@@ -1,6 +1,6 @@
 # Realtime MDD/TRIAS Integration and GTFS Matching
 
-**Last updated:** 2026-09-05
+**Last updated:** 2026-09-07
 
 ## Purpose
 
@@ -258,6 +258,59 @@ Configured with non-interactive PowerShell, `MultipleInstances IgnoreNew`, `Star
 Current principal is the interactive Windows user context. Therefore the local pilot requires the VM/user context to be available. It does not collect while the VM is powered off.
 
 The five-minute cadence would be ~8,640 normal HTTP attempts/month if continuous for 30 days, below the 250,000 project limit. Transient retries are bounded and are reported because they consume additional MDD requests.
+
+## Realtime sampling panel
+
+The scheduled no-target Collector execution now resolves its target from the
+database-backed `ctl` sampling configuration. It uses the UTC five-minute
+bucket, the enabled `ctl.MddRealtimeSamplingSlot` rows, and
+`ctl.uspGetMddRealtimeSamplingTarget`; it does not use an in-memory counter.
+Restarting PowerShell or Windows therefore does not reset the rotation. A
+missed bucket is not replayed. An explicit `-StopPointRef` remains a manual
+single-target override and bypasses automatic selection.
+
+The current panel was selected from the live warehouse using current
+`dw.DimStop` identities and scheduled mode/route coverage. Each stored target
+is a current parent-station `StopId` used as the MDD/TRIAS `StopPointRef`:
+
+| Target | StopPointRef | Static stable modes | Distinct routes | Slots | Average interval |
+|---|---|---|---:|---:|---:|
+| Köln Hbf | `de:05315:11201` | S-Bahn, RE, RB | 24 | 2 | 25 min |
+| Köln Bf Mülheim | `de:05315:19201` | Stadtbahn/Tram, S-Bahn, RE, RB, Urban Bus | 24 | 2 | 25 min |
+| Köln Bf Ehrenfeld | `de:05315:14201` | S-Bahn, RE, RB, Urban Bus | 17 | 1 | 50 min |
+| Köln Heumarkt | `de:05315:11110` | Stadtbahn/Tram, Urban Bus, Regional/Other Bus | 14 | 2 | 25 min |
+| Köln Porz Markt | `de:05315:17311` | Stadtbahn/Tram, Urban Bus | 10 | 1 | 50 min |
+| Köln Worringen S-Bahn | `de:05315:16601` | S-Bahn, Regional/Other Bus, Urban Bus | 8 | 1 | 50 min |
+| Köln Rodenkirchen Bf | `de:05315:12711` | Stadtbahn/Tram, Urban Bus | 7 | 1 | 50 min |
+
+The fixed ten-slot, 50-minute cycle is:
+
+```text
+1 Hbf -> 2 Mülheim -> 3 Heumarkt -> 4 Ehrenfeld -> 5 Porz Markt
+-> 6 Hbf -> 7 Mülheim -> 8 Heumarkt -> 9 Worringen -> 10 Rodenkirchen
+```
+
+The weighting reflects scheduled service volume, mode and route diversity,
+multimodal interchange value, and geographic spread across central, east,
+west, north, south, and southeast Cologne. It intentionally includes urban
+bus/tram locations and does not require SEV, which is not a stable everyday
+mode. `NumberOfResults` remains configurable and is seeded at 5 per target.
+When automatic selection is used without an explicit `-NumberOfResults`, the
+stored per-target value is used; an explicitly supplied `-NumberOfResults`
+still overrides it for that invocation.
+
+At a continuous five-minute cadence the plan produces approximately 8,928
+normal logical MDD requests in a 31-day month. Transient retries remain the
+existing bounded retry behavior and can add HTTP attempts. The repository
+validation report is
+`sql/02-staging/08-validate-mdd-realtime-sampling.sql`.
+
+The current Mac execution context did not have the Windows User
+`MDD_API_KEY`, so no new live MDD target-validation requests were issued while
+this panel was added. The static identities, parent-station relationships, and
+coverage claims are verified from the live warehouse; endpoint validation for
+the six new parent references must be performed from the configured Windows
+collector context, at most once per newly selected target.
 
 ## 13. Collector logging and scheduler diagnostics
 
