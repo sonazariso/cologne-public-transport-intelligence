@@ -220,6 +220,36 @@ eligibility, post-static-reload reconciliation, and repeatability using the
 current genuine source rows. Its first/latest lineage checks use the same
 timestamp-plus-key order as the production refresh.
 
+### Controlled live static-reload verification — 2026-09-08
+
+The current loader was executed against the live validated GTFS staging batch.
+The pre-reload capture at 11:52:31 UTC had WarehouseLoadBatchId 2, with
+1,263 stop observations, 454 situation observations, 542 situation links,
+84 CollectorRun rows, 466 operational outcomes, and 512 usable matched grains.
+The committed replacement created WarehouseLoadBatchId 3 with status
+`Loaded` and `CompletedAtUtc` 11:59:37 UTC. The immediate post-reload capture
+had 1,273 / 457 / 545 / 86 realtime source and audit rows, 518 operational
+outcomes, and 518 usable matched grains. No source table was modified by the
+reload; all four source counts increased or stayed non-decreasing while the
+live Collector continued.
+
+The batch recorded and actual static counts reconciled exactly: 15 agencies,
+7 modes, 153 routes, 3,156 stops, 3,947 services, 364 dates, 99,399
+service-date rows, 90,331 trips, and 1,551,343 scheduled stop events.
+Operational validation reported 9 enabled and trusted foreign keys, zero
+operational grain differences, and only usable match statuses in the fact.
+After the live-source timing REVIEW was investigated, the exact final lineage
+check returned 0 first and 0 latest violations using
+`ObservedAtUtc ASC, ObservationKey ASC` and
+`ObservedAtUtc DESC, ObservationKey DESC`. The repeatability validation’s
+second refresh was unchanged with 0 inserts and 0 updates; its earlier
+5-row REVIEW was accounted for by genuine Collector arrivals between checks.
+
+The realtime analytics validation returned PASS for all view, coverage,
+reliability, dimension, platform, and situation checks. Reliability reconciled
+527 outcomes to 527 consumer rows, and overall observed estimated delay was
+average 9.00, median 3.85, P95 35.80 minutes.
+
 ### Realtime analytics views
 
 `05-analytics/03-create-realtime-analytics-views.sql` creates:

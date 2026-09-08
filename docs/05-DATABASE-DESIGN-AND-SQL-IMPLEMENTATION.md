@@ -279,6 +279,40 @@ current rows, shows repeated-observation consolidation examples, validates
 lineage and warehouse keys, checks post-static-reload reconciliation, and
 proves repeatability without synthetic data.
 
+### Controlled static-reload verification — 2026-09-08
+
+The repository loader was run against the live SQL Server with the validated
+GTFS staging state. Before execution, WarehouseLoadBatchId was 2 and the live
+counts were: stop observations 1,263; situation observations 454; situation
+links 542; CollectorRun rows 84; operational outcomes 466; and usable
+`(DateKey, ScheduledStopEventKey)` grain 512. Immediately after the committed
+reload, WarehouseLoadBatchId 3 was `Loaded` with `CompletedAtUtc`
+2026-09-08 11:59:37 UTC. The corresponding counts were 1,273, 457, 545, 86,
+518, and 518. The latest pre-reload realtime observation was
+2026-09-08 11:48:49 UTC.
+
+The load batch’s recorded row counts matched the live static tables for all
+tracked tables: 15 agencies, 7 modes, 153 routes, 3,156 stops, 3,947
+services, 364 dates, 99,399 service-date rows, 90,331 trips, and 1,551,343
+scheduled stop events. Realtime staging and Collector audit history were
+preserved while natural new rows arrived.
+
+The operational validation reported 9 foreign keys with 0 disabled and 0
+untrusted, and no stale or missing operational grain after refresh. Its
+initial 0-first/1-latest REVIEW was investigated as five genuine observations
+arriving between the reload and the first repeat check; the final exact
+recheck returned 0 first and 0 latest lineage violations with the production
+timestamp-plus-key ordering, 0 exact grain differences, and 0 non-usable fact
+rows. Refresh repeatability ended PASS: the second refresh produced 0 inserts,
+0 updates, and no state difference; the intermediate 5-row difference was
+legitimate Collector activity.
+
+The analytics validation ended PASS for all eight view/queryability checks,
+Data Quality/Coverage, reliability reconciliation, dimensions, and
+platform/situation semantics. At that validation point the fact and
+reliability consumer each contained 527 rows; overall observed estimated delay
+was average 9.00, median 3.85, and P95 35.80 minutes.
+
 ## 13. Realtime Analytics Views
 
 `05-analytics/03-create-realtime-analytics-views.sql` creates business-facing

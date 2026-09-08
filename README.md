@@ -104,6 +104,53 @@ commit. A failed reload rolls back both layers; realtime staging and Collector
 run history are not deleted. The initial static load remains compatible with a
 database where the realtime operational objects do not yet exist.
 
+### Controlled static-reload verification — 2026-09-08
+
+A real controlled reload was executed against the live SQL Server using the
+current validated GTFS staging batch and
+`sql/04-warehouse/02-load-static-warehouse.sql`. The pre-reload capture was at
+2026-09-08 11:52:31 UTC; the latest realtime observation then was
+2026-09-08 11:48:49 UTC.
+
+| Evidence | Before reload | Immediately after committed reload |
+| --- | ---: | ---: |
+| `WarehouseLoadBatchId` | 2 | 3 |
+| Static load status | — | `Loaded`; `CompletedAtUtc` 2026-09-08 11:59:37 UTC |
+| `stg.MddRealtimeStopObservation` | 1,263 | 1,273 |
+| `stg.MddRealtimeSituationObservation` | 454 | 457 |
+| `stg.MddRealtimeStopSituationLink` | 542 | 545 |
+| `ctl.MddCollectorRun` | 84 | 86 |
+| `dw.FactOperationalStopOutcome` | 466 | 518 |
+| Current usable `(DateKey, ScheduledStopEventKey)` grain | 512 | 518 |
+
+Batch 3 recorded and actual static row counts reconciled exactly: agencies
+15, modes 7, routes 153, stops 3,156, services 3,947, dates 364,
+service-date rows 99,399, trips 90,331, and scheduled stop events 1,551,343.
+The realtime counts increased during the test but never decreased, proving
+source history preservation while the Collector continued naturally.
+
+The checked-in operational validation reported 9 foreign keys with 0 disabled
+and 0 untrusted, a unique operational grain, and a 522/522/0 current usable
+grain comparison at its completion. Its initial lineage check saw 0 first and
+1 latest violation while five new genuine stop observations arrived after the
+reload; the existing refresh resolved that live timing difference. A final
+exact recheck using the required `ObservedAtUtc ASC, ObservationKey ASC` first
+ordering and `ObservedAtUtc DESC, ObservationKey DESC` latest ordering returned
+0/0 lineage violations, 0 exact grain differences, and 0 non-usable fact rows.
+
+The same validation proved refresh repeatability: the first refresh moved the
+fact from 518 to 522 as four new grains and one existing grain update arrived;
+the second refresh returned 0 inserts, 0 updates, and a 522/522/0 state
+comparison. The first comparison was therefore a documented natural-data
+`REVIEW`, not an idempotency failure. A later final refresh incorporated five
+more genuine observations and left 527 outcomes.
+
+`sql/05-analytics/04-validate-realtime-analytics-views.sql` returned PASS for
+view existence/queryability, Data Quality/Coverage, reliability reconciliation
+(527 fact rows and 527 consumer rows), dimensions, and platform/situation
+semantics. Overall observed estimated delay remained valid at average 9.00,
+median 3.85, and P95 35.80 minutes. Power BI was not started.
+
 ### Realtime collector
 
 The repository realtime collector is configured for the local pilot:

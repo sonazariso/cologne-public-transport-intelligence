@@ -672,6 +672,37 @@ coverage. The 14/28-day history target is needed later for stronger
 interpretation and Power BI findings, not for this database engineering or SQL
 validation step. Power BI has not been started here.
 
+### Controlled static-reload verification — 2026-09-08
+
+The live controlled reload started from WarehouseLoadBatchId 2. The pre-reload
+counts were 1,263 stop observations, 454 situation observations, 542 situation
+links, 84 CollectorRun rows, 466 operational outcomes, and 512 usable matched
+scheduled-stop grains. The repository loader committed WarehouseLoadBatchId 3
+with status `Loaded` and completion time 2026-09-08 11:59:37 UTC. Immediately
+after commit the counts were 1,273, 457, 545, 86, 518, and 518 respectively;
+none of the append-only source counts decreased. The pre-reload latest
+realtime observation was 2026-09-08 11:48:49 UTC.
+
+Static batch reconciliation passed for 15 agencies, 7 modes, 153 routes,
+3,156 stops, 3,947 services, 364 dates, 99,399 service-date rows, 90,331
+trips, and 1,551,343 scheduled stop events. The operational fact retained only
+usable match statuses. Nine fact foreign keys were enabled and trusted, and an
+exact current-grain comparison returned no missing or stale outcome rows.
+
+The checked-in validation’s initial latest-lineage REVIEW was caused by five
+genuine Collector observations arriving after the reload; after the existing
+refresh, the required deterministic first/latest check returned 0/0 violations
+for `ObservedAtUtc ASC, ObservationKey ASC` and
+`ObservedAtUtc DESC, ObservationKey DESC`. The repeatability second refresh
+returned 0 inserts and 0 updates with no state difference; the earlier 5-row
+drift was explicitly accounted for as natural arrivals.
+
+The realtime analytics validation passed view existence/queryability, coverage,
+reliability reconciliation (527 fact rows to 527 consumer rows), dimensions,
+and platform/situation semantics. Average, median, and P95 observed estimated
+delay remained valid at 9.00, 3.85, and 35.80 minutes. Power BI was not
+started.
+
 ## 23. Grain warnings
 
 `wrk.vwCologneRealtimeEvidenceSituation` can have more rows than stop observations because one observation can link to multiple situations.
