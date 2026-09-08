@@ -44,15 +44,22 @@ The earliest corresponding milestone dates are 2026-09-21 and 2026-10-05;
 neither target is complete until real calendar time and genuine observations
 support it.
 
-The live SQL Server baseline checked at 2026-09-08 10:42 UTC contains 1,193
-stop observations across 239 snapshots and 4 UTC collection dates, spanning
-2026-09-05 08:27:28 UTC through 2026-09-08 10:38:41 UTC. The maximum snapshot
-gap remains 76,759 seconds. Preserved legacy Hbf-only history contributed 845
-observations across 169 snapshots before the verified start. A live audit check
-found 70 successful `Automatic` runs since the verified start, 0 failed runs,
-and 0 stale or incomplete `Started` runs. All seven enabled targets have
-participated in successful runs and have persisted observations. Missing periods
-remain visible and are not backfilled.
+The 2026-09-08 10:42 UTC values are preserved as a historical checkpoint:
+1,193 stop observations across 239 snapshots and 4 UTC collection dates,
+spanning 2026-09-05 08:27:28 UTC through 2026-09-08 10:38:41 UTC. The maximum
+snapshot gap remains 76,759 seconds. Preserved legacy Hbf-only history
+contributed 845 observations across 169 snapshots before the verified start.
+
+The latest live verification at 2026-09-08 13:45:46 UTC found latest
+`CollectorRunId = 107`, 107 total CollectorRun rows, 107 successful
+`Automatic` runs since the verified start, 0 failed runs, and 0 stale
+`Started` runs under the existing 15-minute rule. Current persisted totals are
+1,378 stop observations, 496 situation observations, and 618 stop-situation
+links; the stop-observation range is 2026-09-05 08:27:28 UTC through
+2026-09-08 13:43:49 UTC. All seven enabled targets participated and persisted
+observations. Thirty-seven Collector runs and 185 genuine observations were
+added after the old 10:42 UTC checkpoint. Missing periods remain visible and
+are not backfilled.
 
 ---
 

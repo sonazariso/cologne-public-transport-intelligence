@@ -14,22 +14,65 @@ from: **2026-09-07 20:03:53 UTC**. The useful-history target is a minimum of
 14 actual calendar days, with 28 days preferred. The Collector must accumulate
 the data naturally; missing periods are not generated or backfilled.
 
-The live SQL Server baseline checked at 2026-09-08 10:42 UTC contains 1,193
-genuine stop observations across 239 snapshots and 4 UTC collection dates. The
-observed range is 2026-09-05 08:27:28 UTC through 2026-09-08 10:38:41 UTC; the
-maximum snapshot gap remains 76,759 seconds. This is not yet a 14- or 28-day
-dataset, and missing periods remain visible.
+The 2026-09-08 10:42 UTC values below are preserved as a historical checkpoint:
+1,193 genuine stop observations across 239 snapshots and 4 UTC collection
+dates, spanning 2026-09-05 08:27:28 UTC through 2026-09-08 10:38:41 UTC. The
+maximum snapshot gap remains 76,759 seconds. That checkpoint was not yet a
+14- or 28-day dataset, and missing periods remain visible.
 
 Before the verified start, preserved legacy Hbf-only history contained 845
 observations across 169 snapshots. The first verified automatic run selected
 Köln Porz Markt (slot 5) and inserted five genuine source observations. The
-next scheduled run selected Köln Hbf (slot 6) and inserted five more. A live
-audit check at 2026-09-08 10:42 UTC found 70 successful `Automatic` runs since
-the verified start, 0 failed runs, and 0 stale or incomplete `Started` runs.
-All seven enabled targets have participated in successful automatic runs and
-have persisted observations. The earliest 14-day and 28-day milestone dates
-from the verified start are 2026-09-21 and 2026-10-05 respectively; neither
-target is complete yet.
+next scheduled run selected Köln Hbf (slot 6) and inserted five more. The
+earlier 2026-09-08 10:42 UTC audit found 70 successful `Automatic` runs since
+the verified start, 0 failed runs, and 0 stale or incomplete `Started` runs;
+those values are not the current live state.
+
+### Latest live historical-collection verification — 2026-09-08 13:45:46 UTC
+
+The live SQL Server verification found latest `CollectorRunId = 107`, with the
+latest Collector run started at 2026-09-08 13:43:52 UTC and completed at
+13:43:55 UTC as `Succeeded` / `Automatic`. There are 107 total
+`ctl.MddCollectorRun` rows, 107 successful `Automatic` runs since
+2026-09-07 20:03:53 UTC, 0 `Failed` runs, 0 current `Started` runs, and 0
+stale `Started` runs using the existing 15-minute rule.
+
+Current persisted realtime totals are 1,378 stop observations, 496 situation
+observations, and 618 stop-situation links across 276 snapshots and 4 UTC
+observation dates. The realtime stop-observation range is
+2026-09-05 08:27:28 UTC through 2026-09-08 13:43:49 UTC.
+
+Collection continued after the old checkpoint: 37 Collector runs and 37
+successful `Automatic` runs started after 10:42 UTC, and 185 genuine stop
+observations were both observed and created after that checkpoint, beginning at
+2026-09-08 10:43:49 UTC and reaching 13:43:49 UTC. The 14-day and 28-day
+milestones remain incomplete. From the trusted start, the live elapsed duration
+was 17 hours 41 minutes 53 seconds (0.737419 days), or 5.2673% toward 14 days
+and 2.6336% toward 28 days. The earliest milestone dates are
+2026-09-21 20:03:53 UTC and 2026-10-05 20:03:53 UTC. Preserved pre-start Hbf-only
+history is excluded from this clock.
+
+All seven currently enabled targets are still participating and have persisted
+observations. Each live target still has `NumberOfResults = 5`; the configured
+target list, slot weighting, and five-minute cadence were not changed:
+
+| SamplingTargetId | Target | StopPointRef | IsEnabled | Slots | Successful Automatic runs since trusted start | Latest successful Automatic start | Persisted stop observations | Latest persisted observation |
+| ---: | --- | --- | :---: | ---: | ---: | --- | ---: | --- |
+| 1 | Köln Heumarkt | `de:05315:11110` | 1 | 2 | 21 | 2026-09-08 13:23:52 UTC | 105 | 2026-09-08 13:23:42 UTC |
+| 2 | Köln Hbf | `de:05315:11201` | 1 | 2 | 22 | 2026-09-08 13:38:52 UTC | 955 | 2026-09-08 13:38:41 UTC |
+| 3 | Köln Rodenkirchen Bf | `de:05315:12711` | 1 | 1 | 10 | 2026-09-08 13:08:53 UTC | 50 | 2026-09-08 13:08:47 UTC |
+| 4 | Köln Bf Ehrenfeld | `de:05315:14201` | 1 | 1 | 10 | 2026-09-08 13:28:52 UTC | 50 | 2026-09-08 13:28:48 UTC |
+| 5 | Köln Worringen S-Bahn | `de:05315:16601` | 1 | 1 | 10 | 2026-09-08 13:03:53 UTC | 48 | 2026-09-08 13:03:47 UTC |
+| 6 | Köln Porz Markt | `de:05315:17311` | 1 | 1 | 12 | 2026-09-08 13:33:52 UTC | 58 | 2026-09-08 13:33:48 UTC |
+| 7 | Köln Bf Mülheim | `de:05315:19201` | 1 | 2 | 22 | 2026-09-08 13:43:52 UTC | 110 | 2026-09-08 13:43:49 UTC |
+
+The health check found no failed HTTP/API or SQL/persistence runs, no stale
+started execution, no unselected configured target, and no target without
+persisted observations. Two automatic run gaps over ten minutes remain visible
+as old historical gaps (4,598 seconds from 21:53:53 to 23:10:31 UTC and
+27,832 seconds from 23:10:31 to 2026-09-08 06:54:23 UTC); no later automatic
+gap exceeded ten minutes. The 76,759-second maximum snapshot gap is likewise a
+preserved historical gap, not evidence that current collection has stopped.
 
 The repository-managed `ctl.MddCollectorRun` table and procedures are deployed.
 All three files under `C:\Collector` now match the repository source by
@@ -404,8 +447,9 @@ persisted observations:
 | Köln Porz Markt | 5 | 23 |
 | Köln Bf Mülheim | 9 | 45 |
 
-The checkpoint all-time observation total was 1,058; the Hbf total includes
-preserved pre-start history. The current live validation total is 1,193. These
+The 2026-09-08 08:28 UTC checkpoint all-time observation total was 1,058; the
+Hbf total includes preserved pre-start history. The later 10:42 UTC total of
+1,193 is also historical. The latest live verification total is 1,378. These
 are genuine accumulation checkpoints, not a reason to redesign the panel.
 
 ## 13. Collector logging and scheduler diagnostics
