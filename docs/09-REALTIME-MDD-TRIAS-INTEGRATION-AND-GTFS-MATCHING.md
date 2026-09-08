@@ -14,9 +14,9 @@ from: **2026-09-07 20:03:53 UTC**. The useful-history target is a minimum of
 14 actual calendar days, with 28 days preferred. The Collector must accumulate
 the data naturally; missing periods are not generated or backfilled.
 
-The live SQL Server baseline checked at 2026-09-08 08:28 UTC contains 1,058
-genuine stop observations across 212 snapshots and 4 UTC collection dates. The
-observed range is 2026-09-05 08:27:28 UTC through 2026-09-08 08:23:48 UTC; the
+The live SQL Server baseline checked at 2026-09-08 10:42 UTC contains 1,193
+genuine stop observations across 239 snapshots and 4 UTC collection dates. The
+observed range is 2026-09-05 08:27:28 UTC through 2026-09-08 10:38:41 UTC; the
 maximum snapshot gap remains 76,759 seconds. This is not yet a 14- or 28-day
 dataset, and missing periods remain visible.
 
@@ -24,16 +24,12 @@ Before the verified start, preserved legacy Hbf-only history contained 845
 observations across 169 snapshots. The first verified automatic run selected
 Köln Porz Markt (slot 5) and inserted five genuine source observations. The
 next scheduled run selected Köln Hbf (slot 6) and inserted five more. A live
-audit check at 2026-09-08 08:28 UTC found 43 successful `Automatic` runs since
-the verified start (`CollectorRunId` 1–43), 0 failed runs, and 0 stale or
-incomplete `Started` runs. The latest successful run after `CollectorRunId = 2`
-was `CollectorRunId = 43`: started 2026-09-08 08:23:52 UTC, completed
-2026-09-08 08:23:55 UTC, status `Succeeded`, sampling mode `Automatic`, target
-Köln Heumarkt (`de:05315:11110`), slot 3, HTTP 200, 5 source events, and 5
-inserted observations. All seven enabled targets have participated in
-successful automatic runs and have persisted observations. The earliest 14-day
-and 28-day milestone dates from the verified start are
-2026-09-21 and 2026-10-05 respectively; neither target is complete yet.
+audit check at 2026-09-08 10:42 UTC found 70 successful `Automatic` runs since
+the verified start, 0 failed runs, and 0 stale or incomplete `Started` runs.
+All seven enabled targets have participated in successful automatic runs and
+have persisted observations. The earliest 14-day and 28-day milestone dates
+from the verified start are 2026-09-21 and 2026-10-05 respectively; neither
+target is complete yet.
 
 The repository-managed `ctl.MddCollectorRun` table and procedures are deployed.
 All three files under `C:\Collector` now match the repository source by
@@ -44,24 +40,10 @@ wrapper logs and audit rows prove the scheduled runtime can read the external
 `MDD_API_KEY` without exposing it.
 
 This repository was narrowed from an earlier NRW-wide public-transport project
-to the current Cologne scope. Live inspection on 2026-09-08 classified the
-separate `\NRW DB Realtime Collector` task as the earlier Deutsche-Bahn
-multi-station runtime, not as a duplicate MDD/TRIAS collector. Its live
-Task Scheduler events expose `powershell.exe`; the protected task definition
-could not be exported from the available SQL service context. The historical
-task definition and matching live files are
-`C:\NRWTransport\Collector\RunDbRealtimeCollector.ps1` and
-`C:\NRWTransport\Collector\DbRealtimeCollector.ps1`; the latter uses
-`cfg.DbRealtimeStation`, `stg.DbRealtimeStopObservation`, and Deutsche Bahn
-`/plan` and `/fchg` endpoints. These legacy files and their log directory were
-preserved. Its final enabled/disabled state remains unverified from the current
-execution context because no authorized Windows Task Scheduler/elevated
-PowerShell session could be established. The task has not been claimed
-disabled, deleted, renamed, or reactivated. Administrator/authorized Windows
-Task Scheduler access is the only remaining blocker for this cleanup item. No
-old file, folder, or task was renamed; live SQL evidence confirms that the
-current Cologne MDD/TRIAS pipeline continues to produce successful automatic
-runs.
+to the current Cologne scope. The user has already manually disabled the
+legacy `\NRW DB Realtime Collector`. Windows Scheduled Task management is not
+part of this database task; the old NRW runtime is not inspected, modified, or
+reused here. The current Cologne MDD/TRIAS Collector continues independently.
 
 ## 1. Source and quota
 
@@ -136,7 +118,7 @@ Current collector is arrival-oriented and persists current-call arrival data.
 Platform rule:
 
 ```text
-EstimatedBay missing       -> PlatformChanged = NULL
+PlannedBay or EstimatedBay missing -> PlatformChanged = NULL
 both present and different -> 1
 both present and equal     -> 0
 ```
@@ -422,9 +404,9 @@ persisted observations:
 | Köln Porz Markt | 5 | 23 |
 | Köln Bf Mülheim | 9 | 45 |
 
-The current all-time observation total is 1,058; the Hbf total includes
-preserved pre-start history. This is a genuine accumulation checkpoint, not a
-reason to redesign the panel.
+The checkpoint all-time observation total was 1,058; the Hbf total includes
+preserved pre-start history. The current live validation total is 1,193. These
+are genuine accumulation checkpoints, not a reason to redesign the panel.
 
 ## 13. Collector logging and scheduler diagnostics
 
@@ -454,19 +436,11 @@ inserts, `CollectorRunId = 1`, and `STATUS: SUCCESS`. The next scheduled log
 `collector-20260907-220852.log` records automatic slot 6 / Köln Hbf with the
 same successful source/persistence evidence and `CollectorRunId = 2`.
 
-The separate `\NRW DB Realtime Collector` task is the retained legacy
-Deutsche-Bahn runtime from the former NRW-wide project. Its recent Task
-Scheduler events launch `powershell.exe` successfully, and live inspection of
-the matching live files confirmed the old `cfg.DbRealtimeStation` /
-`stg.DbRealtimeStopObservation` pipeline and Deutsche Bahn `/plan` and `/fchg`
-requests. It does not perform current MDD/TRIAS collection and produced no new
-`ctl.MddCollectorRun` row. Its legacy files were preserved, but its final
-enabled/disabled state remains unverified from the current execution context
-because no authorized Windows Task Scheduler/elevated PowerShell session could
-be established. The task has not been claimed disabled, deleted, renamed, or
-reactivated. Administrator/authorized Windows Task Scheduler access is the only
-remaining blocker for this cleanup item. The named Cologne task remains the
-verified current MDD/TRIAS Collector.
+The user has already manually disabled the separate `\NRW DB Realtime
+Collector` legacy runtime from the former NRW-wide project. Windows Scheduled
+Task management is outside the scope of this SQL implementation; the old NRW
+runtime is not inspected, modified, or reused here. The named Cologne task and
+its current MDD/TRIAS data flow remain independent.
 
 ## 14. Strict-mode collection-count bug
 
@@ -647,7 +621,48 @@ The same frozen baseline was rechecked against the altered production view with 
 
 The paired materialization benchmark was approximately 494.9 seconds for the old production path versus 3.6 seconds for the warehouse-direct implementation. After alteration, a forced-field projection returned 530 rows in approximately 1.6 seconds; the compiled plan referenced `IX_FactScheduledStopEvent_RealtimeMatch` and not the old scheduled-stop-event view. The focused regression script is checked in at `sql/03-working/04-validate-realtime-trip-match-rewrite.sql`.
 
-## 22. Grain warnings
+## 22. Realtime database and analytics preparation
+
+The realtime SQL preparation is complete against the genuine current sample;
+historical collection continues independently. The production objects are:
+
+```text
+dw.FactOperationalStopOutcome
+dw.uspRefreshFactOperationalStopOutcome
+analytics.vwRealtimeCollectorRunHealth
+analytics.vwRealtimeDataQualityCoverage
+analytics.vwRealtimeOperationalConsolidationQuality
+analytics.vwRealtimeReliabilityOutcome
+analytics.vwRealtimeReliabilityByDimension
+analytics.vwRealtimeDelayHotspot
+analytics.vwRealtimePlatformChangeEvidence
+analytics.vwRealtimeSituationLinkedOutcome
+```
+
+The operational fact grain is one matched scheduled stop event on one GTFS
+service date. Repeated usable observations are consolidated deterministically
+by `ObservedAtUtc`, then `ObservationKey`; first/last observation keys and the
+contributing count remain available for lineage. Only
+`ExactStopMatch` and `ParentStationFallback` populate operational reliability
+outcomes. `StaticCoverageMissing` and `Unresolved` remain visible in Data
+Quality/Coverage analytics.
+
+Arrival and delay values are observed estimates, not confirmed physical
+arrival or actual-delay measurements. Platform evidence is `Changed` only when
+comparable explicit bay values differ, `Unchanged` only when comparable values
+agree without change evidence, and `Unknown` otherwise. Situation links are
+evidence, not confirmed causality. No arbitrary on-time threshold, cancellation
+KPI, or departure KPI is created.
+
+The analytics layer supports average, median, and P95 observed estimated delay
+by date, route, stop/station, mode, and scheduled hour, plus collector health,
+sampling-panel coverage, platform evidence, and situation-linked outcomes. The
+seven configured targets are a sampling panel, not complete Cologne network
+coverage. The 14/28-day history target is needed later for stronger
+interpretation and Power BI findings, not for this database engineering or SQL
+validation step. Power BI has not been started here.
+
+## 23. Grain warnings
 
 `wrk.vwCologneRealtimeEvidenceSituation` can have more rows than stop observations because one observation can link to multiple situations.
 
@@ -660,13 +675,15 @@ EvidenceSituation row count != observation count
 observation count != dated service count
 ```
 
-Realtime KPIs require a later consolidation grain.
+Realtime KPI views use the current consolidated
+`dw.FactOperationalStopOutcome` grain rather than raw evidence rows.
 
-## 23. Binding decisions
+## 24. Binding decisions
 
 - raw/source values stay in `stg`;
 - normalization/matching stays in `wrk`;
-- validated operational facts enter `dw`/`analytics` later;
+- validated operational outcomes enter `dw` and are consumed through
+  `analytics` views;
 - Power BI does not read staging;
 - exact stop preferred, parent fallback controlled;
 - `StaticCoverageMissing` is not match failure;
@@ -677,7 +694,7 @@ Realtime KPIs require a later consolidation grain.
 - secrets remain outside source control;
 - performance rewrites require semantic-equivalence validation.
 
-## 24. Exact handoff checkpoint
+## 25. Exact handoff checkpoint
 
 At the end of the 2026-09-06 repository-synchronization session:
 
@@ -690,12 +707,13 @@ Completed:
 - stop-enrichment semantic-preserving performance rewrite;
 - persisted `ScheduledArrivalSecondOfDay`;
 - `IX_FactScheduledStopEvent_RealtimeMatch`;
-- repository SQL synchronization = completed for the validated realtime tables, views, computed column, and index;
+- repository SQL synchronization = completed for the validated realtime tables,
+  views, computed column, index, operational fact, refresh procedure, and
+  analytics views;
 - route/time lookup ~4 ms;
 - route/time + active service-date lookup ~17 ms.
 
-Not yet completed:
-
-- consolidated realtime DW/analytics grain.
-
-The trip-match rewrite and its semantic validation are complete; future work remains at the separate realtime DW/analytics consolidation grain.
+The trip-match rewrite, operational consolidation grain, and SQL analytics
+preparation are complete. Future work is historical accumulation, later
+interpretation, and Power BI authoring; no Windows Scheduled Task work is part
+of this handoff.

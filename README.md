@@ -14,7 +14,7 @@
 
 An end-to-end analytics project for understanding the reliability and performance of multimodal public transport in Cologne, Germany.
 
-The project combines a validated **VRS/go.Rheinland static GTFS baseline** with **MDD NRW / DELFI / TRIAS 1.2 realtime observations**. SQL Server is used for staging, transformation, service-day normalization, schedule matching, warehouse modeling, and analytics. Power BI currently represents the validated scheduled-service baseline; realtime reliability reporting will be added only after repeated observations are consolidated into defensible dated operational facts.
+The project combines a validated **VRS/go.Rheinland static GTFS baseline** with **MDD NRW / DELFI / TRIAS 1.2 realtime observations**. SQL Server is used for staging, transformation, service-day normalization, schedule matching, warehouse modeling, and analytics. Power BI currently represents the validated scheduled-service baseline; the realtime operational fact and SQL analytics layer are now prepared, while Power BI remains a later reporting step after more history accumulates.
 
 This repository is the narrowed Cologne successor to an earlier NRW-wide
 public-transport project. Some runtime names still carry that historical scope.
@@ -52,9 +52,9 @@ The project is now in the historical realtime collection phase. The intended
 window is a minimum of **14 actual calendar days**, with **28 days preferred**;
 missing periods must remain visible rather than being backfilled.
 
-The live SQL Server baseline checked at 2026-09-08 08:28 UTC contains 1,058
-genuine stop observations across 212 snapshots and 4 UTC collection dates,
-spanning 2026-09-05 08:27:28 UTC through 2026-09-08 08:23:48 UTC. The maximum
+The live SQL Server baseline checked at 2026-09-08 10:42 UTC contains 1,193
+genuine stop observations across 239 snapshots and 4 UTC collection dates,
+spanning 2026-09-05 08:27:28 UTC through 2026-09-08 10:38:41 UTC. The maximum
 snapshot gap remains 76,759 seconds, so this is not yet a 14- or 28-day dataset
 and missing periods remain visible.
 
@@ -63,47 +63,39 @@ Before that verified run, the preserved legacy Hbf-only history contained 845
 observations across 169 snapshots. The first verified automatic multi-target
 run selected Köln Porz Markt (slot 5) and persisted five genuine observations;
 the next scheduled run selected Köln Hbf (slot 6) and also succeeded. A live
-audit check at 2026-09-08 08:28 UTC found 43 successful `Automatic` runs since
-the verified start (`CollectorRunId` 1–43), with 0 failed runs and 0 stale or
-incomplete `Started` runs. The latest successful run after `CollectorRunId = 2`
-was run 43: started 2026-09-08 08:23:52 UTC, completed 2026-09-08 08:23:55
-UTC, `Succeeded` / `Automatic`, target Köln Heumarkt
-(`de:05315:11110`), slot 3, HTTP 200, 5 source events, and 5 inserted
-observations. All seven enabled targets have participated in successful
-automatic runs and have persisted observations; the current total is 1,058
-observations and the latest observation is 2026-09-08 08:23:48 UTC.
+audit check at 2026-09-08 10:42 UTC found 70 successful `Automatic` runs since
+the verified start, with 0 failed runs and 0 stale or incomplete `Started` runs.
+All seven enabled targets have participated in successful automatic runs and
+have persisted observations; the current total is 1,193 observations and the
+latest observation is 2026-09-08 10:38:41 UTC.
 
 The minimum target is 14 actual calendar days from that verified start; the
 preferred target is 28 actual calendar days. The corresponding earliest
 milestone dates are 2026-09-21 and 2026-10-05 respectively, subject to natural
 runtime availability and visible gaps.
 
-The repository-managed `ctl.MddCollectorRun` audit objects are deployed. The
-three deployed runtime files now match the repository SHA-256 hashes, the
-existing `C:\Collector\Logs` directory was preserved, and the current
-scheduled task continues to produce successful `Succeeded` / `Automatic`
-audit rows. Task Scheduler history shows `Cologne Transit Realtime Collector`
-running as `DATAANALYST-VM\Somaye` every five minutes with return code 0; the
-successful wrapper logs prove that the runtime account can read `MDD_API_KEY`
-without exposing its value.
+The repository-managed `ctl.MddCollectorRun` audit objects are deployed and the
+current Collector continues to persist successful `Succeeded` / `Automatic`
+rows. Windows Scheduled Task management is outside this database task. The
+user has already manually disabled the legacy `NRW DB Realtime Collector`; this
+repository does not inspect, modify, or reuse that old NRW runtime.
 
-A separate `\NRW DB Realtime Collector` task was classified on 2026-09-08 as
-the legacy NRW-wide Deutsche-Bahn pipeline, not as a second MDD/TRIAS
-Collector. Its live Task Scheduler events launch `powershell.exe` as
-`DATAANALYST-VM\Somaye`. The protected task definition could not be exported
-from the available SQL service context; the historical task definition and
-matching live files identify the former
-`C:\NRWTransport\Collector\RunDbRealtimeCollector.ps1` and
-`C:\NRWTransport\Collector\DbRealtimeCollector.ps1`; those files use the
-`cfg.DbRealtimeStation` / `stg.DbRealtimeStopObservation` flow and Deutsche
-Bahn `/plan` and `/fchg` endpoints. The legacy files and log directory were
-preserved. Its final enabled/disabled state remains unverified from the current
-execution context because no authorized Windows Task Scheduler/elevated
-PowerShell session could be established. The task has not been claimed
-disabled, deleted, renamed, or reactivated. Administrator/authorized Windows
-Task Scheduler access is the only remaining blocker for this cleanup item. The
-live SQL audit confirms that the named `\Cologne Transit Realtime Collector`
-continues to run as the current MDD/TRIAS task.
+### Realtime database engineering — completed now
+
+The live database now contains the production operational fact
+`dw.FactOperationalStopOutcome`, refreshed by
+`dw.uspRefreshFactOperationalStopOutcome`, plus read-only Data Quality/Coverage
+and Reliability analytics views under `analytics`. The fact grain is one
+matched scheduled stop event on one GTFS service date; repeated observations
+are consolidated by `ObservedAtUtc`, then `ObservationKey`.
+
+Only `ExactStopMatch` and `ParentStationFallback` enter operational outcomes.
+`StaticCoverageMissing` and `Unresolved` remain visible in coverage analytics.
+Estimated arrival/delay values are explicitly source estimates, platform
+changes require comparable bay evidence, and linked situations are evidence
+only—not confirmed causality. The 14/28-day period remains a later history and
+interpretation milestone; it is not a prerequisite for this database design or
+SQL validation. Power BI has not been started in this task.
 
 ### Realtime collector
 

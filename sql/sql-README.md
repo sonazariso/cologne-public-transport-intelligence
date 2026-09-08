@@ -32,7 +32,10 @@ The realtime phase now includes:
 - one-row-per-execution Collector run auditing;
 - SQL performance work for realtime stop enrichment and schedule candidate lookup.
 
-The final realtime warehouse fact and realtime `analytics` views are **not yet approved**.
+The realtime operational fact and realtime `analytics` views are now implemented
+and validated against the genuine current sample. The database is ready for
+continued refresh while history accumulates; this does not start Power BI or
+turn the current sample into final portfolio conclusions.
 
 The project is now in the historical realtime collection phase. Historical
 multi-target collection verified from: **2026-09-07 20:03:53 UTC**. The useful
@@ -41,20 +44,15 @@ The earliest corresponding milestone dates are 2026-09-21 and 2026-10-05;
 neither target is complete until real calendar time and genuine observations
 support it.
 
-The live SQL Server baseline checked at 2026-09-08 08:28 UTC contains 1,058
-stop observations across 212 snapshots and 4 UTC collection dates, spanning
-2026-09-05 08:27:28 UTC through 2026-09-08 08:23:48 UTC. The maximum snapshot
+The live SQL Server baseline checked at 2026-09-08 10:42 UTC contains 1,193
+stop observations across 239 snapshots and 4 UTC collection dates, spanning
+2026-09-05 08:27:28 UTC through 2026-09-08 10:38:41 UTC. The maximum snapshot
 gap remains 76,759 seconds. Preserved legacy Hbf-only history contributed 845
 observations across 169 snapshots before the verified start. A live audit check
-found 43 successful `Automatic` runs since the verified start
-(`CollectorRunId` 1–43), 0 failed runs, and 0 stale or incomplete `Started`
-runs. The latest successful run after `CollectorRunId = 2` was run 43: it
-started at 2026-09-08 08:23:52 UTC, completed at 2026-09-08 08:23:55 UTC, and
-was `Succeeded` / `Automatic` for Köln Heumarkt
-(`de:05315:11110`), slot 3, with HTTP 200, 5 source events, and 5 inserted
-observations. The latest persisted observation is 2026-09-08 08:23:48 UTC.
-All seven enabled targets have participated in successful runs and have
-persisted observations. Missing periods remain visible and are not backfilled.
+found 70 successful `Automatic` runs since the verified start, 0 failed runs,
+and 0 stale or incomplete `Started` runs. All seven enabled targets have
+participated in successful runs and have persisted observations. Missing periods
+remain visible and are not backfilled.
 
 ---
 
@@ -85,6 +83,11 @@ The checked-in scripts reproduce the validated static baseline and the synchroni
 21. `02-staging/08-validate-mdd-realtime-sampling.sql` — focused sampling report after the warehouse and realtime objects exist
 22. `02-staging/10-validate-mdd-collector-run-audit.sql` — focused Collector run audit report
 23. `02-staging/11-validate-realtime-collection-health.sql` — read-only historical collection-health report
+24. `04-warehouse/05-create-operational-stop-outcome.sql`
+25. `04-warehouse/06-refresh-operational-stop-outcome.sql`
+26. `04-warehouse/07-validate-operational-stop-outcome.sql`
+27. `05-analytics/03-create-realtime-analytics-views.sql`
+28. `05-analytics/04-validate-realtime-analytics-views.sql`
 
 The realtime steps are listed after the static warehouse and analytics steps so every dependency of the realtime working views exists before those views are created. The folder numbering remains organized by schema/layer rather than by this global dependency order.
 
@@ -92,7 +95,9 @@ The realtime steps are listed after the static warehouse and analytics steps so 
 
 ## Synchronized Realtime SQL
 
-The repository now contains reproducible SQL for the validated realtime structures, Collector run audit, and performance changes:
+The repository now contains reproducible SQL for the validated realtime
+structures, Collector run audit, operational outcome fact, analytics views, and
+performance changes:
 
 ### Realtime staging
 
@@ -178,6 +183,55 @@ history.
 - `wrk.vwCologneRealtimeTripMatchKey`
 - `wrk.vwCologneRealtimeTripMatch`
 - `wrk.vwCologneRealtimeEvidenceSituation`
+
+### Realtime operational fact and refresh
+
+`04-warehouse/05-create-operational-stop-outcome.sql` creates
+`dw.FactOperationalStopOutcome` at the grain of one matched scheduled stop
+event on one GTFS service date. Its lineage and business fields retain first
+and last source observations, deterministic observation counts, estimated
+arrival/delay fields, conservative platform evidence, and situation-link
+evidence without duplicating dimension text.
+
+`04-warehouse/06-refresh-operational-stop-outcome.sql` creates the idempotent
+`dw.uspRefreshFactOperationalStopOutcome` procedure. It orders contributing
+rows by `ObservedAtUtc`, then `ObservationKey`; inserts new outcomes and
+updates existing outcomes when the consolidated state changes. It never
+truncates or deletes append-only realtime staging history. Only
+`ExactStopMatch` and `ParentStationFallback` are eligible for the fact;
+`StaticCoverageMissing` and `Unresolved` remain available to Data Quality /
+Coverage analytics.
+
+`04-warehouse/07-validate-operational-stop-outcome.sql` checks the unique
+dated operational grain, warehouse lineage/foreign keys, consolidation
+examples, platform Unknown semantics, situation-link counts, usable-match
+eligibility, and repeatability using the current genuine source rows.
+
+### Realtime analytics views
+
+`05-analytics/03-create-realtime-analytics-views.sql` creates:
+
+- `analytics.vwRealtimeCollectorRunHealth`
+- `analytics.vwRealtimeDataQualityCoverage`
+- `analytics.vwRealtimeOperationalConsolidationQuality`
+- `analytics.vwRealtimeReliabilityOutcome`
+- `analytics.vwRealtimeReliabilityByDimension`
+- `analytics.vwRealtimeDelayHotspot`
+- `analytics.vwRealtimePlatformChangeEvidence`
+- `analytics.vwRealtimeSituationLinkedOutcome`
+
+The views expose Collector health, sampling-panel participation, all four
+match statuses, usable-match rates, observation consolidation, platform
+availability, situation evidence, and continuous observed estimated-delay
+metrics (average, median, and P95) by date, route, stop, mode, and scheduled
+hour. They do not apply an arbitrary On-Time threshold and do not infer
+cancellation, departure, or causal disruption effects. The seven targets are a
+sampling panel, not complete Cologne network coverage.
+
+`05-analytics/04-validate-realtime-analytics-views.sql` is the read-only
+analytics validation report. The 14/28-day period remains useful for stronger
+historical interpretation, but it is not required to create or validate these
+database objects.
 
 ### Realtime performance support
 
@@ -319,7 +373,9 @@ ParentStationFallback
 - A GTFS `TripId` is a schedule pattern, not automatically a dated physical service.
 - Realtime observations must never overwrite the scheduled baseline.
 - Repeated realtime predictions must not later be counted as repeated services.
-- Final realtime facts will be introduced only after the dated operational grain is validated.
+- `dw.FactOperationalStopOutcome` is the validated dated operational outcome;
+  repeated realtime predictions are consolidated and are not counted as
+  repeated services.
 
 ---
 
@@ -440,7 +496,9 @@ The paired materialization benchmark was approximately 494.9 seconds for the pro
 - Parent stations and physical stop positions are separate reporting grains.
 - The current Power BI report is a scheduled baseline, not a reliability report.
 - Power BI must not read raw realtime staging directly.
-- Realtime reliability views should be created only after repeated observations are consolidated into validated dated operational outcomes.
+- Realtime reliability views consume the validated dated operational outcome;
+  they expose continuous observed estimated-delay metrics and do not create an
+  arbitrary `OnTimeRate`.
 
 ---
 
@@ -523,17 +581,9 @@ successful wrapper logs prove that the scheduled runtime can read the external
 `MDD_API_KEY` without storing or exposing it.
 
 The project was originally NRW-wide and included a separate Deutsche-Bahn
-multi-station runtime. Live inspection on 2026-09-08 classified
-`\NRW DB Realtime Collector` as that legacy pipeline: its PowerShell wrapper
-is historically documented at `C:\NRWTransport\Collector\RunDbRealtimeCollector.ps1`
-and the matching live file `C:\NRWTransport\Collector\DbRealtimeCollector.ps1`
-uses
-`cfg.DbRealtimeStation`, `stg.DbRealtimeStopObservation`, and the Deutsche Bahn
-`/plan` and `/fchg` endpoints. It is not a duplicate MDD/TRIAS task. Its files
-and log directory were retained. Its final enabled/disabled state remains
-unverified from the current execution context because no authorized Windows
-Task Scheduler/elevated PowerShell session could be established. The task has
-not been claimed disabled, deleted, renamed, or reactivated. Administrator/
-authorized Windows Task Scheduler access is the only remaining blocker for
-this cleanup item. The live SQL audit confirms that
-`\Cologne Transit Realtime Collector` remains the current MDD/TRIAS task.
+multi-station runtime. The user has already manually disabled the legacy
+`\NRW DB Realtime Collector`. Windows Scheduled Task management is outside the
+scope of this SQL implementation; the old NRW runtime is not inspected,
+modified, or reused here. The current MDD/TRIAS Collector continues
+independently and its SQL audit rows remain available through the realtime
+health views.

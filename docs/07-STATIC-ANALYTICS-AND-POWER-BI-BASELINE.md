@@ -1,10 +1,13 @@
 # Static Analytics and Power BI Baseline
 
-**Last updated:** 2026-09-04
+**Last updated:** 2026-09-08
 
 ## 1. Purpose
 
-The static analytics layer remains the validated **scheduled-service baseline** for the portfolio. Realtime integration now exists in `stg`/`wrk`, but the current baseline Power BI report must still be interpreted as planned supply rather than reliability.
+The static analytics layer remains the validated **scheduled-service baseline**
+for the portfolio. The realtime SQL operational fact and analytics consumer
+views now exist separately; the current baseline Power BI report must still be
+interpreted as planned supply rather than reliability.
 
 ## 2. Static Analytics Views
 
@@ -56,7 +59,7 @@ The static analytics layer remains the validated **scheduled-service baseline** 
 - Keep SEV separate from ordinary bus service.
 - Snapshot/feed version and coverage dates should remain visible in methodology documentation.
 
-## 6. Realtime Status Update
+## 6. Realtime SQL Status Update
 
 Realtime MDD/TRIAS ingestion structures and matching views now exist in the database working layer. They currently support:
 
@@ -68,22 +71,41 @@ Realtime MDD/TRIAS ingestion structures and matching views now exist in the data
 - service-date matching;
 - match-quality statuses.
 
-This does **not** yet mean the Power BI static baseline should be converted into a reliability report. Historical collection and consolidated operational grains must be established first.
+The database engineering is complete against the genuine current sample. The
+operational fact grain is one matched scheduled stop event on one GTFS service
+date; repeated observations are consolidated by `ObservedAtUtc`, then
+`ObservationKey`. Only `ExactStopMatch` and `ParentStationFallback` enter
+reliability outcomes. `StaticCoverageMissing` and `Unresolved` remain visible
+in Data Quality/Coverage analytics.
 
-## 7. Future Realtime Analytics
+The current analytics layer exposes Collector health, sampling-panel
+participation, all match-status rates, observations per operational outcome,
+platform-information availability, situation evidence, and continuous observed
+estimated-delay metrics. It deliberately does not create an arbitrary
+`OnTimeRate`, infer cancellation/departure, or claim disruption causality.
 
-Once approved historical collection is active, new analytics views should expose measures such as:
+This does **not** mean the Power BI static baseline should be converted into a
+final reliability report now. The 14/28-day history window remains necessary
+for stronger interpretation and portfolio findings, but it is not a
+prerequisite for database design, consolidation, or SQL validation. Power BI
+work is intentionally deferred.
 
-- observed services;
-- match coverage and data-quality rates;
-- on-time / delayed distribution;
-- median / P95 delay;
-- route/station hotspots;
-- platform mismatch/change evidence;
-- situation-linked delay counts;
-- coverage-missing and unresolved rates.
+## 7. Current Realtime Analytics Views
 
-Raw snapshot row counts must never be used as delayed-service counts.
+The SQL layer now exposes:
+
+- `analytics.vwRealtimeCollectorRunHealth`
+- `analytics.vwRealtimeDataQualityCoverage`
+- `analytics.vwRealtimeOperationalConsolidationQuality`
+- `analytics.vwRealtimeReliabilityOutcome`
+- `analytics.vwRealtimeReliabilityByDimension`
+- `analytics.vwRealtimeDelayHotspot`
+- `analytics.vwRealtimePlatformChangeEvidence`
+- `analytics.vwRealtimeSituationLinkedOutcome`
+
+Average, median, and P95 are observed estimated-delay statistics. Raw snapshot
+row counts are never used as delayed-service counts, and the seven configured
+locations are a sampling panel rather than complete Cologne network coverage.
 
 ## 8. Current Recommended Static Report Pages
 

@@ -1,6 +1,6 @@
 # Data Architecture
 
-**Last updated:** 2026-09-04
+**Last updated:** 2026-09-08
 
 ## 1. Purpose
 
@@ -25,12 +25,15 @@ VRS/go.Rheinland static GTFS            MDD NRW DELFI/TRIAS
                   +-----------+-----------+
                   |                       |
                   v                       v
-          static warehouse (`dw`)   realtime evidence views
+          static warehouse (`dw`)   realtime matching/evidence
                   |                       |
                   +-----------+-----------+
                               |
                               v
-                       `analytics`
+          operational outcome fact (`dw`)
+                               |
+                               v
+                       realtime `analytics`
                               |
                               v
                            Power BI
@@ -75,11 +78,17 @@ Transparent transformations and derived logic:
 
 ### `dw`
 
-Validated static dimensions, service-date bridge, and facts. Realtime facts will be added only after observation collection and consolidation behavior is stable.
+Validated static dimensions, service-date bridge, static facts, and the
+realtime `dw.FactOperationalStopOutcome` operational fact. The realtime fact
+is refreshed from genuine staging history; the 14/28-day period is a later
+historical interpretation milestone, not a database-design prerequisite.
 
 ### `analytics`
 
-Business-readable datasets for Power BI. Existing views are static scheduled-supply views. Realtime reliability views are a later phase.
+Business-readable datasets for Power BI. Existing static views remain the
+scheduled-supply baseline; realtime Data Quality/Coverage and Reliability views
+now consume the validated operational fact. Power BI authoring remains a later
+step.
 
 ## 4. Realtime Source Architecture
 
@@ -143,6 +152,18 @@ wrk.vwCologneRealtimeTripMatch
         v
 wrk.vwCologneRealtimeEvidenceSituation
   match quality + disruption/situation context
+
+        |
+        v
+dw.FactOperationalStopOutcome
+  one usable matched scheduled stop event + GTFS service date
+  repeated observations consolidated by ObservedAtUtc, ObservationKey
+
+        |
+        v
+analytics.vwRealtimeDataQualityCoverage
+analytics.vwRealtimeReliabilityOutcome
+analytics.vwRealtimeReliabilityByDimension
 ```
 
 ## 7. Time and Service-Day Normalization
@@ -208,7 +229,30 @@ association or likely contributing factor
 
 A source-linked situation is evidence, not automatic proof that it caused the delay.
 
-## 11. Data Quality Gates
+## 11. Realtime Operational Fact and Analytics Boundary
+
+`dw.FactOperationalStopOutcome` has one row per matched scheduled stop event on
+one GTFS service date. Only `ExactStopMatch` and `ParentStationFallback` enter
+this fact. `StaticCoverageMissing` and `Unresolved` remain in staging and are
+reported by `analytics.vwRealtimeDataQualityCoverage`.
+
+The refresh procedure orders source observations by `ObservedAtUtc`, then
+`ObservationKey`, retaining first/last lineage and consolidating repeated
+predictions into one operational outcome. Arrival and delay fields are
+observed estimates; they are not confirmed physical arrivals or actual delays.
+
+The realtime analytics layer exposes collector health, sampling-panel coverage,
+match-status rates, observations per operational outcome, platform information,
+situation evidence, and average/median/P95 observed estimated delay by date,
+route, stop, mode, and hour. It deliberately does not create an arbitrary
+on-time threshold or infer cancellation, departure, or situation causality.
+
+The seven configured locations are a sampling panel, not complete Cologne
+network coverage. Historical collection continues independently in the
+append-only staging layer; Power BI is not part of this database-preparation
+step.
+
+## 12. Data Quality Gates
 
 Critical checks include:
 
@@ -220,9 +264,12 @@ Critical checks include:
 - invalid time conversions;
 - service-date reconciliation;
 - situation-link integrity;
-- warehouse-to-analytics reconciliation.
+- warehouse-to-analytics reconciliation;
+- operational-grain uniqueness and repeated-observation consolidation;
+- fact refresh idempotency;
+- usable-match-only reliability eligibility.
 
-## 12. Security and Compliance
+## 13. Security and Compliance
 
 - API keys and secrets remain outside Git and documentation.
 - The MDD storage/retention confirmation email has been received.

@@ -1,6 +1,6 @@
 # Static GTFS Analytical Warehouse Model
 
-**Last updated:** 2026-09-04
+**Last updated:** 2026-09-08
 
 ## 1. Purpose
 
@@ -19,6 +19,7 @@ The static warehouse materializes the validated Cologne schedule baseline and pr
 | `dw.BridgeServiceDate` | one active service/date pair |
 | `dw.FactScheduledTrip` | one GTFS trip pattern |
 | `dw.FactScheduledStopEvent` | one Cologne stop sequence of one trip pattern |
+| `dw.FactOperationalStopOutcome` | one usable matched scheduled stop event on one GTFS service date |
 
 ## 3. Static Baseline Counts
 
@@ -104,13 +105,27 @@ RB27 matched the route/time/service at Köln Hbf but static GTFS used Gleis 4 wh
 
 The static Cologne route/trip views contain no ICE rows, while TRIAS returned an ICE event. This is `StaticCoverageMissing`, not `Unresolved`.
 
-## 11. Warehouse Extension Principle
+## 11. Realtime Operational Outcome Extension
 
-Realtime observations must not overwrite static scheduled facts. Future warehouse design should preserve separate grains for:
+Realtime observations do not overwrite static scheduled facts. The current
+warehouse preserves separate grains for:
 
 - raw realtime observation;
-- consolidated dated stop performance;
+- `dw.FactOperationalStopOutcome`: consolidated dated stop performance;
 - consolidated dated trip performance;
 - situation/disruption evidence.
 
-This prevents repeated predictions from being counted as repeated services.
+`dw.FactOperationalStopOutcome` is one row per matched scheduled stop event on
+one GTFS service date. Repeated predictions are consolidated deterministically
+by `ObservedAtUtc`, then `ObservationKey`; first and last observation keys and
+the contributing count remain available for lineage. Only
+`ExactStopMatch` and `ParentStationFallback` enter this reliability fact;
+coverage-missing and unresolved rows remain visible to Data Quality/Coverage
+analytics.
+
+The fact uses estimated arrival/delay terminology because the current source
+does not provide a validated physical arrival timestamp. Platform evidence is
+`Changed`, `Unchanged`, or `Unknown` only when explicit comparable bay values
+support that conclusion. Situation links are preserved as evidence, not
+causality. The 14/28-day history window is for later interpretation, not a
+prerequisite for this warehouse design.

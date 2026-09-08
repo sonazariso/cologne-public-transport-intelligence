@@ -1,6 +1,6 @@
 # Database Design and SQL Server Implementation
 
-**Last updated:** 2026-09-04
+**Last updated:** 2026-09-08
 
 ## 1. Platform
 
@@ -99,7 +99,7 @@ Derives:
 
 `PlatformChanged` rules:
 
-- `EstimatedBay` missing -> `NULL`
+- `PlannedBay` or `EstimatedBay` missing -> `NULL`
 - both values present and different -> `1`
 - both values present and equal -> `0`
 
@@ -136,6 +136,14 @@ Adds candidate counts and final static matching fields:
 - `MatchedRouteId`
 - `MatchedServiceId`
 - `MatchedStaticStopId`
+- `ScheduledStopEventKey`
+- `TripKey`
+- `RouteKey`
+- `StopKey`
+- `ModeKey`
+- `ServiceKey`
+- `DateKey`
+- `ServiceDate`
 
 ### `wrk.vwCologneRealtimeEvidenceSituation`
 
@@ -222,9 +230,68 @@ RB27 validated a real platform mismatch: TRIAS reported Gleis 3 while static GTF
 | Scheduled stop-event patterns | 1,551,343 |
 | Scheduled trip occurrences | 1,878,944 |
 
-## 12. Persistence Checkpoint
+## 12. Realtime Operational Outcome Fact
 
-Realtime table structures and views have been prepared. Before enabling the production collector, row counts of the three realtime staging tables must be checked and the exact email-confirmed storage/retention terms recorded.
+`04-warehouse/05-create-operational-stop-outcome.sql` creates
+`dw.FactOperationalStopOutcome` with the grain:
+
+> one matched scheduled stop event on one GTFS service date.
+
+The fact retains `DateKey`, `ServiceDate`, the existing scheduled-event/trip/
+route/stop/mode/service surrogate keys, the final usable `MatchStatus`, first
+and last source observation lineage, observed timestamps and count, timetable
+time, first/latest observed estimated arrivals, first/final observed estimated
+delays, planned/latest estimated bay values, platform evidence, situation-link
+evidence, and refresh time. It does not create `ActualArrival` or
+`ActualDelay`: MDD/TRIAS currently supplies estimates, not validated physical
+arrival timestamps.
+
+`04-warehouse/06-refresh-operational-stop-outcome.sql` creates
+`dw.uspRefreshFactOperationalStopOutcome`. For each `(DateKey,
+ScheduledStopEventKey)` it orders usable observations by `ObservedAtUtc` and
+`ObservationKey`; the first row supplies first-state fields, the last row
+supplies latest-state fields, and all contributing rows count toward
+`ObservationCount`. The transaction inserts new outcomes and updates changed
+outcomes without truncating staging. The unique operational-grain index,
+foreign keys, and fact checks enforce the model.
+
+Only `ExactStopMatch` and `ParentStationFallback` populate the operational
+fact. `StaticCoverageMissing` and `Unresolved` remain visible in the staging
+and Data Quality/Coverage layer. Platform change is `Changed` only when
+comparable explicit bay values differ, `Unchanged` only when comparable values
+agree without change evidence, and `Unknown` otherwise. Situation links are
+evidence, not confirmed causality.
+
+The repeatable validation report is
+`04-warehouse/07-validate-operational-stop-outcome.sql`. It uses genuine
+current rows, shows repeated-observation consolidation examples, validates
+lineage and warehouse keys, and proves repeatability without synthetic data.
+
+## 13. Realtime Analytics Views
+
+`05-analytics/03-create-realtime-analytics-views.sql` creates business-facing
+views for Collector run health, sampling-panel participation, source match
+coverage, operational consolidation quality, one-row-per-outcome reliability
+consumption, continuous delay performance by date/route/stop/mode/hour,
+delay-hotspot candidates, platform-change evidence, and situation-linked
+outcomes. Average, median, and P95 are observed estimated-delay statistics.
+No arbitrary `OnTimeRate` threshold is applied. Cancellation, departure, and
+situation causality are not inferred.
+
+The seven configured locations remain a sampling panel, not complete Cologne
+network coverage. `05-analytics/04-validate-realtime-analytics-views.sql`
+validates view existence, row reconciliation, rate bounds, dimension coverage,
+platform/situation semantics, and current continuous metrics. The 14/28-day
+history target remains relevant for stronger interpretation later, but it is not
+required for database engineering or SQL validation. Power BI authoring is
+intentionally deferred.
+
+## 14. Persistence Checkpoint
+
+Realtime staging, the operational fact, refresh procedure, and analytics views
+are deployed. The Collector continues inserting append-only genuine
+observations independently. The exact email-confirmed storage/retention terms
+remain a separate compliance record; no retention duration is invented.
 
 The project must not assume a retention duration until the confirmation email wording is transcribed.
 
@@ -232,6 +299,8 @@ The project must not assume a retention duration until the confirmation email wo
 
 GTFS `BULK INSERT` paths must be readable by the SQL Server Database Engine service account. VMware shared-folder visibility to the interactive Windows user does not by itself prove SQL Server service access.
 
-## 14. Power BI Boundary
+## 15. Power BI Boundary
 
-Power BI reads validated `analytics` views, not raw `stg` tables. Realtime analytics views should be created only after the collector produces stable historical data and consolidated operational grains are defined.
+Power BI reads validated `analytics` views, not raw `stg` tables. The realtime
+analytics views are now prepared; Power BI is intentionally not started until
+the later historical evidence window supports stronger findings.
