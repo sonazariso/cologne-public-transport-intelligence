@@ -1,6 +1,6 @@
 # SQL Server Implementation
 
-**Last updated:** 2026-09-07
+**Last updated:** 2026-09-08
 
 This directory contains the SQL Server implementation for the **Cologne Public Transport Intelligence** project.
 
@@ -41,14 +41,20 @@ The earliest corresponding milestone dates are 2026-09-21 and 2026-10-05;
 neither target is complete until real calendar time and genuine observations
 support it.
 
-The live SQL Server baseline checked at 2026-09-07 20:12 UTC contains 855 stop
-observations across 171 snapshots and 3 UTC collection dates, spanning
-2026-09-05 08:27:28 UTC through 2026-09-07 20:08:41 UTC. The maximum snapshot
-gap is 76,759 seconds. Preserved legacy Hbf-only history contributed 845
-observations across 169 snapshots before the verified start. The first verified
-automatic run selected Köln Porz Markt (slot 5); the next selected Köln Hbf
-(slot 6). Both completed as `Succeeded` with HTTP 200 and five inserted source
-observations. Missing periods remain visible and are not backfilled.
+The live SQL Server baseline checked at 2026-09-08 08:28 UTC contains 1,058
+stop observations across 212 snapshots and 4 UTC collection dates, spanning
+2026-09-05 08:27:28 UTC through 2026-09-08 08:23:48 UTC. The maximum snapshot
+gap remains 76,759 seconds. Preserved legacy Hbf-only history contributed 845
+observations across 169 snapshots before the verified start. A live audit check
+found 43 successful `Automatic` runs since the verified start
+(`CollectorRunId` 1–43), 0 failed runs, and 0 stale or incomplete `Started`
+runs. The latest successful run after `CollectorRunId = 2` was run 43: it
+started at 2026-09-08 08:23:52 UTC, completed at 2026-09-08 08:23:55 UTC, and
+was `Succeeded` / `Automatic` for Köln Heumarkt
+(`de:05315:11110`), slot 3, with HTTP 200, 5 source events, and 5 inserted
+observations. The latest persisted observation is 2026-09-08 08:23:48 UTC.
+All seven enabled targets have participated in successful runs and have
+persisted observations. Missing periods remain visible and are not backfilled.
 
 ---
 
@@ -524,8 +530,10 @@ and the matching live file `C:\NRWTransport\Collector\DbRealtimeCollector.ps1`
 uses
 `cfg.DbRealtimeStation`, `stg.DbRealtimeStopObservation`, and the Deutsche Bahn
 `/plan` and `/fchg` endpoints. It is not a duplicate MDD/TRIAS task. Its files
-and log directory were retained, and the task-disable attempt could not reach
-the protected task definition from the available SQL service context, so its
-final enabled/disabled state could not be verified or changed. Authorized Task
-Scheduler access is still required. The
-`\Cologne Transit Realtime Collector` remains the sole current MDD/TRIAS task.
+and log directory were retained. Its final enabled/disabled state remains
+unverified from the current execution context because no authorized Windows
+Task Scheduler/elevated PowerShell session could be established. The task has
+not been claimed disabled, deleted, renamed, or reactivated. Administrator/
+authorized Windows Task Scheduler access is the only remaining blocker for
+this cleanup item. The live SQL audit confirms that
+`\Cologne Transit Realtime Collector` remains the current MDD/TRIAS task.

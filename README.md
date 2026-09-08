@@ -30,7 +30,7 @@ Collector; the former NRW Deutsche-Bahn collector is a separate legacy runtime.
 - GitHub Desktop on the macOS host
 - MDD NRW / DELFI / TRIAS 1.2 realtime source
 
-## Current status — 2026-09-07
+## Current status — 2026-09-08
 
 ### Static baseline
 
@@ -52,19 +52,26 @@ The project is now in the historical realtime collection phase. The intended
 window is a minimum of **14 actual calendar days**, with **28 days preferred**;
 missing periods must remain visible rather than being backfilled.
 
-The live SQL Server baseline checked at 2026-09-07 20:12 UTC contains 855
-genuine stop observations across 171 snapshots and 3 UTC collection dates,
-spanning 2026-09-05 08:27:28 UTC through 2026-09-07 20:08:41 UTC. The maximum
-snapshot gap is 76,759 seconds, so this is not yet a 14- or 28-day dataset and
-missing periods remain visible.
+The live SQL Server baseline checked at 2026-09-08 08:28 UTC contains 1,058
+genuine stop observations across 212 snapshots and 4 UTC collection dates,
+spanning 2026-09-05 08:27:28 UTC through 2026-09-08 08:23:48 UTC. The maximum
+snapshot gap remains 76,759 seconds, so this is not yet a 14- or 28-day dataset
+and missing periods remain visible.
 
 Historical multi-target collection verified from: **2026-09-07 20:03:53 UTC**.
 Before that verified run, the preserved legacy Hbf-only history contained 845
 observations across 169 snapshots. The first verified automatic multi-target
 run selected Köln Porz Markt (slot 5) and persisted five genuine observations;
-the next scheduled run selected Köln Hbf (slot 6) and also succeeded. The
-configured targets are not being treated as complete until real calendar time
-and genuine observations support that claim.
+the next scheduled run selected Köln Hbf (slot 6) and also succeeded. A live
+audit check at 2026-09-08 08:28 UTC found 43 successful `Automatic` runs since
+the verified start (`CollectorRunId` 1–43), with 0 failed runs and 0 stale or
+incomplete `Started` runs. The latest successful run after `CollectorRunId = 2`
+was run 43: started 2026-09-08 08:23:52 UTC, completed 2026-09-08 08:23:55
+UTC, `Succeeded` / `Automatic`, target Köln Heumarkt
+(`de:05315:11110`), slot 3, HTTP 200, 5 source events, and 5 inserted
+observations. All seven enabled targets have participated in successful
+automatic runs and have persisted observations; the current total is 1,058
+observations and the latest observation is 2026-09-08 08:23:48 UTC.
 
 The minimum target is 14 actual calendar days from that verified start; the
 preferred target is 28 actual calendar days. The corresponding earliest
@@ -73,13 +80,12 @@ runtime availability and visible gaps.
 
 The repository-managed `ctl.MddCollectorRun` audit objects are deployed. The
 three deployed runtime files now match the repository SHA-256 hashes, the
-existing `C:\Collector\Logs` directory was preserved, and the corrected
-scheduled task produced two `Succeeded` / `Automatic` audit rows with HTTP
-200, one attempt, five source events, and five inserted observations each.
-Task Scheduler history shows `Cologne Transit Realtime Collector` running as
-`DATAANALYST-VM\Somaye` every five minutes with return code 0; the successful
-wrapper logs prove that the runtime account can read `MDD_API_KEY` without
-exposing its value.
+existing `C:\Collector\Logs` directory was preserved, and the current
+scheduled task continues to produce successful `Succeeded` / `Automatic`
+audit rows. Task Scheduler history shows `Cologne Transit Realtime Collector`
+running as `DATAANALYST-VM\Somaye` every five minutes with return code 0; the
+successful wrapper logs prove that the runtime account can read `MDD_API_KEY`
+without exposing its value.
 
 A separate `\NRW DB Realtime Collector` task was classified on 2026-09-08 as
 the legacy NRW-wide Deutsche-Bahn pipeline, not as a second MDD/TRIAS
@@ -91,11 +97,13 @@ matching live files identify the former
 `C:\NRWTransport\Collector\DbRealtimeCollector.ps1`; those files use the
 `cfg.DbRealtimeStation` / `stg.DbRealtimeStopObservation` flow and Deutsche
 Bahn `/plan` and `/fchg` endpoints. The legacy files and log directory were
-preserved. Disabling the task was attempted, but the protected task definition
-was not controllable from the available SQL service context, so its final
-enabled/disabled state could not be verified or changed. Authorized Task
-Scheduler access is still required. The named
-`\Cologne Transit Realtime Collector` remains the sole current MDD/TRIAS task.
+preserved. Its final enabled/disabled state remains unverified from the current
+execution context because no authorized Windows Task Scheduler/elevated
+PowerShell session could be established. The task has not been claimed
+disabled, deleted, renamed, or reactivated. Administrator/authorized Windows
+Task Scheduler access is the only remaining blocker for this cleanup item. The
+live SQL audit confirms that the named `\Cologne Transit Realtime Collector`
+continues to run as the current MDD/TRIAS task.
 
 ### Realtime collector
 

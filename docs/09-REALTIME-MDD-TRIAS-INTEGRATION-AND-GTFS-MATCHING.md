@@ -14,16 +14,25 @@ from: **2026-09-07 20:03:53 UTC**. The useful-history target is a minimum of
 14 actual calendar days, with 28 days preferred. The Collector must accumulate
 the data naturally; missing periods are not generated or backfilled.
 
-The live SQL Server baseline checked at 2026-09-07 20:12 UTC contains 855 stop
-observations across 171 snapshots and 3 UTC collection dates. The observed range
-is 2026-09-05 08:27:28 UTC through 2026-09-07 20:08:41 UTC; the maximum
-snapshot gap is 76,759 seconds. This is not yet a 14- or 28-day dataset.
+The live SQL Server baseline checked at 2026-09-08 08:28 UTC contains 1,058
+genuine stop observations across 212 snapshots and 4 UTC collection dates. The
+observed range is 2026-09-05 08:27:28 UTC through 2026-09-08 08:23:48 UTC; the
+maximum snapshot gap remains 76,759 seconds. This is not yet a 14- or 28-day
+dataset, and missing periods remain visible.
 
 Before the verified start, preserved legacy Hbf-only history contained 845
 observations across 169 snapshots. The first verified automatic run selected
 Köln Porz Markt (slot 5) and inserted five genuine source observations. The
-next scheduled run selected Köln Hbf (slot 6) and inserted five more. The
-earliest 14-day and 28-day milestone dates from the verified start are
+next scheduled run selected Köln Hbf (slot 6) and inserted five more. A live
+audit check at 2026-09-08 08:28 UTC found 43 successful `Automatic` runs since
+the verified start (`CollectorRunId` 1–43), 0 failed runs, and 0 stale or
+incomplete `Started` runs. The latest successful run after `CollectorRunId = 2`
+was `CollectorRunId = 43`: started 2026-09-08 08:23:52 UTC, completed
+2026-09-08 08:23:55 UTC, status `Succeeded`, sampling mode `Automatic`, target
+Köln Heumarkt (`de:05315:11110`), slot 3, HTTP 200, 5 source events, and 5
+inserted observations. All seven enabled targets have participated in
+successful automatic runs and have persisted observations. The earliest 14-day
+and 28-day milestone dates from the verified start are
 2026-09-21 and 2026-10-05 respectively; neither target is complete yet.
 
 The repository-managed `ctl.MddCollectorRun` table and procedures are deployed.
@@ -45,12 +54,14 @@ task definition and matching live files are
 `C:\NRWTransport\Collector\DbRealtimeCollector.ps1`; the latter uses
 `cfg.DbRealtimeStation`, `stg.DbRealtimeStopObservation`, and Deutsche Bahn
 `/plan` and `/fchg` endpoints. These legacy files and their log directory were
-preserved. Disabling the task was attempted, but the protected task definition
-was not controllable from the available SQL service context, so its final
-enabled/disabled state could not be verified or changed. Authorized Task
-Scheduler access is still required. No old file, folder, or task was renamed;
-the current Cologne MDD/TRIAS pipeline remains the only active project-owned
-realtime Collector.
+preserved. Its final enabled/disabled state remains unverified from the current
+execution context because no authorized Windows Task Scheduler/elevated
+PowerShell session could be established. The task has not been claimed
+disabled, deleted, renamed, or reactivated. Administrator/authorized Windows
+Task Scheduler access is the only remaining blocker for this cleanup item. No
+old file, folder, or task was renamed; live SQL evidence confirms that the
+current Cologne MDD/TRIAS pipeline continues to produce successful automatic
+runs.
 
 ## 1. Source and quota
 
@@ -397,10 +408,23 @@ The first verified automatic run selected Köln Porz Markt (slot 5), and the
 next selected Köln Hbf (slot 6); both returned HTTP 200 and persisted five
 source observations. The live sampling tables remain configured with all seven
 enabled targets, `NumberOfResults = 5`, and the intended
-2/2/2/1/1/1/1 weighting. At the current checkpoint, preserved Hbf history
-contains 850 observations and the verified Porz run contributes 5; the other
-five targets have not yet returned persisted observations. This is a genuine
-accumulation checkpoint, not a reason to redesign the panel.
+2/2/2/1/1/1/1 weighting. At the 2026-09-08 08:28 UTC checkpoint, all seven
+targets had participated in successful automatic runs and all seven had
+persisted observations:
+
+| Target | Successful automatic runs since verified start | Persisted observations (all time) |
+|---|---:|---:|
+| Köln Heumarkt | 9 | 45 |
+| Köln Hbf | 9 | 890 |
+| Köln Rodenkirchen Bf | 4 | 20 |
+| Köln Bf Ehrenfeld | 3 | 15 |
+| Köln Worringen S-Bahn | 4 | 20 |
+| Köln Porz Markt | 5 | 23 |
+| Köln Bf Mülheim | 9 | 45 |
+
+The current all-time observation total is 1,058; the Hbf total includes
+preserved pre-start history. This is a genuine accumulation checkpoint, not a
+reason to redesign the panel.
 
 ## 13. Collector logging and scheduler diagnostics
 
@@ -437,10 +461,12 @@ the matching live files confirmed the old `cfg.DbRealtimeStation` /
 `stg.DbRealtimeStopObservation` pipeline and Deutsche Bahn `/plan` and `/fchg`
 requests. It does not perform current MDD/TRIAS collection and produced no new
 `ctl.MddCollectorRun` row. Its legacy files were preserved, but its final
-enabled/disabled state could not be verified or changed because the available
-SQL service context could not access or control the protected Task Scheduler
-definition. The named Cologne task remains the verified current MDD/TRIAS
-Collector.
+enabled/disabled state remains unverified from the current execution context
+because no authorized Windows Task Scheduler/elevated PowerShell session could
+be established. The task has not been claimed disabled, deleted, renamed, or
+reactivated. Administrator/authorized Windows Task Scheduler access is the only
+remaining blocker for this cleanup item. The named Cologne task remains the
+verified current MDD/TRIAS Collector.
 
 ## 14. Strict-mode collection-count bug
 
