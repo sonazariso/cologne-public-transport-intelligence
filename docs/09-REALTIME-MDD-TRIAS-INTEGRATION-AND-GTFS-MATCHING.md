@@ -1,6 +1,6 @@
 # Realtime MDD/TRIAS Integration and GTFS Matching
 
-**Last updated:** 2026-09-07
+**Last updated:** 2026-09-08
 
 ## Purpose
 
@@ -32,10 +32,25 @@ SHA-256, and the existing `C:\Collector\Logs` directory was preserved. Task
 Scheduler history shows `\Cologne Transit Realtime Collector` running as
 `DATAANALYST-VM\Somaye` every five minutes with return code 0. Its corrected
 wrapper logs and audit rows prove the scheduled runtime can read the external
-`MDD_API_KEY` without exposing it. A separate `\NRW DB Realtime Collector` task
-is also active in history but produced no new `ctl.MddCollectorRun` rows during
-this check; it is recorded as a legacy/duplicate-task candidate and was not
-disabled without explicit task-owner authorization.
+`MDD_API_KEY` without exposing it.
+
+This repository was narrowed from an earlier NRW-wide public-transport project
+to the current Cologne scope. Live inspection on 2026-09-08 classified the
+separate `\NRW DB Realtime Collector` task as the earlier Deutsche-Bahn
+multi-station runtime, not as a duplicate MDD/TRIAS collector. Its live
+Task Scheduler events expose `powershell.exe`; the protected task definition
+could not be exported from the available SQL service context. The historical
+task definition and matching live files are
+`C:\NRWTransport\Collector\RunDbRealtimeCollector.ps1` and
+`C:\NRWTransport\Collector\DbRealtimeCollector.ps1`; the latter uses
+`cfg.DbRealtimeStation`, `stg.DbRealtimeStopObservation`, and Deutsche Bahn
+`/plan` and `/fchg` endpoints. These legacy files and their log directory were
+preserved. Disabling the task was attempted, but the protected task definition
+was not controllable from the available SQL service context, so its final
+enabled/disabled state could not be verified or changed. Authorized Task
+Scheduler access is still required. No old file, folder, or task was renamed;
+the current Cologne MDD/TRIAS pipeline remains the only active project-owned
+realtime Collector.
 
 ## 1. Source and quota
 
@@ -415,11 +430,17 @@ inserts, `CollectorRunId = 1`, and `STATUS: SUCCESS`. The next scheduled log
 `collector-20260907-220852.log` records automatic slot 6 / Köln Hbf with the
 same successful source/persistence evidence and `CollectorRunId = 2`.
 
-The separate `\NRW DB Realtime Collector` task remains active in Task Scheduler
-history and is a legacy/duplicate-task candidate because it produced no new
-`ctl.MddCollectorRun` row during this check. It was not disabled without
-explicit task-owner authorization; only the named Cologne task is treated as
-the verified current Collector task.
+The separate `\NRW DB Realtime Collector` task is the retained legacy
+Deutsche-Bahn runtime from the former NRW-wide project. Its recent Task
+Scheduler events launch `powershell.exe` successfully, and live inspection of
+the matching live files confirmed the old `cfg.DbRealtimeStation` /
+`stg.DbRealtimeStopObservation` pipeline and Deutsche Bahn `/plan` and `/fchg`
+requests. It does not perform current MDD/TRIAS collection and produced no new
+`ctl.MddCollectorRun` row. Its legacy files were preserved, but its final
+enabled/disabled state could not be verified or changed because the available
+SQL service context could not access or control the protected Task Scheduler
+definition. The named Cologne task remains the verified current MDD/TRIAS
+Collector.
 
 ## 14. Strict-mode collection-count bug
 

@@ -514,7 +514,18 @@ existing `C:\Collector\Logs` directory was preserved. Task Scheduler history
 shows `Cologne Transit Realtime Collector` running as
 `DATAANALYST-VM\Somaye` every five minutes with return code 0, and the two
 successful wrapper logs prove that the scheduled runtime can read the external
-`MDD_API_KEY` without storing or exposing it. A separate `\NRW DB Realtime
-Collector` task remains active in history but produced no new audit rows during
-this check; it is recorded as a legacy/duplicate-task candidate and was not
-disabled without explicit task-owner authorization.
+`MDD_API_KEY` without storing or exposing it.
+
+The project was originally NRW-wide and included a separate Deutsche-Bahn
+multi-station runtime. Live inspection on 2026-09-08 classified
+`\NRW DB Realtime Collector` as that legacy pipeline: its PowerShell wrapper
+is historically documented at `C:\NRWTransport\Collector\RunDbRealtimeCollector.ps1`
+and the matching live file `C:\NRWTransport\Collector\DbRealtimeCollector.ps1`
+uses
+`cfg.DbRealtimeStation`, `stg.DbRealtimeStopObservation`, and the Deutsche Bahn
+`/plan` and `/fchg` endpoints. It is not a duplicate MDD/TRIAS task. Its files
+and log directory were retained, and the task-disable attempt could not reach
+the protected task definition from the available SQL service context, so its
+final enabled/disabled state could not be verified or changed. Authorized Task
+Scheduler access is still required. The
+`\Cologne Transit Realtime Collector` remains the sole current MDD/TRIAS task.

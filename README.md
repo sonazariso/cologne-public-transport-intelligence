@@ -16,6 +16,11 @@ An end-to-end analytics project for understanding the reliability and performanc
 
 The project combines a validated **VRS/go.Rheinland static GTFS baseline** with **MDD NRW / DELFI / TRIAS 1.2 realtime observations**. SQL Server is used for staging, transformation, service-day normalization, schedule matching, warehouse modeling, and analytics. Power BI currently represents the validated scheduled-service baseline; realtime reliability reporting will be added only after repeated observations are consolidated into defensible dated operational facts.
 
+This repository is the narrowed Cologne successor to an earlier NRW-wide
+public-transport project. Some runtime names still carry that historical scope.
+The current active realtime pipeline is the Cologne MDD NRW / DELFI / TRIAS
+Collector; the former NRW Deutsche-Bahn collector is a separate legacy runtime.
+
 ## Current technology
 
 - SQL Server 2025 Developer + SSMS
@@ -76,10 +81,21 @@ Task Scheduler history shows `Cologne Transit Realtime Collector` running as
 wrapper logs prove that the runtime account can read `MDD_API_KEY` without
 exposing its value.
 
-A separate `\NRW DB Realtime Collector` task is also active in Task Scheduler
-history. It produced no new `ctl.MddCollectorRun` rows in this verification,
-so it is treated as a legacy/duplicate-task candidate. It was not disabled
-without explicit task-owner authorization.
+A separate `\NRW DB Realtime Collector` task was classified on 2026-09-08 as
+the legacy NRW-wide Deutsche-Bahn pipeline, not as a second MDD/TRIAS
+Collector. Its live Task Scheduler events launch `powershell.exe` as
+`DATAANALYST-VM\Somaye`. The protected task definition could not be exported
+from the available SQL service context; the historical task definition and
+matching live files identify the former
+`C:\NRWTransport\Collector\RunDbRealtimeCollector.ps1` and
+`C:\NRWTransport\Collector\DbRealtimeCollector.ps1`; those files use the
+`cfg.DbRealtimeStation` / `stg.DbRealtimeStopObservation` flow and Deutsche
+Bahn `/plan` and `/fchg` endpoints. The legacy files and log directory were
+preserved. Disabling the task was attempted, but the protected task definition
+was not controllable from the available SQL service context, so its final
+enabled/disabled state could not be verified or changed. Authorized Task
+Scheduler access is still required. The named
+`\Cologne Transit Realtime Collector` remains the sole current MDD/TRIAS task.
 
 ### Realtime collector
 
