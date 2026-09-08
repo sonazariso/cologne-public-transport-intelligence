@@ -24,6 +24,17 @@ DECLARE @GtfsBatchStatus VARCHAR(30);
 DECLARE @StagingStateRowCount INT;
 DECLARE @StagingLockResult INT;
 DECLARE @StagingLockAcquired BIT = 0;
+DECLARE @OperationalFactExists BIT =
+    CASE WHEN OBJECT_ID(N'dw.FactOperationalStopOutcome', N'U') IS NULL
+         THEN 0 ELSE 1 END;
+DECLARE @OperationalRefreshExists BIT =
+    CASE WHEN OBJECT_ID(N'dw.uspRefreshFactOperationalStopOutcome', N'P') IS NULL
+         THEN 0 ELSE 1 END;
+
+IF @OperationalFactExists <> @OperationalRefreshExists
+BEGIN
+    THROW 50016, 'The realtime operational fact and refresh procedure must be deployed together before reloading the static warehouse.', 1;
+END;
 
 BEGIN TRY
     /* Prevent a staging replacement while this warehouse load reads it. */
@@ -95,7 +106,19 @@ BEGIN TRY
 
     BEGIN TRANSACTION;
 
-    TRUNCATE TABLE dw.FactScheduledStopEvent;
+    /*
+        The operational fact is derived from the append-only realtime source
+        history.  Clear only that derived layer inside the same transaction as
+        the static replacement so every static surrogate key can be rebuilt.
+        A rollback restores both the previous warehouse and its outcomes.
+    */
+    IF @OperationalFactExists = 1
+    BEGIN
+        DELETE FROM dw.FactOperationalStopOutcome;
+    END;
+
+    /* FactScheduledStopEvent is referenced by the operational fact's FK. */
+    DELETE FROM dw.FactScheduledStopEvent;
     TRUNCATE TABLE dw.BridgeServiceDate;
     DELETE FROM dw.FactScheduledTrip;
 
@@ -113,6 +136,7 @@ BEGIN TRY
     DBCC CHECKIDENT ('dw.DimStop', RESEED, 0) WITH NO_INFOMSGS;
     DBCC CHECKIDENT ('dw.DimService', RESEED, 0) WITH NO_INFOMSGS;
     DBCC CHECKIDENT ('dw.FactScheduledTrip', RESEED, 0) WITH NO_INFOMSGS;
+    DBCC CHECKIDENT ('dw.FactScheduledStopEvent', RESEED, 0) WITH NO_INFOMSGS;
 
     INSERT INTO dw.DimAgency
     (
@@ -411,9 +435,10 @@ BEGIN TRY
         ON service.ServiceId = trip.ServiceId;
 
     /*
-        Keep the complete warehouse replacement in one transaction.
-        TripKey batches control INSERT size and progress reporting only; they
-        do not commit independently.
+        Keep the complete warehouse replacement and, when deployed, the
+        derived operational rebuild in one transaction.  TripKey batches
+        control INSERT size and progress reporting only; they do not commit
+        independently.
     */
 
     SELECT
@@ -490,6 +515,12 @@ BEGIN TRY
         RAISERROR(@ProgressMessage, 10, 1) WITH NOWAIT;
 
         SET @FirstTripKey = @LastTripKey + 1;
+    END;
+
+    IF @OperationalFactExists = 1
+    BEGIN
+        /* Re-match preserved realtime observations against the new warehouse. */
+        EXEC dw.uspRefreshFactOperationalStopOutcome;
     END;
 
     UPDATE ctl.StaticWarehouseLoadBatch

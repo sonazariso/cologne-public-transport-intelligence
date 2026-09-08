@@ -641,11 +641,21 @@ analytics.vwRealtimeSituationLinkedOutcome
 
 The operational fact grain is one matched scheduled stop event on one GTFS
 service date. Repeated usable observations are consolidated deterministically
-by `ObservedAtUtc`, then `ObservationKey`; first/last observation keys and the
-contributing count remain available for lineage. Only
+by `ObservedAtUtc ASC, ObservationKey ASC` for the first observation and
+`ObservedAtUtc DESC, ObservationKey DESC` for the latest; first/last observation
+keys and the contributing count remain available for lineage. Only
 `ExactStopMatch` and `ParentStationFallback` populate operational reliability
 outcomes. `StaticCoverageMissing` and `Unresolved` remain visible in Data
 Quality/Coverage analytics.
+
+After the realtime operational objects exist, a subsequent GTFS/static
+warehouse reload preserves the append-only realtime staging and Collector audit
+history, clears only the derived operational fact inside the static-load
+transaction, rebuilds the static warehouse with FK-compatible deletes, and
+refreshes the operational fact from the preserved observations before commit.
+Rollback therefore keeps the prior static and operational state together when a
+reload fails. The initial static load remains valid before these realtime
+objects are created.
 
 Arrival and delay values are observed estimates, not confirmed physical
 arrival or actual-delay measurements. Platform evidence is `Changed` only when

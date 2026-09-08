@@ -195,17 +195,30 @@ evidence without duplicating dimension text.
 
 `04-warehouse/06-refresh-operational-stop-outcome.sql` creates the idempotent
 `dw.uspRefreshFactOperationalStopOutcome` procedure. It orders contributing
-rows by `ObservedAtUtc`, then `ObservationKey`; inserts new outcomes and
-updates existing outcomes when the consolidated state changes. It never
+rows by `ObservedAtUtc ASC, ObservationKey ASC` for the first observation and
+`ObservedAtUtc DESC, ObservationKey DESC` for the latest observation; inserts
+new outcomes and updates existing outcomes when the consolidated state changes. It never
 truncates or deletes append-only realtime staging history. Only
 `ExactStopMatch` and `ParentStationFallback` are eligible for the fact;
 `StaticCoverageMissing` and `Unresolved` remain available to Data Quality /
 Coverage analytics.
 
+After the realtime operational objects exist, a subsequent
+`04-warehouse/02-load-static-warehouse.sql` run clears only the derived
+operational fact inside the static replacement transaction, reloads the static
+warehouse with FK-compatible parent-table deletes, and invokes the refresh
+procedure against the preserved realtime observations before commit. A failed
+reload rolls back the static replacement and the derived-fact clear together;
+the append-only realtime staging and Collector audit history are untouched.
+The same loader still works before the realtime operational objects have been
+created.
+
 `04-warehouse/07-validate-operational-stop-outcome.sql` checks the unique
 dated operational grain, warehouse lineage/foreign keys, consolidation
 examples, platform Unknown semantics, situation-link counts, usable-match
-eligibility, and repeatability using the current genuine source rows.
+eligibility, post-static-reload reconciliation, and repeatability using the
+current genuine source rows. Its first/latest lineage checks use the same
+timestamp-plus-key order as the production refresh.
 
 ### Realtime analytics views
 

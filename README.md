@@ -97,6 +97,13 @@ only—not confirmed causality. The 14/28-day period remains a later history and
 interpretation milestone; it is not a prerequisite for this database design or
 SQL validation. Power BI has not been started in this task.
 
+Subsequent GTFS/static warehouse reloads now clear and rebuild only the derived
+operational outcome fact within the same transaction as the static replacement,
+then refresh it from the preserved append-only realtime observations before
+commit. A failed reload rolls back both layers; realtime staging and Collector
+run history are not deleted. The initial static load remains compatible with a
+database where the realtime operational objects do not yet exist.
+
 ### Realtime collector
 
 The repository realtime collector is configured for the local pilot:

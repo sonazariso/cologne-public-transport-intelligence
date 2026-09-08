@@ -248,12 +248,23 @@ arrival timestamps.
 
 `04-warehouse/06-refresh-operational-stop-outcome.sql` creates
 `dw.uspRefreshFactOperationalStopOutcome`. For each `(DateKey,
-ScheduledStopEventKey)` it orders usable observations by `ObservedAtUtc` and
-`ObservationKey`; the first row supplies first-state fields, the last row
-supplies latest-state fields, and all contributing rows count toward
-`ObservationCount`. The transaction inserts new outcomes and updates changed
-outcomes without truncating staging. The unique operational-grain index,
-foreign keys, and fact checks enforce the model.
+ScheduledStopEventKey)` it orders usable observations by
+`ObservedAtUtc ASC, ObservationKey ASC` for the first row and
+`ObservedAtUtc DESC, ObservationKey DESC` for the latest row. Those rows supply
+the first/latest state fields, all contributing rows count toward
+`ObservationCount`, and the transaction inserts new outcomes and updates
+changed outcomes without truncating staging. The unique operational-grain
+index, foreign keys, and fact checks enforce the model.
+
+When a subsequent GTFS/static warehouse reload runs after the realtime
+operational objects have been deployed, `04-warehouse/02-load-static-warehouse.sql`
+clears only this derived fact inside the existing static-load transaction. It
+uses FK-compatible deletes for the rebuilt parent fact, reloads the static
+surrogate keys, and calls `dw.uspRefreshFactOperationalStopOutcome` against the
+preserved append-only realtime observations before committing. Any failure
+rolls back the static replacement and operational clear together, while the
+realtime staging and Collector audit history remain intact. Before those
+realtime objects exist, the loader follows the original initial-install path.
 
 Only `ExactStopMatch` and `ParentStationFallback` populate the operational
 fact. `StaticCoverageMissing` and `Unresolved` remain visible in the staging
@@ -265,7 +276,8 @@ evidence, not confirmed causality.
 The repeatable validation report is
 `04-warehouse/07-validate-operational-stop-outcome.sql`. It uses genuine
 current rows, shows repeated-observation consolidation examples, validates
-lineage and warehouse keys, and proves repeatability without synthetic data.
+lineage and warehouse keys, checks post-static-reload reconciliation, and
+proves repeatability without synthetic data.
 
 ## 13. Realtime Analytics Views
 

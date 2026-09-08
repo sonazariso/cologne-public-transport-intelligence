@@ -153,24 +153,52 @@ GROUP BY outcome.MatchStatus
 ORDER BY outcome.MatchStatus;
 
 /* 4. Real examples of repeated observations consolidated to one outcome. */
-;WITH SourceConsolidation AS
+;WITH OrderedUsableObservation AS
 (
     SELECT
         match_view.DateKey,
         match_view.ServiceDate,
         match_view.ScheduledStopEventKey,
-        COUNT_BIG(*) AS SourceObservationCount,
-        MIN(match_view.ObservationKey) AS EarliestSourceObservationKey,
-        MAX(match_view.ObservationKey) AS LatestSourceObservationKey,
-        MIN(match_view.ObservedAtUtc) AS EarliestSourceObservedAtUtc,
-        MAX(match_view.ObservedAtUtc) AS LatestSourceObservedAtUtc
+        match_view.ObservationKey,
+        match_view.ObservedAtUtc,
+        ROW_NUMBER() OVER
+        (
+            PARTITION BY match_view.DateKey, match_view.ScheduledStopEventKey
+            ORDER BY match_view.ObservedAtUtc ASC, match_view.ObservationKey ASC
+        ) AS FirstOrdinal,
+        ROW_NUMBER() OVER
+        (
+            PARTITION BY match_view.DateKey, match_view.ScheduledStopEventKey
+            ORDER BY match_view.ObservedAtUtc DESC, match_view.ObservationKey DESC
+        ) AS LatestOrdinal
     FROM wrk.vwCologneRealtimeTripMatch AS match_view
     WHERE match_view.MatchStatus IN
           (N'ExactStopMatch', N'ParentStationFallback')
+),
+SourceConsolidation AS
+(
+    SELECT
+        ordered_observation.DateKey,
+        ordered_observation.ServiceDate,
+        ordered_observation.ScheduledStopEventKey,
+        COUNT_BIG(*) AS SourceObservationCount,
+        MAX(CASE WHEN ordered_observation.FirstOrdinal = 1
+                 THEN ordered_observation.ObservationKey END)
+            AS EarliestSourceObservationKey,
+        MAX(CASE WHEN ordered_observation.LatestOrdinal = 1
+                 THEN ordered_observation.ObservationKey END)
+            AS LatestSourceObservationKey,
+        MAX(CASE WHEN ordered_observation.FirstOrdinal = 1
+                 THEN ordered_observation.ObservedAtUtc END)
+            AS EarliestSourceObservedAtUtc,
+        MAX(CASE WHEN ordered_observation.LatestOrdinal = 1
+                 THEN ordered_observation.ObservedAtUtc END)
+            AS LatestSourceObservedAtUtc
+    FROM OrderedUsableObservation AS ordered_observation
     GROUP BY
-        match_view.DateKey,
-        match_view.ServiceDate,
-        match_view.ScheduledStopEventKey
+        ordered_observation.DateKey,
+        ordered_observation.ServiceDate,
+        ordered_observation.ScheduledStopEventKey
 )
 SELECT TOP (15)
     outcome.ServiceDate,
@@ -203,33 +231,93 @@ ORDER BY
     outcome.ServiceDate,
     outcome.ScheduledStopEventKey;
 
-/* 5. Latest source observation lineage must be reflected in the fact. */
-;WITH LatestSource AS
+/* 5. First/latest source lineage must use the production ordering rule. */
+;WITH OrderedSource AS
 (
     SELECT
         match_view.DateKey,
         match_view.ScheduledStopEventKey,
-        MAX(match_view.ObservationKey) AS LatestSourceObservationKey
+        match_view.ObservationKey,
+        match_view.ObservedAtUtc,
+        ROW_NUMBER() OVER
+        (
+            PARTITION BY match_view.DateKey, match_view.ScheduledStopEventKey
+            ORDER BY match_view.ObservedAtUtc ASC, match_view.ObservationKey ASC
+        ) AS FirstOrdinal,
+        ROW_NUMBER() OVER
+        (
+            PARTITION BY match_view.DateKey, match_view.ScheduledStopEventKey
+            ORDER BY match_view.ObservedAtUtc DESC, match_view.ObservationKey DESC
+        ) AS LatestOrdinal
     FROM wrk.vwCologneRealtimeTripMatch AS match_view
     WHERE match_view.MatchStatus IN
           (N'ExactStopMatch', N'ParentStationFallback')
-    GROUP BY match_view.DateKey, match_view.ScheduledStopEventKey
+),
+SourceLineage AS
+(
+    SELECT
+        ordered_source.DateKey,
+        ordered_source.ScheduledStopEventKey,
+        MAX(CASE WHEN ordered_source.FirstOrdinal = 1
+                 THEN ordered_source.ObservationKey END)
+            AS FirstSourceObservationKey,
+        MAX(CASE WHEN ordered_source.LatestOrdinal = 1
+                 THEN ordered_source.ObservationKey END)
+            AS LatestSourceObservationKey,
+        MAX(CASE WHEN ordered_source.FirstOrdinal = 1
+                 THEN ordered_source.ObservedAtUtc END)
+            AS FirstSourceObservedAtUtc,
+        MAX(CASE WHEN ordered_source.LatestOrdinal = 1
+                 THEN ordered_source.ObservedAtUtc END)
+            AS LatestSourceObservedAtUtc
+    FROM OrderedSource AS ordered_source
+    GROUP BY ordered_source.DateKey, ordered_source.ScheduledStopEventKey
 )
 SELECT
-    COUNT_BIG(*) AS LatestObservationLineageViolations,
-    CASE WHEN COUNT_BIG(*) = 0 THEN 'PASS' ELSE 'REVIEW' END AS CheckStatus
-FROM LatestSource AS source_latest
+    COALESCE(SUM
+    (
+        CASE WHEN outcome.FirstObservationKey <> source_lineage.FirstSourceObservationKey
+                   OR outcome.FirstObservedAtUtc <> source_lineage.FirstSourceObservedAtUtc
+             THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END
+    ), 0) AS FirstObservationLineageViolations,
+    COALESCE(SUM
+    (
+        CASE WHEN outcome.LastObservationKey <> source_lineage.LatestSourceObservationKey
+                   OR outcome.LastObservedAtUtc <> source_lineage.LatestSourceObservedAtUtc
+             THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END
+    ), 0) AS LatestObservationLineageViolations,
+    CASE WHEN COALESCE(SUM
+    (
+        CASE WHEN outcome.FirstObservationKey <> source_lineage.FirstSourceObservationKey
+                   OR outcome.FirstObservedAtUtc <> source_lineage.FirstSourceObservedAtUtc
+             THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END
+    ), 0) = 0
+       AND COALESCE(SUM
+    (
+        CASE WHEN outcome.LastObservationKey <> source_lineage.LatestSourceObservationKey
+                   OR outcome.LastObservedAtUtc <> source_lineage.LatestSourceObservedAtUtc
+             THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END
+    ), 0) = 0
+         THEN 'PASS' ELSE 'REVIEW' END AS CheckStatus
+FROM SourceLineage AS source_lineage
 JOIN dw.FactOperationalStopOutcome AS outcome
-    ON outcome.DateKey = source_latest.DateKey
-   AND outcome.ScheduledStopEventKey = source_latest.ScheduledStopEventKey
-WHERE outcome.LastObservationKey <> source_latest.LatestSourceObservationKey;
+    ON outcome.DateKey = source_lineage.DateKey
+   AND outcome.ScheduledStopEventKey = source_lineage.ScheduledStopEventKey;
 
 SELECT
     COUNT_BIG(*) AS ConsolidatedOutcomeOrderingViolations,
     CASE WHEN COUNT_BIG(*) = 0 THEN 'PASS' ELSE 'REVIEW' END AS CheckStatus
 FROM dw.FactOperationalStopOutcome AS outcome
 WHERE outcome.ObservationCount > 1
-  AND outcome.LastObservationKey <= outcome.FirstObservationKey;
+  AND
+  (
+      outcome.LastObservedAtUtc < outcome.FirstObservedAtUtc
+      OR
+      (
+          outcome.LastObservedAtUtc = outcome.FirstObservedAtUtc
+          AND outcome.LastObservationKey < outcome.FirstObservationKey
+      )
+  );
 
 /* 6. Situation-link totals and platform evidence semantics. */
 ;WITH SourceSituation AS
@@ -524,3 +612,159 @@ FROM
                 SELECT * FROM #FactStateAfterFirstRepeat
             ) AS difference_rows)
 ) AS comparison;
+
+/* 8. Static-reload compatibility and post-reload reconciliation. */
+;WITH LatestStaticLoad AS
+(
+    SELECT TOP (1)
+        load_batch.WarehouseLoadBatchId,
+        load_batch.Status,
+        load_batch.CompletedAtUtc,
+        load_batch.AgencyRows,
+        load_batch.ModeRows,
+        load_batch.RouteRows,
+        load_batch.StopRows,
+        load_batch.ServiceRows,
+        load_batch.DateRows,
+        load_batch.ServiceDateRows,
+        load_batch.TripRows,
+        load_batch.ScheduledStopEventRows
+    FROM ctl.StaticWarehouseLoadBatch AS load_batch
+    ORDER BY load_batch.WarehouseLoadBatchId DESC
+)
+SELECT
+    check_result.CheckName,
+    check_result.FailedRows,
+    CASE WHEN check_result.FailedRows = 0 THEN 'PASS' ELSE 'REVIEW' END
+        AS CheckStatus
+FROM
+(
+    SELECT
+        N'Latest static warehouse load completed' AS CheckName,
+        CASE WHEN EXISTS
+        (
+            SELECT 1
+            FROM LatestStaticLoad
+            WHERE Status IN ('Loaded', 'Validated')
+              AND CompletedAtUtc IS NOT NULL
+        )
+        THEN CONVERT(BIGINT, 0) ELSE CONVERT(BIGINT, 1) END AS FailedRows
+
+    UNION ALL
+
+    SELECT
+        N'Latest static warehouse row counts reconcile' AS CheckName,
+        CASE WHEN EXISTS
+        (
+            SELECT 1
+            FROM LatestStaticLoad
+            WHERE Status IN ('Loaded', 'Validated')
+              AND AgencyRows = (SELECT COUNT_BIG(*) FROM dw.DimAgency)
+              AND ModeRows = (SELECT COUNT_BIG(*) FROM dw.DimMode)
+              AND RouteRows = (SELECT COUNT_BIG(*) FROM dw.DimRoute)
+              AND StopRows = (SELECT COUNT_BIG(*) FROM dw.DimStop)
+              AND ServiceRows = (SELECT COUNT_BIG(*) FROM dw.DimService)
+              AND DateRows = (SELECT COUNT_BIG(*) FROM dw.DimDate)
+              AND ServiceDateRows = (SELECT COUNT_BIG(*) FROM dw.BridgeServiceDate)
+              AND TripRows = (SELECT COUNT_BIG(*) FROM dw.FactScheduledTrip)
+              AND ScheduledStopEventRows =
+                  (SELECT COUNT_BIG(*) FROM dw.FactScheduledStopEvent)
+        )
+        THEN CONVERT(BIGINT, 0) ELSE CONVERT(BIGINT, 1) END
+) AS check_result
+ORDER BY check_result.CheckName;
+
+SELECT
+    fk.name AS ForeignKeyName,
+    fk.is_disabled AS IsDisabled,
+    fk.is_not_trusted AS IsNotTrusted,
+    CASE WHEN fk.is_disabled = 0 AND fk.is_not_trusted = 0
+         THEN 'PASS' ELSE 'REVIEW' END AS CheckStatus
+FROM sys.foreign_keys AS fk
+WHERE fk.parent_object_id = OBJECT_ID(N'dw.FactOperationalStopOutcome')
+ORDER BY fk.name;
+
+SELECT
+    COUNT_BIG(*) AS FactForeignKeyCount,
+    COALESCE(SUM(CASE WHEN fk.is_disabled = 1 THEN CONVERT(BIGINT, 1)
+                      ELSE CONVERT(BIGINT, 0) END), 0)
+        AS DisabledForeignKeyCount,
+    COALESCE(SUM(CASE WHEN fk.is_not_trusted = 1 THEN CONVERT(BIGINT, 1)
+                      ELSE CONVERT(BIGINT, 0) END), 0)
+        AS UntrustedForeignKeyCount,
+    CASE WHEN COUNT_BIG(*) = 9
+               AND COALESCE(SUM(CASE WHEN fk.is_disabled = 1 THEN 1 ELSE 0 END), 0) = 0
+               AND COALESCE(SUM(CASE WHEN fk.is_not_trusted = 1 THEN 1 ELSE 0 END), 0) = 0
+         THEN 'PASS' ELSE 'REVIEW' END AS CheckStatus
+FROM sys.foreign_keys AS fk
+WHERE fk.parent_object_id = OBJECT_ID(N'dw.FactOperationalStopOutcome');
+
+;WITH CurrentUsableGrain AS
+(
+    SELECT
+        match_view.DateKey,
+        match_view.ScheduledStopEventKey
+    FROM wrk.vwCologneRealtimeTripMatch AS match_view
+    WHERE match_view.MatchStatus IN
+          (N'ExactStopMatch', N'ParentStationFallback')
+    GROUP BY match_view.DateKey, match_view.ScheduledStopEventKey
+),
+FactGrain AS
+(
+    SELECT
+        outcome.DateKey,
+        outcome.ScheduledStopEventKey
+    FROM dw.FactOperationalStopOutcome AS outcome
+    GROUP BY outcome.DateKey, outcome.ScheduledStopEventKey
+),
+GrainDifferences AS
+(
+    SELECT
+        missing.DateKey,
+        missing.ScheduledStopEventKey,
+        N'Missing operational outcome for current usable match' AS DifferenceType
+    FROM
+    (
+        SELECT DateKey, ScheduledStopEventKey
+        FROM CurrentUsableGrain
+        EXCEPT
+        SELECT DateKey, ScheduledStopEventKey
+        FROM FactGrain
+    ) AS missing
+
+    UNION ALL
+
+    SELECT
+        stale.DateKey,
+        stale.ScheduledStopEventKey,
+        N'Stale operational outcome without current usable match'
+    FROM
+    (
+        SELECT DateKey, ScheduledStopEventKey
+        FROM FactGrain
+        EXCEPT
+        SELECT DateKey, ScheduledStopEventKey
+        FROM CurrentUsableGrain
+    ) AS stale
+)
+SELECT
+    (SELECT COUNT_BIG(*) FROM CurrentUsableGrain)
+        AS CurrentUsableMatchGrainCount,
+    (SELECT COUNT_BIG(*) FROM FactGrain)
+        AS OperationalFactGrainCount,
+    (SELECT COUNT_BIG(*) FROM GrainDifferences)
+        AS GrainDifferenceCount,
+    CASE WHEN (SELECT COUNT_BIG(*) FROM GrainDifferences) = 0
+         THEN 'PASS' ELSE 'REVIEW' END AS CheckStatus;
+
+SELECT
+    (SELECT COUNT_BIG(*) FROM stg.MddRealtimeStopObservation)
+        AS RealtimeStopObservationCount,
+    (SELECT COUNT_BIG(*) FROM stg.MddRealtimeSituationObservation)
+        AS RealtimeSituationObservationCount,
+    (SELECT COUNT_BIG(*) FROM stg.MddRealtimeStopSituationLink)
+        AS RealtimeStopSituationLinkCount,
+    (SELECT COUNT_BIG(*) FROM ctl.MddCollectorRun)
+        AS CollectorRunCount,
+    N'Append-only realtime source counts are reported for comparison with the pre-reload capture.'
+        AS SourceHistoryNote;
