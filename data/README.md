@@ -5,7 +5,7 @@ Raw source data is stored locally and is not committed to GitHub.
 ## Current Local Source
 
 ```text
-/Users/admin/Documents/DataBaseKÖLN/google_transit_goR/
+/Users/admin/Documents/CologneTransitData/google_transit_goR/
 ```
 
 This directory contains the extracted VRS static GTFS feed downloaded on 2026-08-29.
