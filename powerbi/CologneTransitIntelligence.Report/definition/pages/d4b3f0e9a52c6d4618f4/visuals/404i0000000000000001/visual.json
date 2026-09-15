@@ -525,7 +525,7 @@
                 "Entity": "StopPosition"
               }
             },
-            "Property": "StopCode"
+            "Property": "StopId"
           }
         },
         "type": "TopN",
