@@ -167,6 +167,8 @@ table _Measures
 		displayFolder: 02 Network Baseline
 		lineageTag: e7bc0b69-35cd-4415-9487-3ba5afe82f40
 
+	/// Count of matched operational stop outcomes available for validated
+	/// realtime reliability analysis.
 	measure 'Observed Matched Services' =
 			
 			COUNTROWS ( RT_ReliabilityOutcome )
