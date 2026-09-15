@@ -1,0 +1,434 @@
+table RT_ReliabilityOutcome
+	lineageTag: 29a9eeba-fefd-4586-b324-0f9f35753784
+
+	column OperationalStopOutcomeKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 3bdfffe6-7df7-48bc-b647-5412a187b1bb
+		summarizeBy: count
+		sourceColumn: OperationalStopOutcomeKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column DateKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 77a26dbd-22e9-49d4-8520-a26f386c2606
+		summarizeBy: none
+		sourceColumn: DateKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ServiceDate
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 0687f820-152b-4d47-986f-67c322c2c9bb
+		summarizeBy: none
+		sourceColumn: ServiceDate
+
+		variation Variation
+			isDefault
+			relationship: c6276bbc-7975-43d4-9c70-d252478cfb2f
+			defaultHierarchy: LocalDateTable_795cbcd6-e74c-4586-bc4f-b3d26250a9fe.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ScheduledStopEventKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: c3024905-dcd5-43b0-b769-d292a0a96891
+		summarizeBy: count
+		sourceColumn: ScheduledStopEventKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column TripKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: cfb2fda1-dd79-409f-b10f-ad6bc6e9616a
+		summarizeBy: count
+		sourceColumn: TripKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column RouteKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 798e299e-af80-4913-857f-dd0689502786
+		summarizeBy: none
+		sourceColumn: RouteKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column RouteId
+		dataType: string
+		lineageTag: 2d9fc30c-4bd1-41f8-85bf-b9fdad3b736a
+		summarizeBy: none
+		sourceColumn: RouteId
+
+		annotation SummarizationSetBy = Automatic
+
+	column Route
+		dataType: string
+		lineageTag: 0c70c250-cf9a-4011-80d8-c602cfa122a2
+		summarizeBy: none
+		sourceColumn: Route
+
+		annotation SummarizationSetBy = Automatic
+
+	column Line
+		dataType: string
+		lineageTag: fe59b2da-936d-4c2f-8707-d45387c9870f
+		summarizeBy: none
+		sourceColumn: Line
+
+		annotation SummarizationSetBy = Automatic
+
+	column RouteLongName
+		dataType: string
+		lineageTag: e5ce83c9-7b3b-4171-8b5f-b5ea45dd91ba
+		summarizeBy: none
+		sourceColumn: RouteLongName
+
+		annotation SummarizationSetBy = Automatic
+
+	column StopKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 894002c7-b814-476a-8bd1-18ff5ee1b264
+		summarizeBy: none
+		sourceColumn: StopKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column StopId
+		dataType: string
+		lineageTag: dce50a8f-e1ee-4b89-ba05-e71ecc8e766f
+		summarizeBy: none
+		sourceColumn: StopId
+
+		annotation SummarizationSetBy = Automatic
+
+	column Stop
+		dataType: string
+		lineageTag: 5805599b-7c23-4543-8bfa-e7c571e3b443
+		summarizeBy: none
+		sourceColumn: Stop
+
+		annotation SummarizationSetBy = Automatic
+
+	column Station
+		dataType: string
+		lineageTag: 116a7f0d-2daa-4e19-932e-302c8f8a9ac7
+		summarizeBy: none
+		sourceColumn: Station
+
+		annotation SummarizationSetBy = Automatic
+
+	column ModeKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 5c73082b-27eb-4b08-bfea-dc6504140b56
+		summarizeBy: count
+		sourceColumn: ModeKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ModeGroup
+		dataType: string
+		lineageTag: 951a7051-82c6-40a7-86f2-dfaf41e3dfbd
+		summarizeBy: none
+		sourceColumn: ModeGroup
+
+		annotation SummarizationSetBy = Automatic
+
+	column Mode
+		dataType: string
+		lineageTag: e08dfa4a-f5b9-41b0-9f21-fcc1987a6dda
+		summarizeBy: none
+		sourceColumn: Mode
+
+		annotation SummarizationSetBy = Automatic
+
+	column ServiceKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b0e00eba-952d-40ce-81fe-3c49af4bbdaa
+		summarizeBy: count
+		sourceColumn: ServiceKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column TripHeadsign
+		dataType: string
+		lineageTag: e141fde6-bc2c-4553-bded-3417b9d75730
+		summarizeBy: none
+		sourceColumn: TripHeadsign
+
+		annotation SummarizationSetBy = Automatic
+
+	column MatchStatus
+		dataType: string
+		lineageTag: 4a95c8e2-7f76-4859-816e-1473afc11af8
+		summarizeBy: none
+		sourceColumn: MatchStatus
+
+		annotation SummarizationSetBy = Automatic
+
+	column ScheduledArrivalUtc
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		lineageTag: e4527a3c-0748-446e-8610-2232f623115a
+		summarizeBy: none
+		sourceColumn: ScheduledArrivalUtc
+
+		variation Variation
+			isDefault
+			relationship: 7080987e-b3ac-44c1-ad39-626c1183f443
+			defaultHierarchy: LocalDateTable_a5de2fbe-f735-43ec-abb8-07e541312a45.'Date Hierarchy'
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ScheduledArrival
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: c3197d18-2cb4-4dfc-9663-e3d2f9dbd120
+		summarizeBy: none
+		sourceColumn: ScheduledArrival
+
+		variation Variation
+			isDefault
+			relationship: 6e5555ea-a13d-4848-8cd6-39c090b86738
+			defaultHierarchy: LocalDateTable_5f70b578-7fd6-4479-aa68-bc54eba795b8.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column LatestObservedEstimatedArrival
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		lineageTag: 20834496-5b30-4dcd-b438-b3694d67b09c
+		summarizeBy: none
+		sourceColumn: LatestObservedEstimatedArrival
+
+		variation Variation
+			isDefault
+			relationship: 10b4c194-31eb-472e-ad4d-b8dc659d3ebb
+			defaultHierarchy: LocalDateTable_ef48eb9b-677f-49d5-9fd8-45df252d5505.'Date Hierarchy'
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column LatestObservedEstimatedArrivalLocal
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: b016fe72-dc40-4abc-972a-d4a52813e58f
+		summarizeBy: none
+		sourceColumn: LatestObservedEstimatedArrivalLocal
+
+		variation Variation
+			isDefault
+			relationship: 4f7442d8-6e21-4726-8f2f-c0a7dfcb394f
+			defaultHierarchy: LocalDateTable_188bc582-0098-4979-be96-18fee972181c.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column FirstObservedEstimatedDelayMinutes
+		dataType: double
+		lineageTag: 4f875ecc-8b54-491a-8231-30da09cb6702
+		summarizeBy: none
+		sourceColumn: FirstObservedEstimatedDelayMinutes
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column FinalObservedEstimatedDelayMinutes
+		dataType: double
+		lineageTag: 735676eb-6c6f-4eef-ad77-ff65c74cf025
+		summarizeBy: none
+		sourceColumn: FinalObservedEstimatedDelayMinutes
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column ObservationCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 4950b7b9-090b-4d36-818a-8fc3d544ca5c
+		summarizeBy: none
+		sourceColumn: ObservationCount
+
+		annotation SummarizationSetBy = User
+
+	column FirstObservationKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: eb516f9c-9727-4e6d-b02d-ba3768251778
+		summarizeBy: count
+		sourceColumn: FirstObservationKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column LastObservationKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: d3a7d331-d4da-42b8-8dbb-a5b2ef5f8d07
+		summarizeBy: count
+		sourceColumn: LastObservationKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column FirstObservedAtUtc
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: cafabee2-0341-4531-b156-73368fe73649
+		summarizeBy: none
+		sourceColumn: FirstObservedAtUtc
+
+		variation Variation
+			isDefault
+			relationship: 1bdedd13-4c66-47f1-ae41-9b4540d2969e
+			defaultHierarchy: LocalDateTable_e205e702-5f10-4b41-8cba-b6886ca61e22.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column LastObservedAtUtc
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: b6897652-607c-4899-b8ed-b7111c0db3b6
+		summarizeBy: none
+		sourceColumn: LastObservedAtUtc
+
+		variation Variation
+			isDefault
+			relationship: 6772c866-3773-4a69-aa90-a8c76f67f1f4
+			defaultHierarchy: LocalDateTable_a38b5805-9b72-4b16-b431-2d172a4531a5.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column PlannedBay
+		dataType: string
+		lineageTag: 5761b838-f9cd-4742-9bb8-4511913bd81d
+		summarizeBy: none
+		sourceColumn: PlannedBay
+
+		annotation SummarizationSetBy = Automatic
+
+	column LatestObservedEstimatedBay
+		dataType: string
+		lineageTag: 3ee8b4d1-1d29-4792-b116-4189052bf569
+		summarizeBy: none
+		sourceColumn: LatestObservedEstimatedBay
+
+		annotation SummarizationSetBy = Automatic
+
+	column PlatformChangeEvidence
+		dataType: string
+		lineageTag: 03456465-8452-4b64-a651-9a8942a4a74b
+		summarizeBy: none
+		sourceColumn: PlatformChangeEvidence
+
+		annotation SummarizationSetBy = Automatic
+
+	column HasSituationEvidence
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 5a91c4ad-a58e-4d8f-aa5a-d1cd4d695c44
+		summarizeBy: none
+		sourceColumn: HasSituationEvidence
+
+		annotation SummarizationSetBy = Automatic
+
+	column SituationLinkCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 2b1c6e2e-24e5-4328-86fe-4f282ba721d9
+		summarizeBy: none
+		sourceColumn: SituationLinkCount
+
+		annotation SummarizationSetBy = User
+
+	column RefreshedAtUtc
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		lineageTag: cc8c321a-5913-4efc-86f9-cc75a397dda7
+		summarizeBy: none
+		sourceColumn: RefreshedAtUtc
+
+		variation Variation
+			isDefault
+			relationship: 5c658535-c5b5-4095-bcf9-dc383b658c43
+			defaultHierarchy: LocalDateTable_cf101cbc-431c-4774-be2b-b13c423a200c.'Date Hierarchy'
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column DelaySemanticNote
+		dataType: string
+		lineageTag: 35e6f43a-472a-4206-8085-b7d553e8fabc
+		summarizeBy: none
+		sourceColumn: DelaySemanticNote
+
+		annotation SummarizationSetBy = Automatic
+
+	column SituationSemanticNote
+		dataType: string
+		lineageTag: 8769efd7-1b66-4718-8cd0-47bda9587856
+		summarizeBy: none
+		sourceColumn: SituationSemanticNote
+
+		annotation SummarizationSetBy = Automatic
+
+	partition RT_ReliabilityOutcome = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("localhost", "CologneTransitIntelligence"),
+				    analytics_vwRealtimeReliabilityOutcome = Source{[Schema="analytics",Item="vwRealtimeReliabilityOutcome"]}[Data]
+				in
+				    analytics_vwRealtimeReliabilityOutcome
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

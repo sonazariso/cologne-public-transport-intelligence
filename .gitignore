@@ -34,3 +34,10 @@ prompts/
 
 # Workspace-local VS Code settings, including the machine-specific MSSQL profile
 .vscode/settings.json
+
+# Power BI Project local state
+**/.pbi/localSettings.json
+**/.pbi/cache.abf
+
+# Power BI Desktop binary files
+/powerbi/*.pbix

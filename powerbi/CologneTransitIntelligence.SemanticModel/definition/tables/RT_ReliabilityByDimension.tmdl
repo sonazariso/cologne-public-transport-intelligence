@@ -1,0 +1,152 @@
+table RT_ReliabilityByDimension
+	lineageTag: 387b7671-b596-4ddb-b0cb-bed2bc3ff244
+
+	column DimensionType
+		dataType: string
+		lineageTag: 48f7f580-f2f1-4e4a-ae09-ec89aaab5588
+		summarizeBy: none
+		sourceColumn: DimensionType
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column DimensionKey
+		dataType: string
+		isHidden
+		lineageTag: 83ecbe51-57f0-463a-aa26-c15c81bde2e1
+		summarizeBy: none
+		sourceColumn: DimensionKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column DimensionLabel
+		dataType: string
+		isHidden
+		lineageTag: e169fa46-b324-4350-98ee-613569ec128f
+		summarizeBy: none
+		sourceColumn: DimensionLabel
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ObservedMatchedServiceCount
+		dataType: int64
+		formatString: 0
+		lineageTag: c4a0d731-a449-45be-9c38-e5e77332bddc
+		summarizeBy: none
+		sourceColumn: ObservedMatchedServiceCount
+
+		annotation SummarizationSetBy = User
+
+	column DelayObservationCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 37c1fefc-6f3a-404e-8656-111e223c3a5a
+		summarizeBy: none
+		sourceColumn: DelayObservationCount
+
+		annotation SummarizationSetBy = User
+
+	column AverageObservedEstimatedDelayMinutes
+		dataType: double
+		lineageTag: 99714683-3f15-4cc2-8f96-f61d81d50d56
+		summarizeBy: none
+		sourceColumn: AverageObservedEstimatedDelayMinutes
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column MinimumObservedEstimatedDelayMinutes
+		dataType: double
+		lineageTag: 4fce9bd3-e329-4804-becc-8f51d6b17dd7
+		summarizeBy: none
+		sourceColumn: MinimumObservedEstimatedDelayMinutes
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column MaximumObservedEstimatedDelayMinutes
+		dataType: double
+		lineageTag: 41a4bc15-b975-4e40-afca-707466a208b4
+		summarizeBy: none
+		sourceColumn: MaximumObservedEstimatedDelayMinutes
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column MedianObservedEstimatedDelayMinutes
+		dataType: double
+		lineageTag: dda68c79-838b-4254-b4c4-83b2eb0b2e50
+		summarizeBy: none
+		sourceColumn: MedianObservedEstimatedDelayMinutes
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column P95ObservedEstimatedDelayMinutes
+		dataType: double
+		lineageTag: c70fb7d5-fd6a-464c-a183-8d992f3e4d01
+		summarizeBy: none
+		sourceColumn: P95ObservedEstimatedDelayMinutes
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column AverageObservationsPerOutcome
+		dataType: double
+		lineageTag: 82fed1ef-eb00-4ba6-bade-e4313fd4c5d5
+		summarizeBy: none
+		sourceColumn: AverageObservationsPerOutcome
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column SituationLinkedOutcomeCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 9297bf1f-aac8-45b8-9a1b-d7d7e2132d82
+		summarizeBy: none
+		sourceColumn: SituationLinkedOutcomeCount
+
+		annotation SummarizationSetBy = User
+
+	column PlatformChangedEvidenceCount
+		dataType: int64
+		formatString: 0
+		lineageTag: ba7178ba-0e38-49cb-9ad8-bd7266578f69
+		summarizeBy: none
+		sourceColumn: PlatformChangedEvidenceCount
+
+		annotation SummarizationSetBy = User
+
+	column ThresholdSemanticNote
+		dataType: string
+		lineageTag: 3e03f291-d421-4c47-a4f5-ae1f19490b98
+		summarizeBy: none
+		sourceColumn: ThresholdSemanticNote
+
+		annotation SummarizationSetBy = Automatic
+
+	partition RT_ReliabilityByDimension = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("localhost", "CologneTransitIntelligence"),
+				    analytics_vwRealtimeReliabilityByDimension = Source{[Schema="analytics",Item="vwRealtimeReliabilityByDimension"]}[Data]
+				in
+				    analytics_vwRealtimeReliabilityByDimension
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

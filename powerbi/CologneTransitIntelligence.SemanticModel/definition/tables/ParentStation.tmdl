@@ -1,0 +1,123 @@
+table ParentStation
+	lineageTag: 6d3b396b-e4e4-4ced-8967-ea64b8fe1e26
+
+	column ParentStationKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 40a1ff14-be0f-47fa-9903-87f18984c3d4
+		summarizeBy: none
+		sourceColumn: ParentStationKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ParentStationId
+		dataType: string
+		isHidden
+		lineageTag: 72616cc7-d534-4f0a-94e5-b7f57ebb2ffb
+		summarizeBy: none
+		sourceColumn: ParentStationId
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ParentStationName
+		dataType: string
+		lineageTag: c0adbb77-b9f9-404f-a868-a38c33bc68e2
+		summarizeBy: none
+		sourceColumn: ParentStationName
+
+		annotation SummarizationSetBy = Automatic
+
+	column Latitude
+		dataType: double
+		lineageTag: ebb670a8-b8cf-4512-9132-fd17512aa29c
+		dataCategory: Latitude
+		summarizeBy: none
+		sourceColumn: Latitude
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Longitude
+		dataType: double
+		lineageTag: 07d39349-deab-42e0-9c45-b41ac13242fb
+		dataCategory: Longitude
+		summarizeBy: none
+		sourceColumn: Longitude
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column ChildStopPositionCount
+		dataType: int64
+		formatString: 0
+		lineageTag: d2408103-b6a1-4ed1-9ce8-164d8160f431
+		summarizeBy: none
+		sourceColumn: ChildStopPositionCount
+
+		annotation SummarizationSetBy = Automatic
+
+	column UsedStopPositionCount
+		dataType: int64
+		formatString: 0
+		lineageTag: e4be4d7a-24d7-450b-9a05-e29ef6de404e
+		summarizeBy: none
+		sourceColumn: UsedStopPositionCount
+
+		annotation SummarizationSetBy = Automatic
+
+	column ServedRouteCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 92796768-1218-4b75-9950-e702f3765c7a
+		summarizeBy: none
+		sourceColumn: ServedRouteCount
+
+		annotation SummarizationSetBy = Automatic
+
+	column ScheduledTripPatternCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 2520a902-0864-49a5-b611-09145dda475a
+		summarizeBy: none
+		sourceColumn: ScheduledTripPatternCount
+
+		annotation SummarizationSetBy = Automatic
+
+	column ScheduledStopEventPatternCount
+		dataType: int64
+		formatString: 0
+		lineageTag: fb64540e-8486-4a2c-8ecd-ebbb3a3e6296
+		summarizeBy: none
+		sourceColumn: ScheduledStopEventPatternCount
+
+		annotation SummarizationSetBy = Automatic
+
+	column IsUsedInCurrentSchedule
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: b23077ee-ebb4-4098-bde1-9c8c8b87b2be
+		summarizeBy: none
+		sourceColumn: IsUsedInCurrentSchedule
+
+		annotation SummarizationSetBy = Automatic
+
+	partition ParentStation = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("localhost", "CologneTransitIntelligence"),
+				    analytics_vwParentStationScheduleProfile = Source{[Schema="analytics",Item="vwParentStationScheduleProfile"]}[Data]
+				in
+				    analytics_vwParentStationScheduleProfile
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

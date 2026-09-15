@@ -1,0 +1,275 @@
+table DailySchedule
+	lineageTag: 89a3fe31-eec5-476e-ab20-aa549a516b86
+
+	column DateKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 3a02ffff-d4c0-4c19-a20f-54a52d27071a
+		summarizeBy: none
+		sourceColumn: DateKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column DateValue
+		dataType: dateTime
+		isHidden
+		formatString: Long Date
+		lineageTag: 473817cd-e6e2-4b72-affa-1a3e8465d75b
+		summarizeBy: none
+		sourceColumn: DateValue
+
+		variation Variation
+			isDefault
+			relationship: 6e249e15-fc26-415a-9f6c-0180c01f28dd
+			defaultHierarchy: LocalDateTable_8d3d726e-5bc7-4ade-90cc-004adab77097.'Date Hierarchy'
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column CalendarYear
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 204d1815-2b5f-484c-a405-7ab3099b6b75
+		summarizeBy: sum
+		sourceColumn: CalendarYear
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column CalendarQuarter
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 24ac66f1-b20f-48cf-803c-32111358e4df
+		summarizeBy: sum
+		sourceColumn: CalendarQuarter
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column CalendarMonth
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 9ce4ba26-c536-4aad-aed7-c30ce608c495
+		summarizeBy: sum
+		sourceColumn: CalendarMonth
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column MonthName
+		dataType: string
+		isHidden
+		lineageTag: cee36c1f-9e36-4383-a84b-51e74e2c5535
+		summarizeBy: none
+		sourceColumn: MonthName
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column IsoWeekNumber
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 5fb7f4de-616a-49db-95da-f009c5c4ca85
+		summarizeBy: sum
+		sourceColumn: IsoWeekNumber
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column IsoWeekdayNumber
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 3dee7377-ffce-4cbd-95cc-6778cc671383
+		summarizeBy: sum
+		sourceColumn: IsoWeekdayNumber
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column WeekdayName
+		dataType: string
+		isHidden
+		lineageTag: 1f3c69ba-c692-4036-8926-0b80f30defc4
+		summarizeBy: none
+		sourceColumn: WeekdayName
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column IsWeekend
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: b85bc44d-f312-4eda-bbdb-34dffe995b7d
+		summarizeBy: none
+		sourceColumn: IsWeekend
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column RouteKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: d8bca334-ebb8-4d86-b9c0-46fd7a7359a1
+		summarizeBy: none
+		sourceColumn: RouteKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column RouteId
+		dataType: string
+		isHidden
+		lineageTag: b1a6d0e7-93cc-4661-8443-9c7d4c831cb4
+		summarizeBy: none
+		sourceColumn: RouteId
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column RouteShortName
+		dataType: string
+		isHidden
+		lineageTag: 09996df7-6b78-4685-8b94-5e0fc4e348bb
+		summarizeBy: none
+		sourceColumn: RouteShortName
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column RouteLongName
+		dataType: string
+		isHidden
+		lineageTag: 153fe2d3-284b-47c5-92f9-4b9fd318fa12
+		summarizeBy: none
+		sourceColumn: RouteLongName
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column AgencyId
+		dataType: string
+		isHidden
+		lineageTag: 6dafb66c-42ee-43dc-b2c0-9a5e4769d6fe
+		summarizeBy: none
+		sourceColumn: AgencyId
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column AgencyName
+		dataType: string
+		isHidden
+		lineageTag: 11d71ee3-7c12-496f-9cd9-c61f0e6a2972
+		summarizeBy: none
+		sourceColumn: AgencyName
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ModeKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 1078752b-8eb6-4b48-aab1-bba6be732a75
+		summarizeBy: count
+		sourceColumn: ModeKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ModeSortOrder
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 27fbca32-067b-4e0b-a3e0-0c15b10f7cc1
+		summarizeBy: sum
+		sourceColumn: ModeSortOrder
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ModeGroup
+		dataType: string
+		isHidden
+		lineageTag: df34fda5-7f3f-4d9f-92c5-61418738aac0
+		summarizeBy: none
+		sourceColumn: ModeGroup
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ModeDetail
+		dataType: string
+		isHidden
+		lineageTag: 5a5dc537-1fb3-4f4d-8754-d6309ef64796
+		summarizeBy: none
+		sourceColumn: ModeDetail
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column IsRailReplacementService
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 2778790d-701e-49d7-b485-2ecab8b816dc
+		summarizeBy: none
+		sourceColumn: IsRailReplacementService
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ScheduledTripCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 0bcf0df9-75e4-41a6-b35a-d22e4e61fc88
+		summarizeBy: sum
+		sourceColumn: ScheduledTripCount
+
+		annotation SummarizationSetBy = User
+
+	partition DailySchedule = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("localhost", "CologneTransitIntelligence"),
+				    analytics_vwDailyScheduledTripProfile = Source{[Schema="analytics",Item="vwDailyScheduledTripProfile"]}[Data]
+				in
+				    analytics_vwDailyScheduledTripProfile
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

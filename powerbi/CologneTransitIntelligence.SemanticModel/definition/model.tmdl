@@ -1,0 +1,51 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-DE
+	valueFilterBehavior: independent
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_QueryOrder = ["ActiveDate","DailySchedule","Mode","NetworkKPI","ParentStation","RT_CollectorRunHealth","RT_DataQualityCoverage","RT_ConsolidationQuality","RT_ReliabilityByDimension","RT_ReliabilityOutcome","Route","StopPosition","_Measures"]
+
+annotation PBI_ProTooling = ["DaxQueryView_Desktop","DevMode"]
+
+ref table ActiveDate
+ref table DateTableTemplate_9132c14b-a97f-4771-8a40-c441e338e8e9
+ref table DailySchedule
+ref table LocalDateTable_8d3d726e-5bc7-4ade-90cc-004adab77097
+ref table Mode
+ref table NetworkKPI
+ref table ParentStation
+ref table RT_CollectorRunHealth
+ref table LocalDateTable_1dae7e85-1d66-4b1a-844f-8526e900bbb2
+ref table LocalDateTable_fa31f15f-568e-4569-b590-22743dcadb6a
+ref table LocalDateTable_95f0fb2e-c960-4599-a9f9-a626cdc0901e
+ref table LocalDateTable_a7d90dc6-24e5-43db-8c19-bad63f51df2d
+ref table LocalDateTable_2aebfa76-e759-491f-b4dd-ee74495220e6
+ref table LocalDateTable_93b916cd-e150-4b72-9a3b-fafc2ad08a28
+ref table RT_DataQualityCoverage
+ref table LocalDateTable_42f63192-3be5-4ca4-87bc-3e15b7951f06
+ref table LocalDateTable_aae62ca4-9930-4156-af4b-0348d1c61241
+ref table LocalDateTable_9daf2b86-364c-4479-8d2f-c5447fdc4273
+ref table RT_ConsolidationQuality
+ref table LocalDateTable_71724097-7cf3-4c3e-b615-4fe9a34aa95a
+ref table RT_ReliabilityByDimension
+ref table RT_ReliabilityOutcome
+ref table LocalDateTable_795cbcd6-e74c-4586-bc4f-b3d26250a9fe
+ref table LocalDateTable_a5de2fbe-f735-43ec-abb8-07e541312a45
+ref table LocalDateTable_5f70b578-7fd6-4479-aa68-bc54eba795b8
+ref table LocalDateTable_ef48eb9b-677f-49d5-9fd8-45df252d5505
+ref table LocalDateTable_188bc582-0098-4979-be96-18fee972181c
+ref table LocalDateTable_e205e702-5f10-4b41-8cba-b6886ca61e22
+ref table LocalDateTable_a38b5805-9b72-4b16-b431-2d172a4531a5
+ref table LocalDateTable_cf101cbc-431c-4774-be2b-b13c423a200c
+ref table Route
+ref table StopPosition
+ref table _Measures
+
+ref cultureInfo en-US
+

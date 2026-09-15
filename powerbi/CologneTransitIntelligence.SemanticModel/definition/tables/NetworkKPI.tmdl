@@ -1,0 +1,115 @@
+table NetworkKPI
+	lineageTag: 3338104e-233f-48b6-b529-413152f93646
+
+	column AgencyCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 4c8f02bd-e223-4040-8930-797fffe70efe
+		summarizeBy: none
+		sourceColumn: AgencyCount
+
+		annotation SummarizationSetBy = User
+
+	column ModeCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 4c343f80-c1e9-4421-996f-1996055d85f5
+		summarizeBy: none
+		sourceColumn: ModeCount
+
+		annotation SummarizationSetBy = User
+
+	column RouteCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 1f707ebb-9018-49fb-9095-a54089d3ad69
+		summarizeBy: none
+		sourceColumn: RouteCount
+
+		annotation SummarizationSetBy = User
+
+	column ParentStationCount
+		dataType: int64
+		formatString: 0
+		lineageTag: efec93d7-c7da-436e-9d0e-87ade507d13f
+		summarizeBy: none
+		sourceColumn: ParentStationCount
+
+		annotation SummarizationSetBy = User
+
+	column StopPositionCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 8bb6dece-bf63-45a8-9007-e57bed25352b
+		summarizeBy: none
+		sourceColumn: StopPositionCount
+
+		annotation SummarizationSetBy = User
+
+	column UsedStopPositionCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 4e39e1bf-9dd8-431b-a49d-3649b3f0091d
+		summarizeBy: none
+		sourceColumn: UsedStopPositionCount
+
+		annotation SummarizationSetBy = User
+
+	column ServicePatternCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 9e8a6c38-ad53-4ef5-b730-bc15a188fea5
+		summarizeBy: none
+		sourceColumn: ServicePatternCount
+
+		annotation SummarizationSetBy = User
+
+	column ActiveServiceDateCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 6a432889-0f8e-430b-bccc-1032859528c1
+		summarizeBy: none
+		sourceColumn: ActiveServiceDateCount
+
+		annotation SummarizationSetBy = User
+
+	column ScheduledTripPatternCount
+		dataType: int64
+		formatString: 0
+		lineageTag: fcbaa117-2774-4af2-b6a8-c33ba790af1b
+		summarizeBy: none
+		sourceColumn: ScheduledTripPatternCount
+
+		annotation SummarizationSetBy = User
+
+	column ScheduledTripOccurrenceCount
+		dataType: int64
+		formatString: 0
+		lineageTag: cf9d6980-bed2-4533-8e3a-a5e65198eb8b
+		summarizeBy: none
+		sourceColumn: ScheduledTripOccurrenceCount
+
+		annotation SummarizationSetBy = User
+
+	column ScheduledStopEventPatternCount
+		dataType: int64
+		formatString: 0
+		lineageTag: c65b41de-fec2-41ab-a78e-85bad614c4c0
+		summarizeBy: none
+		sourceColumn: ScheduledStopEventPatternCount
+
+		annotation SummarizationSetBy = User
+
+	partition NetworkKPI = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("localhost", "CologneTransitIntelligence"),
+				    analytics_vwNetworkBaselineKpi = Source{[Schema="analytics",Item="vwNetworkBaselineKpi"]}[Data]
+				in
+				    analytics_vwNetworkBaselineKpi
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

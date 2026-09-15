@@ -1,0 +1,165 @@
+table StopPosition
+	lineageTag: c9b02c68-ceb5-43f4-8a0c-e5a108d51401
+
+	column StopKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 58bd0b3d-9b74-4ad7-a744-bcb3bf23077e
+		summarizeBy: none
+		sourceColumn: StopKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column StopId
+		dataType: string
+		isHidden
+		lineageTag: cca375ed-9fd6-4bc7-80a3-6bbeaea289f4
+		summarizeBy: none
+		sourceColumn: StopId
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column StopCode
+		dataType: string
+		lineageTag: 9fdf8d14-97bd-43e3-b46f-b10c68e8311b
+		summarizeBy: none
+		sourceColumn: StopCode
+
+		annotation SummarizationSetBy = Automatic
+
+	column StopName
+		dataType: string
+		lineageTag: 077f9e9f-4d19-44fb-8426-c75ef070f933
+		summarizeBy: none
+		sourceColumn: StopName
+
+		annotation SummarizationSetBy = Automatic
+
+	column Latitude
+		dataType: double
+		lineageTag: e98087f5-3437-4213-a020-ab7456eeca62
+		dataCategory: Latitude
+		summarizeBy: none
+		sourceColumn: Latitude
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Longitude
+		dataType: double
+		lineageTag: 36e54dff-5ed1-4e1c-b776-a08d7e5907e3
+		dataCategory: Longitude
+		summarizeBy: none
+		sourceColumn: Longitude
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column ParentStopKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: a670df81-3e88-4e2a-a662-bb58cc9b2637
+		summarizeBy: none
+		sourceColumn: ParentStopKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ParentStationId
+		dataType: string
+		isHidden
+		lineageTag: b6ce5c67-65f2-4ac9-9708-d1138f844dba
+		summarizeBy: none
+		sourceColumn: ParentStationId
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ParentStationName
+		dataType: string
+		isHidden
+		lineageTag: 9ac74fbc-ab4e-4559-a726-68ecbb896a48
+		summarizeBy: none
+		sourceColumn: ParentStationName
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ServedRouteCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 2c9a2b5e-7a94-44d9-aad4-6d440a57388d
+		summarizeBy: none
+		sourceColumn: ServedRouteCount
+
+		annotation SummarizationSetBy = User
+
+	column ScheduledTripPatternCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 50aa836f-1496-4c08-be40-f0d522f0d6b3
+		summarizeBy: none
+		sourceColumn: ScheduledTripPatternCount
+
+		annotation SummarizationSetBy = User
+
+	column ScheduledStopEventPatternCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 061b43f9-7fda-4fb7-9fa7-4d5b6f9ff832
+		summarizeBy: none
+		sourceColumn: ScheduledStopEventPatternCount
+
+		annotation SummarizationSetBy = User
+
+	column EarliestScheduledDepartureSeconds
+		dataType: int64
+		formatString: 0
+		lineageTag: 53f1bc1a-c4c8-4c9c-947c-bc2e9f713bd0
+		summarizeBy: sum
+		sourceColumn: EarliestScheduledDepartureSeconds
+
+		annotation SummarizationSetBy = Automatic
+
+	column LatestScheduledArrivalSeconds
+		dataType: int64
+		formatString: 0
+		lineageTag: dba321b4-f03e-4b98-9280-a0568543bd98
+		summarizeBy: sum
+		sourceColumn: LatestScheduledArrivalSeconds
+
+		annotation SummarizationSetBy = Automatic
+
+	column IsUsedInCurrentSchedule
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 6ddc7ae9-9fbb-44c1-a96b-72efee9bb1b7
+		summarizeBy: none
+		sourceColumn: IsUsedInCurrentSchedule
+
+		annotation SummarizationSetBy = Automatic
+
+	partition StopPosition = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("localhost", "CologneTransitIntelligence"),
+				    analytics_vwStopPositionScheduleProfile = Source{[Schema="analytics",Item="vwStopPositionScheduleProfile"]}[Data]
+				in
+				    analytics_vwStopPositionScheduleProfile
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

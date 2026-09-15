@@ -1,0 +1,330 @@
+table RT_DataQualityCoverage
+	lineageTag: f085ecc2-88aa-4e52-8d0d-036230029d82
+
+	column CollectionDateUtc
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: e7bc524c-e6b5-4ee5-b935-10316cd57f3c
+		summarizeBy: none
+		sourceColumn: CollectionDateUtc
+
+		variation Variation
+			isDefault
+			relationship: 8e34a9b3-d6bb-4396-bb0c-ba5615e51579
+			defaultHierarchy: LocalDateTable_42f63192-3be5-4ca4-87bc-3e15b7951f06.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column CollectorRunCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 503edfbb-2eb0-4b3f-835b-5f0346bea5bd
+		summarizeBy: sum
+		sourceColumn: CollectorRunCount
+
+		annotation SummarizationSetBy = Automatic
+
+	column SuccessfulCollectorRunCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 1c030752-c966-4915-9e24-419761850844
+		summarizeBy: none
+		sourceColumn: SuccessfulCollectorRunCount
+
+		annotation SummarizationSetBy = User
+
+	column FailedCollectorRunCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 07591888-fa95-4f3d-a2fa-5a9c1ae82de0
+		summarizeBy: none
+		sourceColumn: FailedCollectorRunCount
+
+		annotation SummarizationSetBy = User
+
+	column IncompleteStartedRunCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 5beea1b8-eefc-45ae-a52f-5d3931d8d4a4
+		summarizeBy: none
+		sourceColumn: IncompleteStartedRunCount
+
+		annotation SummarizationSetBy = User
+
+	column SuccessfulAutomaticRunCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 3472f90d-8ab2-4df5-abc8-cb1769caaaaa
+		summarizeBy: none
+		sourceColumn: SuccessfulAutomaticRunCount
+
+		annotation SummarizationSetBy = User
+
+	column ConfiguredSamplingPanelTargetCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 26443f21-e1f3-49b0-b31a-6f526228e402
+		summarizeBy: none
+		sourceColumn: ConfiguredSamplingPanelTargetCount
+
+		annotation SummarizationSetBy = User
+
+	column ParticipatingSamplingTargetCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 1114a99f-8f68-4122-8f9f-7a3390c59ac3
+		summarizeBy: none
+		sourceColumn: ParticipatingSamplingTargetCount
+
+		annotation SummarizationSetBy = User
+
+	column SamplingPanelParticipationRate
+		dataType: double
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		lineageTag: 217dba74-a161-40cf-80b7-0cffc1688f9b
+		summarizeBy: none
+		sourceColumn: SamplingPanelParticipationRate
+
+		annotation SummarizationSetBy = User
+
+	column SourceObservationCount
+		dataType: int64
+		formatString: 0
+		lineageTag: bfeda9be-71a9-48ad-927f-d0a12749db82
+		summarizeBy: none
+		sourceColumn: SourceObservationCount
+
+		annotation SummarizationSetBy = User
+
+	column SourceSnapshotCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 9781e71b-f063-4c92-95ef-648c15401f4b
+		summarizeBy: none
+		sourceColumn: SourceSnapshotCount
+
+		annotation SummarizationSetBy = User
+
+	column FirstSourceObservationAtUtc
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 36ca8960-f56b-4bd0-a85f-2188f5a84576
+		summarizeBy: none
+		sourceColumn: FirstSourceObservationAtUtc
+
+		variation Variation
+			isDefault
+			relationship: b8ab9f51-5c9c-4265-b8da-1d0cd9119d41
+			defaultHierarchy: LocalDateTable_aae62ca4-9930-4156-af4b-0348d1c61241.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column LastSourceObservationAtUtc
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 8dd91e5b-6f40-44e9-b296-09d4091c473f
+		summarizeBy: none
+		sourceColumn: LastSourceObservationAtUtc
+
+		variation Variation
+			isDefault
+			relationship: e95bda48-63a2-40d4-9f87-589bf5306792
+			defaultHierarchy: LocalDateTable_9daf2b86-364c-4479-8d2f-c5447fdc4273.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column MatchedViewObservationCount
+		dataType: int64
+		formatString: 0
+		lineageTag: aab9461d-b889-438b-9174-25ba0b01fe7e
+		summarizeBy: none
+		sourceColumn: MatchedViewObservationCount
+
+		annotation SummarizationSetBy = User
+
+	column ExactStopMatchCount
+		dataType: int64
+		formatString: 0
+		lineageTag: c2cf75d9-34ac-4e12-a6c4-33f5872a8a40
+		summarizeBy: none
+		sourceColumn: ExactStopMatchCount
+
+		annotation SummarizationSetBy = User
+
+	column ParentStationFallbackCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 561bba3e-dce4-4438-ba12-1f4de04ba1d4
+		summarizeBy: none
+		sourceColumn: ParentStationFallbackCount
+
+		annotation SummarizationSetBy = User
+
+	column StaticCoverageMissingCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 535cc578-848d-4d82-89eb-c61e8bf2b3c6
+		summarizeBy: none
+		sourceColumn: StaticCoverageMissingCount
+
+		annotation SummarizationSetBy = User
+
+	column UnresolvedCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 69c08b41-09ac-4c75-b8c1-30fbda812160
+		summarizeBy: none
+		sourceColumn: UnresolvedCount
+
+		annotation SummarizationSetBy = User
+
+	column UsableMatchCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 77aaddf9-3fe8-4b3d-9e73-4a716da88291
+		summarizeBy: none
+		sourceColumn: UsableMatchCount
+
+		annotation SummarizationSetBy = User
+
+	column ExactStopMatchRate
+		dataType: double
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		lineageTag: dbfdc254-15f5-41e4-82ab-37757ddad6d2
+		summarizeBy: none
+		sourceColumn: ExactStopMatchRate
+
+		annotation SummarizationSetBy = User
+
+	column ParentStationFallbackRate
+		dataType: double
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		lineageTag: 982b1a9a-261c-4fe6-b6e6-d526e99608ed
+		summarizeBy: none
+		sourceColumn: ParentStationFallbackRate
+
+		annotation SummarizationSetBy = User
+
+	column StaticCoverageMissingRate
+		dataType: double
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		lineageTag: e35dd692-a805-4991-acc9-eb13905481e7
+		summarizeBy: none
+		sourceColumn: StaticCoverageMissingRate
+
+		annotation SummarizationSetBy = User
+
+	column UnresolvedRate
+		dataType: double
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		lineageTag: 1cd34db6-8895-4405-8b60-8427e465fb05
+		summarizeBy: none
+		sourceColumn: UnresolvedRate
+
+		annotation SummarizationSetBy = User
+
+	column UsableMatchRate
+		dataType: double
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		lineageTag: 85b2d03e-a6dc-410d-a5af-8575f04911ee
+		summarizeBy: none
+		sourceColumn: UsableMatchRate
+
+		annotation SummarizationSetBy = User
+
+	column ObservationsWithEstimatedBayCount
+		dataType: int64
+		formatString: 0
+		lineageTag: ba511dc2-0359-4a4e-ba1c-d37d5075c9fc
+		summarizeBy: none
+		sourceColumn: ObservationsWithEstimatedBayCount
+
+		annotation SummarizationSetBy = User
+
+	column EstimatedBayAvailabilityRate
+		dataType: double
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		lineageTag: 2936d3ee-0ff6-44c8-a27d-99477f3ca6d5
+		summarizeBy: none
+		sourceColumn: EstimatedBayAvailabilityRate
+
+		annotation SummarizationSetBy = User
+
+	column ObservationsWithSituationEvidenceCount
+		dataType: int64
+		formatString: 0
+		lineageTag: f6166011-6d9b-42d4-aa5e-77153fd16960
+		summarizeBy: none
+		sourceColumn: ObservationsWithSituationEvidenceCount
+
+		annotation SummarizationSetBy = User
+
+	column SituationEvidenceAvailabilityRate
+		dataType: double
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		lineageTag: 8feb09fc-9df9-496c-a627-be13ad5ba78e
+		summarizeBy: none
+		sourceColumn: SituationEvidenceAvailabilityRate
+
+		annotation SummarizationSetBy = User
+
+	column SituationLinkCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 47b6fbd6-55f9-40fe-864e-097b8c757db3
+		summarizeBy: none
+		sourceColumn: SituationLinkCount
+
+		annotation SummarizationSetBy = User
+
+	column OperationalOutcomeFirstObservedCount
+		dataType: int64
+		formatString: 0
+		lineageTag: a888ef49-065d-4182-8a7e-c971dc09ab92
+		summarizeBy: none
+		sourceColumn: OperationalOutcomeFirstObservedCount
+
+		annotation SummarizationSetBy = User
+
+	column OperationalOutcomeObservationCount
+		dataType: int64
+		formatString: 0
+		lineageTag: ab53b782-8567-4d9a-81f9-cc63432669f2
+		summarizeBy: none
+		sourceColumn: OperationalOutcomeObservationCount
+
+		annotation SummarizationSetBy = User
+
+	column ObservationsPerOperationalOutcome
+		dataType: double
+		lineageTag: da53db64-d8a2-4a43-9c3a-7b44d8673539
+		summarizeBy: none
+		sourceColumn: ObservationsPerOperationalOutcome
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column CoverageScopeNote
+		dataType: string
+		lineageTag: 5adcdc38-ce71-4d33-82a3-6e5f70d5f075
+		summarizeBy: none
+		sourceColumn: CoverageScopeNote
+
+		annotation SummarizationSetBy = Automatic
+
+	partition RT_DataQualityCoverage = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("localhost", "CologneTransitIntelligence"),
+				    analytics_vwRealtimeDataQualityCoverage = Source{[Schema="analytics",Item="vwRealtimeDataQualityCoverage"]}[Data]
+				in
+				    analytics_vwRealtimeDataQualityCoverage
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

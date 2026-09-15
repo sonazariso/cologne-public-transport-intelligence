@@ -1,0 +1,113 @@
+table Mode
+	lineageTag: 3adb5c4c-8d84-49c0-9fec-22edfcade52a
+
+	column ModeKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: ad7daf3d-0217-40e9-9203-051d9e3e349c
+		summarizeBy: none
+		sourceColumn: ModeKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ModeSortOrder
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 4873bcb8-6568-4219-ae37-b83d2b6d3552
+		summarizeBy: none
+		sourceColumn: ModeSortOrder
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ModeGroup
+		dataType: string
+		lineageTag: 39a0595c-504c-4977-942e-eb52e6ebb063
+		summarizeBy: none
+		sourceColumn: ModeGroup
+
+		annotation SummarizationSetBy = Automatic
+
+	column ModeDetail
+		dataType: string
+		lineageTag: ac0b62d6-61ed-416e-a41b-2587e47ca806
+		summarizeBy: none
+		sourceColumn: ModeDetail
+		sortByColumn: ModeSortOrder
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column IsRailReplacementService
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 07cfbe9e-27fe-4a20-843b-b49c6906209b
+		summarizeBy: none
+		sourceColumn: IsRailReplacementService
+
+		annotation SummarizationSetBy = Automatic
+
+	column RouteCount
+		dataType: int64
+		formatString: 0
+		lineageTag: f0be6985-a4fc-476b-b059-492fa84dc49f
+		summarizeBy: none
+		sourceColumn: RouteCount
+
+		annotation SummarizationSetBy = Automatic
+
+	column ScheduledTripPatternCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 1b919e2f-7adf-46dc-aad8-fb0c5ffe622e
+		summarizeBy: none
+		sourceColumn: ScheduledTripPatternCount
+
+		annotation SummarizationSetBy = Automatic
+
+	column ScheduledTripOccurrenceCount
+		dataType: int64
+		formatString: 0
+		lineageTag: d66394cb-b266-4c5a-88c8-4f6a34c37afb
+		summarizeBy: none
+		sourceColumn: ScheduledTripOccurrenceCount
+
+		annotation SummarizationSetBy = Automatic
+
+	column ScheduledStopEventPatternCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 6caddbe9-250e-4640-8801-47f171237077
+		summarizeBy: none
+		sourceColumn: ScheduledStopEventPatternCount
+
+		annotation SummarizationSetBy = Automatic
+
+	column ServedStopPositionCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 8775902e-dfc4-4240-9256-6043ef846465
+		summarizeBy: none
+		sourceColumn: ServedStopPositionCount
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Mode = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("localhost", "CologneTransitIntelligence"),
+				    analytics_vwModeScheduleProfile = Source{[Schema="analytics",Item="vwModeScheduleProfile"]}[Data]
+				in
+				    analytics_vwModeScheduleProfile
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

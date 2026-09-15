@@ -1,0 +1,147 @@
+table RT_ConsolidationQuality
+	lineageTag: d49a016a-946d-4043-95a6-343099d40466
+
+	column ServiceDate
+		dataType: dateTime
+		isHidden
+		formatString: Long Date
+		lineageTag: ab37c26f-b420-488f-9db1-170f1c51aeb7
+		summarizeBy: none
+		sourceColumn: ServiceDate
+
+		variation Variation
+			isDefault
+			relationship: bb720ef2-e336-493d-9c29-71a69c7c0fde
+			defaultHierarchy: LocalDateTable_71724097-7cf3-4c3e-b615-4fe9a34aa95a.'Date Hierarchy'
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column DateKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: eaa247f0-baa3-4b04-bd10-8acc30b2ba76
+		summarizeBy: none
+		sourceColumn: DateKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column OperationalOutcomeCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 6985015e-f250-42c8-879b-d29cdf722af8
+		summarizeBy: none
+		sourceColumn: OperationalOutcomeCount
+
+		annotation SummarizationSetBy = User
+
+	column UsableObservationCount
+		dataType: int64
+		formatString: 0
+		lineageTag: dc1b5813-b2b5-49bf-80ce-6e89d83a677d
+		summarizeBy: none
+		sourceColumn: UsableObservationCount
+
+		annotation SummarizationSetBy = User
+
+	column RepeatedObservationsConsolidated
+		dataType: int64
+		formatString: 0
+		lineageTag: f6598755-fb4c-41c6-a2d7-1ef97e545b1d
+		summarizeBy: none
+		sourceColumn: RepeatedObservationsConsolidated
+
+		annotation SummarizationSetBy = User
+
+	column ObservationsPerOperationalOutcome
+		dataType: double
+		lineageTag: fe317364-896f-464a-82e0-499ec46e4bc2
+		summarizeBy: none
+		sourceColumn: ObservationsPerOperationalOutcome
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column OutcomesWithLatestObservedEstimatedArrival
+		dataType: int64
+		formatString: 0
+		lineageTag: 872ba94f-d976-488d-a3c8-cf34f98d2dcc
+		summarizeBy: none
+		sourceColumn: OutcomesWithLatestObservedEstimatedArrival
+
+		annotation SummarizationSetBy = User
+
+	column OutcomesWithLatestObservedEstimatedBay
+		dataType: int64
+		formatString: 0
+		lineageTag: a921f14d-8159-415c-9c2f-9b8bfec0a771
+		summarizeBy: none
+		sourceColumn: OutcomesWithLatestObservedEstimatedBay
+
+		annotation SummarizationSetBy = User
+
+	column PlatformChangedEvidenceCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 31e58c40-8597-43a6-b53a-6f10d8ff6a81
+		summarizeBy: none
+		sourceColumn: PlatformChangedEvidenceCount
+
+		annotation SummarizationSetBy = User
+
+	column PlatformUnchangedEvidenceCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 31f0c1dc-a194-48e1-af76-805ec885b240
+		summarizeBy: none
+		sourceColumn: PlatformUnchangedEvidenceCount
+
+		annotation SummarizationSetBy = User
+
+	column PlatformUnknownEvidenceCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 48771210-7c7f-486e-80d6-eee4fdfeb34f
+		summarizeBy: none
+		sourceColumn: PlatformUnknownEvidenceCount
+
+		annotation SummarizationSetBy = User
+
+	column SituationLinkedOutcomeCount
+		dataType: int64
+		formatString: 0
+		lineageTag: d08f80c7-0b44-429f-9726-70698fe94d77
+		summarizeBy: none
+		sourceColumn: SituationLinkedOutcomeCount
+
+		annotation SummarizationSetBy = User
+
+	column SituationLinkCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 4131fd64-9706-44ee-be27-2538717ae434
+		summarizeBy: none
+		sourceColumn: SituationLinkCount
+
+		annotation SummarizationSetBy = User
+
+	partition RT_ConsolidationQuality = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("localhost", "CologneTransitIntelligence"),
+				    analytics_vwRealtimeOperationalConsolidationQuality = Source{[Schema="analytics",Item="vwRealtimeOperationalConsolidationQuality"]}[Data]
+				in
+				    analytics_vwRealtimeOperationalConsolidationQuality
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
