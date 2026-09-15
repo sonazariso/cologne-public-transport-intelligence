@@ -21,7 +21,7 @@ Current Chat 06 design baseline:
 - first KPI row starts at Y 150;
 - sample KPI card: X 32 / Y 150 / W 230 / H 110;
 - full numeric display is enabled so count KPIs are not automatically abbreviated to `K`;
-- KPI Card styling remains the next unfinished design-system task.
+- `00 - Template` is the approved Design System / Component Library reference used by the final report pages.
 
 Any future color/formatting change must preserve semantic caution: do not use `good` / `neutral` / `bad` colors to imply On-Time / delay-severity categories unless an explicit, documented business threshold has first been approved.
 
