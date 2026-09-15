@@ -19,7 +19,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "Explore service-date and time-of-day patterns in observed reliability",
+                    "value": "Compare static scheduled service with sampled reliability patterns by service date, hour, and weekday",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
