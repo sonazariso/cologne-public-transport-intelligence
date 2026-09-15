@@ -1,13 +1,13 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
-  "name": "f70e8350c1013d1d530a",
+  "name": "e1f2031425364758697a",
   "position": {
     "x": 32,
-    "y": 90,
-    "z": 1000,
-    "height": 36,
+    "y": 286,
+    "z": 3000,
+    "height": 32,
     "width": 1216,
-    "tabOrder": 1000
+    "tabOrder": 3000
   },
   "visual": {
     "visualType": "textbox",
@@ -19,12 +19,12 @@
               {
                 "textRuns": [
                   {
-                    "value": "Layout and visual styling reference for all report pages",
+                    "value": "Component Patterns",
                     "textStyle": {
-                      "fontWeight": "normal",
-                      "fontFamily": "Segoe UI",
-                      "fontSize": "11pt",
-                      "color": "#5F6B6D"
+                      "fontWeight": "bold",
+                      "fontFamily": "Segoe UI Semibold",
+                      "fontSize": "14pt",
+                      "color": "#0B6E8A"
                     }
                   }
                 ],
@@ -40,7 +40,7 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "true"
+                  "Value": "false"
                 }
               }
             }
