@@ -19,7 +19,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "Explore reliability evidence across sampled stations and stop positions",
+                    "value": "Static scheduled trip-pattern volume alongside sampled Observed Estimated Delay at Parent Station and Stop Position level",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
