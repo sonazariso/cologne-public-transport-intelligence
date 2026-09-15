@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "Mode.ModeDetail",
-              "nativeQueryRef": "ModeDetail"
+              "nativeQueryRef": "ModeDetail",
+              "active": true
             }
           ]
         }
