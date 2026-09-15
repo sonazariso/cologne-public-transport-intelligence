@@ -19,7 +19,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "Compare scheduled service context and observed reliability by mode and route",
+                    "value": "Compare scheduled trip volume with Observed Estimated Delay by route; Mode Group provides context",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
