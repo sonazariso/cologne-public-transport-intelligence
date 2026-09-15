@@ -19,7 +19,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "Definitions, scope, source lineage, and interpretation guidance",
+                    "value": "Data sources, matching logic, sampling scope, metric definitions and limitations",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",

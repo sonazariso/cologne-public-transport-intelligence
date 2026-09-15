@@ -19,7 +19,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "Scheduled and observed performance by route and line",
+                    "value": "Compare scheduled service context and observed reliability by mode and route",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",

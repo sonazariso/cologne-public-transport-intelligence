@@ -19,7 +19,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "Observed service reliability and delay evidence across the network",
+                    "value": "Observed estimated delay patterns across matched operational services",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",

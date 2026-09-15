@@ -19,7 +19,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "Situation labels and platform-change evidence linked to operational outcomes",
+                    "value": "Inspect contextual situation and platform evidence without causal inference",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
