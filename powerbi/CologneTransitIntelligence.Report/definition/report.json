@@ -11,7 +11,7 @@
       "type": "SharedResources"
     },
     "customTheme": {
-      "name": "Cologne_Transit_Baseline2767854965712746.json",
+      "name": "Cologne_Public_Transport_Intelligence.json",
       "reportVersionAtImport": {
         "visual": "2.11.0",
         "report": "3.4.0",
@@ -65,8 +65,8 @@
       "type": "RegisteredResources",
       "items": [
         {
-          "name": "Cologne_Transit_Baseline2767854965712746.json",
-          "path": "Cologne_Transit_Baseline2767854965712746.json",
+          "name": "Cologne_Public_Transport_Intelligence.json",
+          "path": "Cologne_Public_Transport_Intelligence.json",
           "type": "CustomTheme"
         }
       ]

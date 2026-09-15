@@ -1,0 +1,168 @@
+// Cologne Public Transport Intelligence
+// Power BI Chat 04 — DAX Query View validation queries
+// Validated against the 2026-09-14 project state.
+//
+// Run each EVALUATE block separately in DAX Query View.
+// These are validation queries, not model measures.
+
+// 1. Static import cardinality
+EVALUATE
+UNION (
+    ROW ( "TableName", "NetworkKPI", "PowerBIRowCount", COUNTROWS ( 'NetworkKPI' ) ),
+    ROW ( "TableName", "Mode", "PowerBIRowCount", COUNTROWS ( 'Mode' ) ),
+    ROW ( "TableName", "Route", "PowerBIRowCount", COUNTROWS ( 'Route' ) ),
+    ROW ( "TableName", "StopPosition", "PowerBIRowCount", COUNTROWS ( 'StopPosition' ) ),
+    ROW ( "TableName", "ParentStation", "PowerBIRowCount", COUNTROWS ( 'ParentStation' ) ),
+    ROW ( "TableName", "ActiveDate", "PowerBIRowCount", COUNTROWS ( 'ActiveDate' ) ),
+    ROW ( "TableName", "DailySchedule", "PowerBIRowCount", COUNTROWS ( 'DailySchedule' ) )
+)
+ORDER BY [TableName]
+
+// 2. Static baseline KPI reconciliation
+EVALUATE
+ROW (
+    "AgencyCount", MAX ( NetworkKPI[AgencyCount] ),
+    "ModeCount", MAX ( NetworkKPI[ModeCount] ),
+    "RouteCount", MAX ( NetworkKPI[RouteCount] ),
+    "ParentStationCount", MAX ( NetworkKPI[ParentStationCount] ),
+    "StopPositionCount", MAX ( NetworkKPI[StopPositionCount] ),
+    "UsedStopPositionCount", MAX ( NetworkKPI[UsedStopPositionCount] ),
+    "ServicePatternCount", MAX ( NetworkKPI[ServicePatternCount] ),
+    "ActiveServiceDateCount", MAX ( NetworkKPI[ActiveServiceDateCount] ),
+    "ScheduledTripPatternCount", MAX ( NetworkKPI[ScheduledTripPatternCount] ),
+    "ScheduledTripOccurrenceCount", MAX ( NetworkKPI[ScheduledTripOccurrenceCount] ),
+    "ScheduledStopEventPatternCount", MAX ( NetworkKPI[ScheduledStopEventPatternCount] )
+)
+
+// 3. Mode -> Route -> DailySchedule filter propagation
+EVALUATE
+ADDCOLUMNS (
+    SUMMARIZE ( 'Mode', 'Mode'[ModeKey], 'Mode'[ModeGroup] ),
+    "ExpectedFromModeView", CALCULATE ( MAX ( 'Mode'[ScheduledTripOccurrenceCount] ) ),
+    "CalculatedFromDailySchedule", CALCULATE ( SUM ( 'DailySchedule'[ScheduledTripCount] ) ),
+    "Difference",
+        CALCULATE ( SUM ( 'DailySchedule'[ScheduledTripCount] ) )
+        - CALCULATE ( MAX ( 'Mode'[ScheduledTripOccurrenceCount] ) )
+)
+ORDER BY 'Mode'[ModeKey]
+
+// 4. Realtime reliability fact import parity
+EVALUATE
+ROW (
+    "PowerBIOutcomeCount", COUNTROWS ( 'RT_ReliabilityOutcome' ),
+    "PowerBIMaxRefreshedAtUtc", MAX ( 'RT_ReliabilityOutcome'[RefreshedAtUtc] ),
+    "PowerBIMinServiceDate", MIN ( 'RT_ReliabilityOutcome'[ServiceDate] ),
+    "PowerBIMaxServiceDate", MAX ( 'RT_ReliabilityOutcome'[ServiceDate] )
+)
+
+// 5. ActiveDate -> RT_ReliabilityOutcome
+EVALUATE
+SUMMARIZECOLUMNS (
+    'ActiveDate'[DateValue],
+    "PowerBIOutcomeCount", COUNTROWS ( 'RT_ReliabilityOutcome' )
+)
+ORDER BY 'ActiveDate'[DateValue]
+
+// 6. Route -> RT_ReliabilityOutcome
+EVALUATE
+SUMMARIZECOLUMNS (
+    'Route'[RouteKey],
+    'Route'[RouteShortName],
+    "PowerBIOutcomeCount", COUNTROWS ( 'RT_ReliabilityOutcome' )
+)
+ORDER BY 'Route'[RouteKey]
+
+// 7. StopPosition -> RT_ReliabilityOutcome
+EVALUATE
+SUMMARIZECOLUMNS (
+    'StopPosition'[StopKey],
+    'StopPosition'[StopName],
+    "PowerBIOutcomeCount", COUNTROWS ( 'RT_ReliabilityOutcome' )
+)
+ORDER BY 'StopPosition'[StopKey]
+
+// 8. ParentStation -> StopPosition -> RT_ReliabilityOutcome
+EVALUATE
+SUMMARIZECOLUMNS (
+    'ParentStation'[ParentStationKey],
+    'ParentStation'[ParentStationName],
+    "PowerBIOutcomeCount", COUNTROWS ( 'RT_ReliabilityOutcome' )
+)
+ORDER BY 'ParentStation'[ParentStationKey]
+
+// 9. Mode -> Route -> RT_ReliabilityOutcome
+EVALUATE
+SUMMARIZECOLUMNS (
+    'Mode'[ModeKey],
+    'Mode'[ModeGroup],
+    "PowerBIOutcomeCount", COUNTROWS ( 'RT_ReliabilityOutcome' )
+)
+ORDER BY 'Mode'[ModeKey]
+
+// 10. ActiveDate -> RT_ConsolidationQuality
+EVALUATE
+SUMMARIZECOLUMNS (
+    'ActiveDate'[DateValue],
+    "UsableObservationCount", SUM ( 'RT_ConsolidationQuality'[UsableObservationCount] ),
+    "OperationalOutcomeCount", SUM ( 'RT_ConsolidationQuality'[OperationalOutcomeCount] ),
+    "RepeatedObservationsConsolidated", SUM ( 'RT_ConsolidationQuality'[RepeatedObservationsConsolidated] )
+)
+ORDER BY 'ActiveDate'[DateValue]
+
+// 11. ActiveDate -> DailySchedule
+EVALUATE
+SUMMARIZECOLUMNS (
+    'ActiveDate'[DateValue],
+    "PowerBIScheduledTripCount", SUM ( 'DailySchedule'[ScheduledTripCount] )
+)
+ORDER BY 'ActiveDate'[DateValue]
+
+// 12. RT_CollectorRunHealth disconnected behavior
+EVALUATE
+ROW (
+    "TotalCollectorRows", COUNTROWS ( 'RT_CollectorRunHealth' ),
+    "RowsAfterActiveDateFilter",
+        CALCULATE (
+            COUNTROWS ( 'RT_CollectorRunHealth' ),
+            'ActiveDate'[DateValue] = DATE ( 2026, 9, 14 )
+        )
+)
+
+// 13. RT_DataQualityCoverage disconnected behavior
+EVALUATE
+ROW (
+    "TotalDataQualityRows", COUNTROWS ( 'RT_DataQualityCoverage' ),
+    "RowsAfterActiveDateFilter",
+        CALCULATE (
+            COUNTROWS ( 'RT_DataQualityCoverage' ),
+            'ActiveDate'[DateValue] = DATE ( 2026, 9, 14 )
+        )
+)
+
+// 14. RT_ReliabilityByDimension disconnected behavior
+EVALUATE
+ROW (
+    "TotalReliabilityByDimensionRows", COUNTROWS ( 'RT_ReliabilityByDimension' ),
+    "RowsAfterActiveDateFilter",
+        CALCULATE (
+            COUNTROWS ( 'RT_ReliabilityByDimension' ),
+            'ActiveDate'[DateValue] = DATE ( 2026, 9, 14 )
+        )
+)
+
+// 15. NetworkKPI disconnected behavior
+EVALUATE
+ROW (
+    "TotalNetworkKPIRows", COUNTROWS ( 'NetworkKPI' ),
+    "RowsAfterActiveDateFilter",
+        CALCULATE (
+            COUNTROWS ( 'NetworkKPI' ),
+            'ActiveDate'[DateValue] = DATE ( 2026, 9, 14 )
+        ),
+    "RouteCountWithoutDateFilter", MAX ( 'NetworkKPI'[RouteCount] ),
+    "RouteCountWithDateFilter",
+        CALCULATE (
+            MAX ( 'NetworkKPI'[RouteCount] ),
+            'ActiveDate'[DateValue] = DATE ( 2026, 9, 14 )
+        )
+)

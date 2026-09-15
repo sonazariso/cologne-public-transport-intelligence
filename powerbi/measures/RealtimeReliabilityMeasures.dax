@@ -1,0 +1,291 @@
+-- Cologne Public Transport Intelligence
+-- Power BI Chat 05 - Realtime reliability / quality DAX measures.
+--
+-- Status: COMPLETE / manually validated in Power BI on 2026-09-15.
+-- Home table in the PBIX: _Measures
+-- Display folders:
+--   03 Realtime Reliability
+--   04 Evidence
+--   05 Consolidation
+--   06 Data Quality
+--   07 Collector Health
+--
+-- Semantic guardrails:
+--   * Delay is OBSERVED ESTIMATED delay, not confirmed physical actual delay.
+--   * No arbitrary On-Time threshold is used.
+--   * Situation evidence is association evidence, not proven causality.
+--   * Platform Unknown is not equivalent to Unchanged.
+--   * StaticCoverageMissing and Unresolved remain Data Quality states and do not
+--     enter normal reliability outcomes.
+--   * The seven locations form a sampling panel, not full Cologne realtime coverage.
+--   * No cancellation/departure KPI is inferred from missing arrival observations.
+
+-- ============================================================
+-- 03 Realtime Reliability
+-- Source: RT_ReliabilityOutcome (connected operational-outcome fact)
+-- ============================================================
+
+Observed Matched Services =
+COUNTROWS ( RT_ReliabilityOutcome )
+
+Delay Observations =
+COUNT ( RT_ReliabilityOutcome[FinalObservedEstimatedDelayMinutes] )
+
+Average Observed Estimated Delay (min) =
+AVERAGE ( RT_ReliabilityOutcome[FinalObservedEstimatedDelayMinutes] )
+
+Median Observed Estimated Delay (min) =
+MEDIANX (
+    FILTER (
+        RT_ReliabilityOutcome,
+        NOT ISBLANK ( RT_ReliabilityOutcome[FinalObservedEstimatedDelayMinutes] )
+    ),
+    RT_ReliabilityOutcome[FinalObservedEstimatedDelayMinutes]
+)
+
+P95 Observed Estimated Delay (min) =
+PERCENTILEX.INC (
+    FILTER (
+        RT_ReliabilityOutcome,
+        NOT ISBLANK ( RT_ReliabilityOutcome[FinalObservedEstimatedDelayMinutes] )
+    ),
+    RT_ReliabilityOutcome[FinalObservedEstimatedDelayMinutes],
+    0.95
+)
+
+Minimum Observed Estimated Delay (min) =
+MIN ( RT_ReliabilityOutcome[FinalObservedEstimatedDelayMinutes] )
+
+Maximum Observed Estimated Delay (min) =
+MAX ( RT_ReliabilityOutcome[FinalObservedEstimatedDelayMinutes] )
+
+Average Observations per Outcome =
+AVERAGE ( RT_ReliabilityOutcome[ObservationCount] )
+
+-- ============================================================
+-- 04 Evidence
+-- Source: RT_ReliabilityOutcome
+-- ============================================================
+
+Situation-Linked Outcomes =
+CALCULATE (
+    [Observed Matched Services],
+    RT_ReliabilityOutcome[HasSituationEvidence] = TRUE ()
+)
+
+Situation Evidence Share =
+DIVIDE (
+    [Situation-Linked Outcomes],
+    [Observed Matched Services]
+)
+
+Platform Changed Evidence Outcomes =
+CALCULATE (
+    [Observed Matched Services],
+    RT_ReliabilityOutcome[PlatformChangeEvidence] = "Changed"
+)
+
+Platform Changed Evidence Share =
+DIVIDE (
+    [Platform Changed Evidence Outcomes],
+    [Observed Matched Services]
+)
+
+Platform Unchanged Evidence Outcomes =
+COALESCE (
+    CALCULATE (
+        [Observed Matched Services],
+        RT_ReliabilityOutcome[PlatformChangeEvidence] = "Unchanged"
+    ),
+    0
+)
+
+Platform Unchanged Evidence Share =
+DIVIDE (
+    [Platform Unchanged Evidence Outcomes],
+    [Observed Matched Services],
+    0
+)
+
+Platform Unknown Evidence Outcomes =
+CALCULATE (
+    [Observed Matched Services],
+    RT_ReliabilityOutcome[PlatformChangeEvidence] = "Unknown"
+)
+
+Platform Unknown Evidence Share =
+DIVIDE (
+    [Platform Unknown Evidence Outcomes],
+    [Observed Matched Services]
+)
+
+-- ============================================================
+-- 05 Consolidation
+-- Source: RT_ConsolidationQuality (connected by service date)
+-- ============================================================
+
+Operational Outcomes =
+SUM ( RT_ConsolidationQuality[OperationalOutcomeCount] )
+
+Usable Realtime Observations =
+SUM ( RT_ConsolidationQuality[UsableObservationCount] )
+
+Repeated Observations Consolidated =
+SUM ( RT_ConsolidationQuality[RepeatedObservationsConsolidated] )
+
+Consolidation Reduction Share =
+DIVIDE (
+    [Repeated Observations Consolidated],
+    [Usable Realtime Observations],
+    0
+)
+
+Observations per Operational Outcome =
+DIVIDE (
+    [Usable Realtime Observations],
+    [Operational Outcomes]
+)
+
+-- ============================================================
+-- 06 Data Quality
+-- Source: RT_DataQualityCoverage (intentionally disconnected)
+-- Rates are recomputed from summed numerators/denominators rather than averaging
+-- pre-aggregated daily rates.
+-- ============================================================
+
+Realtime Source Observations =
+SUM ( RT_DataQualityCoverage[SourceObservationCount] )
+
+Matched View Observations =
+SUM ( RT_DataQualityCoverage[MatchedViewObservationCount] )
+
+Exact Stop Matches =
+SUM ( RT_DataQualityCoverage[ExactStopMatchCount] )
+
+Parent Station Fallback Matches =
+SUM ( RT_DataQualityCoverage[ParentStationFallbackCount] )
+
+Static Coverage Missing =
+SUM ( RT_DataQualityCoverage[StaticCoverageMissingCount] )
+
+Unresolved Matches =
+SUM ( RT_DataQualityCoverage[UnresolvedCount] )
+
+Usable Matches =
+SUM ( RT_DataQualityCoverage[UsableMatchCount] )
+
+Exact Stop Match Rate =
+DIVIDE (
+    [Exact Stop Matches],
+    [Matched View Observations],
+    0
+)
+
+Parent Station Fallback Rate =
+DIVIDE (
+    [Parent Station Fallback Matches],
+    [Matched View Observations],
+    0
+)
+
+Static Coverage Missing Rate =
+DIVIDE (
+    [Static Coverage Missing],
+    [Matched View Observations],
+    0
+)
+
+Unresolved Match Rate =
+DIVIDE (
+    [Unresolved Matches],
+    [Matched View Observations],
+    0
+)
+
+Usable Match Rate =
+DIVIDE (
+    [Usable Matches],
+    [Matched View Observations],
+    0
+)
+
+Observations with Estimated Bay =
+SUM ( RT_DataQualityCoverage[ObservationsWithEstimatedBayCount] )
+
+Estimated Bay Availability Rate =
+DIVIDE (
+    [Observations with Estimated Bay],
+    [Matched View Observations],
+    0
+)
+
+Observations with Situation Evidence =
+SUM ( RT_DataQualityCoverage[ObservationsWithSituationEvidenceCount] )
+
+Situation Evidence Availability Rate =
+DIVIDE (
+    [Observations with Situation Evidence],
+    [Matched View Observations],
+    0
+)
+
+Situation Links =
+SUM ( RT_DataQualityCoverage[SituationLinkCount] )
+
+-- ============================================================
+-- 07 Collector Health
+-- Source: RT_CollectorRunHealth (intentionally disconnected)
+-- ============================================================
+
+Collector Runs =
+COUNTROWS ( RT_CollectorRunHealth )
+
+Successful Collector Runs =
+CALCULATE (
+    [Collector Runs],
+    RT_CollectorRunHealth[IsSuccessfulRun] = TRUE ()
+)
+
+Failed Collector Runs =
+CALCULATE (
+    [Collector Runs],
+    RT_CollectorRunHealth[IsFailedRun] = TRUE ()
+)
+
+Incomplete Collector Runs =
+CALCULATE (
+    [Collector Runs],
+    RT_CollectorRunHealth[IsIncompleteStartedRun] = TRUE ()
+)
+
+Successful Automatic Runs =
+CALCULATE (
+    [Collector Runs],
+    RT_CollectorRunHealth[IsSuccessfulAutomaticRun] = TRUE ()
+)
+
+Completed Collector Runs =
+[Successful Collector Runs]
+    + [Failed Collector Runs]
+
+Collector Success Rate =
+DIVIDE (
+    [Successful Collector Runs],
+    [Completed Collector Runs],
+    0
+)
+
+Sampling Panel Targets Observed =
+CALCULATE (
+    DISTINCTCOUNT ( RT_CollectorRunHealth[SamplingTargetId] ),
+    RT_CollectorRunHealth[ParticipatedInSamplingPanel] = TRUE ()
+)
+
+Average Successful Run Duration (sec) =
+DIVIDE (
+    CALCULATE (
+        AVERAGE ( RT_CollectorRunHealth[DurationMs] ),
+        RT_CollectorRunHealth[IsSuccessfulRun] = TRUE ()
+    ),
+    1000
+)
