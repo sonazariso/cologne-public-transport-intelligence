@@ -1,7 +1,14 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "707i0000000000000001",
-  "position": { "x": 644, "y": 286, "z": 3001, "height": 252, "width": 604, "tabOrder": 3001 },
+  "position": {
+    "x": 644,
+    "y": 286,
+    "z": 3001,
+    "height": 252,
+    "width": 604,
+    "tabOrder": 3001
+  },
   "visual": {
     "visualType": "tableEx",
     "query": {
@@ -9,17 +16,44 @@
         "Values": {
           "projections": [
             {
-              "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Platform Changed Evidence Share" } },
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Platform Changed Evidence Share"
+                }
+              },
               "queryRef": "_Measures.Platform Changed Evidence Share",
               "nativeQueryRef": "Platform Changed Evidence Share"
             },
             {
-              "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Platform Unchanged Evidence Share" } },
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Platform Unchanged Evidence Share"
+                }
+              },
               "queryRef": "_Measures.Platform Unchanged Evidence Share",
               "nativeQueryRef": "Platform Unchanged Evidence Share"
             },
             {
-              "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Platform Unknown Evidence Share" } },
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Platform Unknown Evidence Share"
+                }
+              },
               "queryRef": "_Measures.Platform Unknown Evidence Share",
               "nativeQueryRef": "Platform Unknown Evidence Share"
             }
@@ -27,56 +61,255 @@
         }
       }
     },
-    "prototypeQuery": null,
-    "dataTransforms": null,
     "objects": {
       "columnWidth": [
-        { "properties": { "value": { "expr": { "Literal": { "Value": "190D" } } } }, "selector": { "metadata": "_Measures.Platform Changed Evidence Share" } },
-        { "properties": { "value": { "expr": { "Literal": { "Value": "190D" } } } }, "selector": { "metadata": "_Measures.Platform Unchanged Evidence Share" } },
-        { "properties": { "value": { "expr": { "Literal": { "Value": "190D" } } } }, "selector": { "metadata": "_Measures.Platform Unknown Evidence Share" } }
-      ],
-      "columnHeaders": [
         {
           "properties": {
-            "fontFamily": { "expr": { "Literal": { "Value": "'''Segoe UI Semibold'', wf_segoe-ui_semibold, helvetica, arial, sans-serif'" } } },
-            "fontSize": { "expr": { "Literal": { "Value": "8D" } } },
-            "fontColor": { "solid": { "color": { "expr": { "Literal": { "Value": "'#1F2933'" } } } } },
-            "backColor": { "solid": { "color": { "expr": { "Literal": { "Value": "'#E6EEF2'" } } } } },
-            "autoSizeColumnWidth": { "expr": { "Literal": { "Value": "false" } } },
-            "wordWrap": { "expr": { "Literal": { "Value": "true" } } }
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "190D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Measures.Platform Changed Evidence Share"
           }
         },
         {
           "properties": {
-            "fontColor": { "solid": { "color": { "expr": { "Literal": { "Value": "'#FFFFFF'" } } } } },
-            "backColor": { "solid": { "color": { "expr": { "Literal": { "Value": "'#E76F51'" } } } } }
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "190D"
+                }
+              }
+            }
           },
-          "selector": { "metadata": "_Measures.Platform Changed Evidence Share" }
+          "selector": {
+            "metadata": "_Measures.Platform Unchanged Evidence Share"
+          }
         },
         {
           "properties": {
-            "fontColor": { "solid": { "color": { "expr": { "Literal": { "Value": "'#FFFFFF'" } } } } },
-            "backColor": { "solid": { "color": { "expr": { "Literal": { "Value": "'#2A9D8F'" } } } } }
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "190D"
+                }
+              }
+            }
           },
-          "selector": { "metadata": "_Measures.Platform Unchanged Evidence Share" }
+          "selector": {
+            "metadata": "_Measures.Platform Unknown Evidence Share"
+          }
+        }
+      ],
+      "columnHeaders": [
+        {
+          "properties": {
+            "fontFamily": {
+              "expr": {
+                "Literal": {
+                  "Value": "'''Segoe UI Semibold'', wf_segoe-ui_semibold, helvetica, arial, sans-serif'"
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "9D"
+                }
+              }
+            },
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#1F2933'"
+                    }
+                  }
+                }
+              }
+            },
+            "backColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#E6EEF2'"
+                    }
+                  }
+                }
+              }
+            },
+            "autoSizeColumnWidth": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "wordWrap": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
         },
         {
           "properties": {
-            "fontColor": { "solid": { "color": { "expr": { "Literal": { "Value": "'#1F2933'" } } } } },
-            "backColor": { "solid": { "color": { "expr": { "Literal": { "Value": "'#E9C46A'" } } } } }
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#1F2933'"
+                    }
+                  }
+                }
+              }
+            },
+            "backColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#E76F51'"
+                    }
+                  }
+                }
+              }
+            }
           },
-          "selector": { "metadata": "_Measures.Platform Unknown Evidence Share" }
+          "selector": {
+            "metadata": "_Measures.Platform Changed Evidence Share"
+          }
+        },
+        {
+          "properties": {
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#1F2933'"
+                    }
+                  }
+                }
+              }
+            },
+            "backColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#2A9D8F'"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Measures.Platform Unchanged Evidence Share"
+          }
+        },
+        {
+          "properties": {
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#1F2933'"
+                    }
+                  }
+                }
+              }
+            },
+            "backColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#E9C46A'"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Measures.Platform Unknown Evidence Share"
+          }
         }
       ],
       "values": [
         {
           "properties": {
-            "fontFamily": { "expr": { "Literal": { "Value": "'''Segoe UI'', wf_segoe-ui_normal, helvetica, arial, sans-serif'" } } },
-            "fontSize": { "expr": { "Literal": { "Value": "12D" } } },
-            "fontColorPrimary": { "solid": { "color": { "expr": { "Literal": { "Value": "'#1F2933'" } } } } },
-            "fontColorSecondary": { "solid": { "color": { "expr": { "Literal": { "Value": "'#1F2933'" } } } } },
-            "backColorPrimary": { "solid": { "color": { "expr": { "Literal": { "Value": "'#FFFFFF'" } } } } },
-            "backColorSecondary": { "solid": { "color": { "expr": { "Literal": { "Value": "'#F5F7F9'" } } } } }
+            "fontFamily": {
+              "expr": {
+                "Literal": {
+                  "Value": "'''Segoe UI'', wf_segoe-ui_normal, helvetica, arial, sans-serif'"
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "12D"
+                }
+              }
+            },
+            "fontColorPrimary": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#1F2933'"
+                    }
+                  }
+                }
+              }
+            },
+            "fontColorSecondary": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#1F2933'"
+                    }
+                  }
+                }
+              }
+            },
+            "backColorPrimary": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#FFFFFF'"
+                    }
+                  }
+                }
+              }
+            },
+            "backColorSecondary": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#F5F7F9'"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       ]
@@ -85,46 +318,191 @@
       "title": [
         {
           "properties": {
-            "show": { "expr": { "Literal": { "Value": "true" } } },
-            "text": { "expr": { "Literal": { "Value": "'Platform Evidence share — validated outcomes'" } } },
-            "fontFamily": { "expr": { "Literal": { "Value": "'''Segoe UI Semibold'', wf_segoe-ui_semibold, helvetica, arial, sans-serif'" } } },
-            "fontSize": { "expr": { "Literal": { "Value": "12D" } } },
-            "fontColor": { "solid": { "color": { "expr": { "Literal": { "Value": "'#1F2933'" } } } } },
-            "titleWrap": { "expr": { "Literal": { "Value": "false" } } },
-            "alignment": { "expr": { "Literal": { "Value": "'left'" } } }
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Platform Evidence share — validated outcomes'"
+                }
+              }
+            },
+            "fontFamily": {
+              "expr": {
+                "Literal": {
+                  "Value": "'''Segoe UI Semibold'', wf_segoe-ui_semibold, helvetica, arial, sans-serif'"
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "12D"
+                }
+              }
+            },
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#1F2933'"
+                    }
+                  }
+                }
+              }
+            },
+            "titleWrap": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "alignment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'left'"
+                }
+              }
+            }
           }
         }
       ],
       "background": [
         {
           "properties": {
-            "show": { "expr": { "Literal": { "Value": "true" } } },
-            "color": { "solid": { "color": { "expr": { "Literal": { "Value": "'#FFFFFF'" } } } } },
-            "transparency": { "expr": { "Literal": { "Value": "0D" } } }
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#FFFFFF'"
+                    }
+                  }
+                }
+              }
+            },
+            "transparency": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            }
           }
         }
       ],
       "border": [
         {
           "properties": {
-            "show": { "expr": { "Literal": { "Value": "true" } } },
-            "color": { "solid": { "color": { "expr": { "Literal": { "Value": "'#D8E1E7'" } } } } },
-            "width": { "expr": { "Literal": { "Value": "1D" } } },
-            "radius": { "expr": { "Literal": { "Value": "6L" } } }
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#D8E1E7'"
+                    }
+                  }
+                }
+              }
+            },
+            "width": {
+              "expr": {
+                "Literal": {
+                  "Value": "1D"
+                }
+              }
+            },
+            "radius": {
+              "expr": {
+                "Literal": {
+                  "Value": "6L"
+                }
+              }
+            }
           }
         }
       ],
       "padding": [
         {
           "properties": {
-            "top": { "expr": { "Literal": { "Value": "8D" } } },
-            "bottom": { "expr": { "Literal": { "Value": "8D" } } },
-            "left": { "expr": { "Literal": { "Value": "8D" } } },
-            "right": { "expr": { "Literal": { "Value": "8D" } } }
+            "top": {
+              "expr": {
+                "Literal": {
+                  "Value": "8D"
+                }
+              }
+            },
+            "bottom": {
+              "expr": {
+                "Literal": {
+                  "Value": "8D"
+                }
+              }
+            },
+            "left": {
+              "expr": {
+                "Literal": {
+                  "Value": "8D"
+                }
+              }
+            },
+            "right": {
+              "expr": {
+                "Literal": {
+                  "Value": "8D"
+                }
+              }
+            }
           }
         }
       ],
-      "visualHeader": [ { "properties": { "show": { "expr": { "Literal": { "Value": "false" } } } } } ]
+      "visualHeader": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Shows the share of validated outcomes with Platform Changed, Platform Unchanged, and Platform Unknown evidence.'"
+                }
+              }
+            }
+          }
+        }
+      ]
     },
     "drillFilterOtherVisuals": true
   }

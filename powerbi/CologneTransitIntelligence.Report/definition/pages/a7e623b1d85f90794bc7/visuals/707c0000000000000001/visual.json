@@ -30,24 +30,6 @@
               "nativeQueryRef": "Situation-Linked Outcomes"
             }
           ]
-        },
-        "sortDefinition": {
-          "sort": [
-            {
-              "field": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "_Measures"
-                    }
-                  },
-                  "Property": "Situation-Linked Outcomes"
-                }
-              },
-              "direction": "Descending"
-            }
-          ],
-          "isDefaultSort": true
         }
       }
     },
@@ -292,6 +274,19 @@
       ]
     },
     "visualContainerObjects": {
+      "visualHeader": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
       "title": [
         {
           "properties": {
@@ -299,6 +294,19 @@
               "expr": {
                 "Literal": {
                   "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Shows the count of Situation-Linked Outcomes.'"
                 }
               }
             }

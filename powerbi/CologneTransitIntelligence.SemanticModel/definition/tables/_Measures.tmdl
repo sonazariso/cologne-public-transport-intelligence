@@ -147,16 +147,6 @@ table _Measures
 		displayFolder: 02 Network Baseline
 		lineageTag: dae1f2ae-83d8-469d-b74b-4f1be7d123c2
 
-	/// Static parent-station scheduled trip-pattern volume for station ranking.
-	/// DailySchedule is route-grain and has no station key; [Scheduled Trips]
-	/// cannot be sliced by ParentStation without changing the approved model.
-	measure 'Parent Station Scheduled Trip Patterns' =
-
-			SUM ( ParentStation[ScheduledTripPatternCount] )
-		formatString: 0
-		displayFolder: 01 Static Schedule
-		lineageTag: 87fac219-e1da-44ec-82c7-4b7d9e97764b
-
 	measure 'Used Stop Positions' =
 			
 			CALCULATE (
@@ -660,6 +650,16 @@ table _Measures
 		formatString: 0
 		displayFolder: 01 Static Schedule
 		lineageTag: 8be1fb2f-c122-42f8-a65a-92a9ae3e0869
+
+	/// Static parent-station scheduled trip-pattern volume for station ranking.
+	/// DailySchedule is route-grain and has no station key; [Scheduled Trips]
+	/// cannot be sliced by ParentStation without changing the approved model.
+	measure 'Parent Station Scheduled Trip Patterns' =
+			
+			SUM ( ParentStation[ScheduledTripPatternCount] )
+		formatString: 0
+		displayFolder: 01 Static Schedule
+		lineageTag: 87fac219-e1da-44ec-82c7-4b7d9e97764b
 
 	column _Placeholder
 		dataType: int64

@@ -1,7 +1,14 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
   "name": "707e0000000000000001",
-  "position": { "x": 520, "y": 150, "z": 2002, "height": 112, "width": 228, "tabOrder": 2002 },
+  "position": {
+    "x": 520,
+    "y": 150,
+    "z": 2002,
+    "height": 112,
+    "width": 228,
+    "tabOrder": 2002
+  },
   "visual": {
     "visualType": "cardVisual",
     "query": {
@@ -9,7 +16,16 @@
         "Data": {
           "projections": [
             {
-              "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Platform Changed Evidence Outcomes" } },
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Platform Changed Evidence Outcomes"
+                }
+              },
               "queryRef": "_Measures.Platform Changed Evidence Outcomes",
               "nativeQueryRef": "Platform Changed Evidence Outcomes"
             }
@@ -21,64 +37,283 @@
       "value": [
         {
           "properties": {
-            "fontFamily": { "expr": { "Literal": { "Value": "'''Segoe UI Semibold'', wf_segoe-ui_semibold, helvetica, arial, sans-serif'" } } },
-            "fontSize": { "expr": { "Literal": { "Value": "22D" } } },
-            "fontColor": { "solid": { "color": { "expr": { "Literal": { "Value": "'#E76F51'" } } } } },
-            "bold": { "expr": { "Literal": { "Value": "true" } } },
-            "horizontalAlignment": { "expr": { "Literal": { "Value": "'left'" } } }
+            "fontFamily": {
+              "expr": {
+                "Literal": {
+                  "Value": "'''Segoe UI Semibold'', wf_segoe-ui_semibold, helvetica, arial, sans-serif'"
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "22D"
+                }
+              }
+            },
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#E76F51'"
+                    }
+                  }
+                }
+              }
+            },
+            "bold": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "horizontalAlignment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'left'"
+                }
+              }
+            }
           },
-          "selector": { "id": "default" }
+          "selector": {
+            "id": "default"
+          }
         }
       ],
       "label": [
         {
           "properties": {
-            "show": { "expr": { "Literal": { "Value": "true" } } },
-            "position": { "expr": { "Literal": { "Value": "'belowValue'" } } },
-            "fontFamily": { "expr": { "Literal": { "Value": "'''Segoe UI'', wf_segoe-ui_normal, helvetica, arial, sans-serif'" } } },
-            "fontSize": { "expr": { "Literal": { "Value": "9D" } } },
-            "fontColor": { "solid": { "color": { "expr": { "Literal": { "Value": "'#5F6B6D'" } } } } },
-            "horizontalAlignment": { "expr": { "Literal": { "Value": "'left'" } } }
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "position": {
+              "expr": {
+                "Literal": {
+                  "Value": "'belowValue'"
+                }
+              }
+            },
+            "fontFamily": {
+              "expr": {
+                "Literal": {
+                  "Value": "'''Segoe UI'', wf_segoe-ui_normal, helvetica, arial, sans-serif'"
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "9D"
+                }
+              }
+            },
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#5F6B6D'"
+                    }
+                  }
+                }
+              }
+            },
+            "horizontalAlignment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'left'"
+                }
+              }
+            }
           },
-          "selector": { "id": "default" }
+          "selector": {
+            "id": "default"
+          }
         }
       ],
       "padding": [
         {
           "properties": {
-            "paddingSelection": { "expr": { "Literal": { "Value": "'Custom'" } } },
-            "leftMargin": { "expr": { "Literal": { "Value": "12D" } } },
-            "rightMargin": { "expr": { "Literal": { "Value": "12D" } } },
-            "topMargin": { "expr": { "Literal": { "Value": "8D" } } },
-            "bottomMargin": { "expr": { "Literal": { "Value": "8D" } } }
+            "paddingSelection": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Custom'"
+                }
+              }
+            },
+            "leftMargin": {
+              "expr": {
+                "Literal": {
+                  "Value": "12D"
+                }
+              }
+            },
+            "rightMargin": {
+              "expr": {
+                "Literal": {
+                  "Value": "12D"
+                }
+              }
+            },
+            "topMargin": {
+              "expr": {
+                "Literal": {
+                  "Value": "8D"
+                }
+              }
+            },
+            "bottomMargin": {
+              "expr": {
+                "Literal": {
+                  "Value": "8D"
+                }
+              }
+            }
           },
-          "selector": { "id": "default" }
+          "selector": {
+            "id": "default"
+          }
         }
       ],
-      "spacing": [ { "properties": { "verticalSpacing": { "expr": { "Literal": { "Value": "4D" } } } }, "selector": { "id": "default" } } ],
+      "spacing": [
+        {
+          "properties": {
+            "verticalSpacing": {
+              "expr": {
+                "Literal": {
+                  "Value": "4D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "id": "default"
+          }
+        }
+      ],
       "layout": [
         {
           "properties": {
-            "backgroundFillColor": { "solid": { "color": { "expr": { "Literal": { "Value": "'#FFFFFF'" } } } } },
-            "rectangleRoundedCurve": { "expr": { "Literal": { "Value": "6L" } } },
-            "alignment": { "expr": { "Literal": { "Value": "'top'" } } },
-            "paddingUniform": { "expr": { "Literal": { "Value": "0L" } } }
+            "backgroundFillColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#FFFFFF'"
+                    }
+                  }
+                }
+              }
+            },
+            "rectangleRoundedCurve": {
+              "expr": {
+                "Literal": {
+                  "Value": "6L"
+                }
+              }
+            },
+            "alignment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'top'"
+                }
+              }
+            },
+            "paddingUniform": {
+              "expr": {
+                "Literal": {
+                  "Value": "0L"
+                }
+              }
+            }
           },
-          "selector": { "id": "default" }
+          "selector": {
+            "id": "default"
+          }
         }
       ],
       "border": [
         {
           "properties": {
-            "show": { "expr": { "Literal": { "Value": "true" } } },
-            "color": { "solid": { "color": { "expr": { "Literal": { "Value": "'#D8E1E7'" } } } } },
-            "width": { "expr": { "Literal": { "Value": "1D" } } }
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#D8E1E7'"
+                    }
+                  }
+                }
+              }
+            },
+            "width": {
+              "expr": {
+                "Literal": {
+                  "Value": "1D"
+                }
+              }
+            }
           },
-          "selector": { "id": "default" }
+          "selector": {
+            "id": "default"
+          }
         }
       ]
     },
-    "visualContainerObjects": { "title": [ { "properties": { "show": { "expr": { "Literal": { "Value": "false" } } } } } ] },
+    "visualContainerObjects": {
+      "visualHeader": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Shows the count of outcomes with Platform Changed evidence.'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
     "drillFilterOtherVisuals": true
   }
 }

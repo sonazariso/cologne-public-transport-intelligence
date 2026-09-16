@@ -1,5 +1,5 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "202i0000000000000001",
   "position": {
     "x": 644,
@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "Mode.ModeGroup",
-              "nativeQueryRef": "ModeGroup"
+              "nativeQueryRef": "ModeGroup",
+              "active": true
             }
           ]
         },
@@ -101,13 +102,6 @@
       "categoryAxis": [
         {
           "properties": {
-            "showTitle": {
-              "expr": {
-                "Literal": {
-                  "Value": "false"
-                }
-              }
-            },
             "labelColor": {
               "solid": {
                 "color": {
@@ -132,13 +126,6 @@
       "valueAxis": [
         {
           "properties": {
-            "showTitle": {
-              "expr": {
-                "Literal": {
-                  "Value": "false"
-                }
-              }
-            },
             "labelColor": {
               "solid": {
                 "color": {
@@ -154,20 +141,6 @@
               "expr": {
                 "Literal": {
                   "Value": "10D"
-                }
-              }
-            },
-            "displayUnits": {
-              "expr": {
-                "Literal": {
-                  "Value": "0L"
-                }
-              }
-            },
-            "precision": {
-              "expr": {
-                "Literal": {
-                  "Value": "1L"
                 }
               }
             }
@@ -187,7 +160,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "9D"
                 }
               }
             },
@@ -199,20 +172,6 @@
                       "Value": "'#1F2933'"
                     }
                   }
-                }
-              }
-            },
-            "displayUnits": {
-              "expr": {
-                "Literal": {
-                  "Value": "0L"
-                }
-              }
-            },
-            "precision": {
-              "expr": {
-                "Literal": {
-                  "Value": "1L"
                 }
               }
             }
@@ -403,6 +362,19 @@
               "expr": {
                 "Literal": {
                   "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Shows average, median, and P95 Observed Estimated Delay by mode group in minutes.'"
                 }
               }
             }
