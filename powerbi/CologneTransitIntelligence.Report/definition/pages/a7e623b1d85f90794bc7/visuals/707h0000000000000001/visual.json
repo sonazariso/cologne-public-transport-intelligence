@@ -31,8 +31,6 @@
         "isDefaultSort": true
       }
     },
-    "prototypeQuery": null,
-    "dataTransforms": null,
     "objects": {
       "columnWidth": [
         { "properties": { "value": { "expr": { "Literal": { "Value": "220D" } } } }, "selector": { "metadata": "RT_ReliabilityOutcome.PlatformChangeEvidence" } },

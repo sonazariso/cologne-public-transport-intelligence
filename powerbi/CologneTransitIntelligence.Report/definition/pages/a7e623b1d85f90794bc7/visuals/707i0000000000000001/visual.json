@@ -27,8 +27,6 @@
         }
       }
     },
-    "prototypeQuery": null,
-    "dataTransforms": null,
     "objects": {
       "columnWidth": [
         { "properties": { "value": { "expr": { "Literal": { "Value": "190D" } } } }, "selector": { "metadata": "_Measures.Platform Changed Evidence Share" } },
