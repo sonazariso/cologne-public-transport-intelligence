@@ -282,10 +282,9 @@ table _Measures
 			    [Situation-Linked Outcomes],
 			    [Observed Matched Services]
 			)
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
 		displayFolder: 04 Evidence
 		lineageTag: 7dff8496-b7e7-4ef5-8d38-131098cf850d
-
-		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
 	measure 'Platform Changed Evidence Outcomes' =
 			
@@ -303,10 +302,9 @@ table _Measures
 			    [Platform Changed Evidence Outcomes],
 			    [Observed Matched Services]
 			)
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
 		displayFolder: 04 Evidence
 		lineageTag: ba48ff5c-3164-406f-aba6-85c687dda0f3
-
-		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
 	measure 'Platform Unchanged Evidence Outcomes' =
 			
@@ -338,10 +336,9 @@ table _Measures
 			    [Observed Matched Services],
 			    0
 			)
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
 		displayFolder: 04 Evidence
 		lineageTag: 170eab5a-9f99-49f7-95a8-ea5e1c9faeef
-
-		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
 	measure 'Platform Unknown Evidence Share' =
 			
@@ -349,10 +346,9 @@ table _Measures
 			    [Platform Unknown Evidence Outcomes],
 			    [Observed Matched Services]
 			)
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
 		displayFolder: 04 Evidence
 		lineageTag: 4d9eefdf-0c75-46e7-92d6-e1f013c4f0a2
-
-		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
 	measure 'Operational Outcomes' =
 			
