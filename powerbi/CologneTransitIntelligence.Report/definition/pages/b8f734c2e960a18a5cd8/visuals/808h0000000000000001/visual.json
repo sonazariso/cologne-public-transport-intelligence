@@ -3,9 +3,9 @@
   "name": "808h0000000000000001",
   "position": {
     "x": 32,
-    "y": 570,
+    "y": 552,
     "z": 4000,
-    "height": 146,
+    "height": 168,
     "width": 1216,
     "tabOrder": 4000
   },
@@ -33,7 +33,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "Read realtime findings as consolidated matched scheduled stop events observed through the seven-location Sampling Panel. Static GTFS is a scheduled baseline; realtime values are observed estimates.",
+                    "value": "Read realtime findings as consolidated matched scheduled stop events from the seven-location Sampling Panel. Static GTFS is the scheduled baseline; realtime values are observed estimates.",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
@@ -79,16 +79,16 @@
                     "textStyle": {
                       "fontWeight": "bold",
                       "fontFamily": "Segoe UI Semibold",
-                      "fontSize": "8pt",
-                      "color": "#2A9D8F"
+                      "fontSize": "9pt",
+                      "color": "#1F2933"
                     }
                   },
                   {
-                    "value": " — comparable evidence explicitly shows a difference between planned and observed estimated platform/bay. ",
+                    "value": " — comparable evidence shows a difference between planned and observed estimated platform/bay. ",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
-                      "fontSize": "8pt",
+                      "fontSize": "9pt",
                       "color": "#1F2933"
                     }
                   },
@@ -97,16 +97,16 @@
                     "textStyle": {
                       "fontWeight": "bold",
                       "fontFamily": "Segoe UI Semibold",
-                      "fontSize": "8pt",
-                      "color": "#2A9D8F"
+                      "fontSize": "9pt",
+                      "color": "#1F2933"
                     }
                   },
                   {
-                    "value": " — comparable evidence explicitly shows the same value. ",
+                    "value": " — comparable evidence shows the same value. ",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
-                      "fontSize": "8pt",
+                      "fontSize": "9pt",
                       "color": "#1F2933"
                     }
                   },
@@ -115,16 +115,16 @@
                     "textStyle": {
                       "fontWeight": "bold",
                       "fontFamily": "Segoe UI Semibold",
-                      "fontSize": "8pt",
-                      "color": "#E76F51"
+                      "fontSize": "9pt",
+                      "color": "#1F2933"
                     }
                   },
                   {
-                    "value": " — evidence is insufficient to establish either Changed or Unchanged.",
+                    "value": " — evidence is insufficient to establish either state.",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
-                      "fontSize": "8pt",
+                      "fontSize": "9pt",
                       "color": "#1F2933"
                     }
                   }
@@ -138,7 +138,7 @@
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
-                      "fontSize": "8pt",
+                      "fontSize": "9pt",
                       "color": "#5F6B6D"
                     }
                   }
@@ -162,11 +162,11 @@
               {
                 "textRuns": [
                   {
-                    "value": "The current realtime implementation is arrival-oriented. Cancellation and departure semantics have not been sufficiently validated for reporting, so the report does not present validated cancellation rate, departure reliability or departure-delay KPI. A missing observation must not be interpreted as a cancellation.",
+                    "value": "The current realtime implementation is arrival-oriented. Cancellation and departure semantics are not sufficiently validated for reporting, so no validated cancellation-rate, departure-reliability or departure-delay KPI is presented. A missing observation is not a cancellation.",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
-                      "fontSize": "8pt",
+                      "fontSize": "9pt",
                       "color": "#1F2933"
                     }
                   }
@@ -180,7 +180,7 @@
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
-                      "fontSize": "8pt",
+                      "fontSize": "9pt",
                       "color": "#5F6B6D"
                     }
                   }
@@ -281,14 +281,14 @@
             "top": {
               "expr": {
                 "Literal": {
-                  "Value": "12D"
+                  "Value": "8D"
                 }
               }
             },
             "bottom": {
               "expr": {
                 "Literal": {
-                  "Value": "12D"
+                  "Value": "8D"
                 }
               }
             },

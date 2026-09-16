@@ -37,7 +37,7 @@
         {
           "properties": {
             "fontFamily": { "expr": { "Literal": { "Value": "'''Segoe UI Semibold'', wf_segoe-ui_semibold, helvetica, arial, sans-serif'" } } },
-            "fontSize": { "expr": { "Literal": { "Value": "8D" } } },
+            "fontSize": { "expr": { "Literal": { "Value": "9D" } } },
             "fontColor": { "solid": { "color": { "expr": { "Literal": { "Value": "'#1F2933'" } } } } },
             "backColor": { "solid": { "color": { "expr": { "Literal": { "Value": "'#E6EEF2'" } } } } },
             "autoSizeColumnWidth": { "expr": { "Literal": { "Value": "false" } } },
@@ -46,14 +46,14 @@
         },
         {
           "properties": {
-            "fontColor": { "solid": { "color": { "expr": { "Literal": { "Value": "'#FFFFFF'" } } } } },
+            "fontColor": { "solid": { "color": { "expr": { "Literal": { "Value": "'#1F2933'" } } } } },
             "backColor": { "solid": { "color": { "expr": { "Literal": { "Value": "'#E76F51'" } } } } }
           },
           "selector": { "metadata": "_Measures.Platform Changed Evidence Share" }
         },
         {
           "properties": {
-            "fontColor": { "solid": { "color": { "expr": { "Literal": { "Value": "'#FFFFFF'" } } } } },
+            "fontColor": { "solid": { "color": { "expr": { "Literal": { "Value": "'#1F2933'" } } } } },
             "backColor": { "solid": { "color": { "expr": { "Literal": { "Value": "'#2A9D8F'" } } } } }
           },
           "selector": { "metadata": "_Measures.Platform Unchanged Evidence Share" }

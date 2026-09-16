@@ -23,7 +23,7 @@
           "properties": {
             "fontFamily": { "expr": { "Literal": { "Value": "'''Segoe UI Semibold'', wf_segoe-ui_semibold, helvetica, arial, sans-serif'" } } },
             "fontSize": { "expr": { "Literal": { "Value": "22D" } } },
-            "fontColor": { "solid": { "color": { "expr": { "Literal": { "Value": "'#8C8C8C'" } } } } },
+            "fontColor": { "solid": { "color": { "expr": { "Literal": { "Value": "'#5F6B6D'" } } } } },
             "bold": { "expr": { "Literal": { "Value": "true" } } },
             "horizontalAlignment": { "expr": { "Literal": { "Value": "'left'" } } }
           },
@@ -78,7 +78,7 @@
         }
       ]
     },
-    "visualContainerObjects": { "title": [ { "properties": { "show": { "expr": { "Literal": { "Value": "false" } } } } } ] },
+    "visualContainerObjects": { "visualHeader": [ { "properties": { "show": { "expr": { "Literal": { "Value": "false" } } } } } ], "title": [ { "properties": { "show": { "expr": { "Literal": { "Value": "false" } } } } } ] },
     "drillFilterOtherVisuals": true
   }
 }

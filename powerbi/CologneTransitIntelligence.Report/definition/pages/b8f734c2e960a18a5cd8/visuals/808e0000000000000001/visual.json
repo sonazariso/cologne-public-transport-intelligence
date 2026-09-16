@@ -5,7 +5,7 @@
     "x": 832,
     "y": 150,
     "z": 2002,
-    "height": 168,
+    "height": 150,
     "width": 416,
     "tabOrder": 2002
   },
@@ -51,7 +51,7 @@
                     "textStyle": {
                       "fontWeight": "bold",
                       "fontFamily": "Segoe UI Semibold",
-                      "fontSize": "8pt",
+                      "fontSize": "9pt",
                       "color": "#1F2933"
                     }
                   }
@@ -65,7 +65,7 @@
                     "textStyle": {
                       "fontWeight": "bold",
                       "fontFamily": "Segoe UI Semibold",
-                      "fontSize": "8pt",
+                      "fontSize": "9pt",
                       "color": "#1F2933"
                     }
                   }
@@ -79,7 +79,7 @@
                     "textStyle": {
                       "fontWeight": "bold",
                       "fontFamily": "Segoe UI Semibold",
-                      "fontSize": "8pt",
+                      "fontSize": "9pt",
                       "color": "#1F2933"
                     }
                   }
@@ -180,14 +180,14 @@
             "top": {
               "expr": {
                 "Literal": {
-                  "Value": "12D"
+                  "Value": "8D"
                 }
               }
             },
             "bottom": {
               "expr": {
                 "Literal": {
-                  "Value": "12D"
+                  "Value": "8D"
                 }
               }
             },

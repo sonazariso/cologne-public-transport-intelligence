@@ -78,7 +78,7 @@
         }
       ]
     },
-    "visualContainerObjects": { "title": [ { "properties": { "show": { "expr": { "Literal": { "Value": "false" } } } } } ] },
+    "visualContainerObjects": { "visualHeader": [ { "properties": { "show": { "expr": { "Literal": { "Value": "false" } } } } } ], "title": [ { "properties": { "show": { "expr": { "Literal": { "Value": "false" } } } } } ] },
     "drillFilterOtherVisuals": true
   }
 }

@@ -52,7 +52,7 @@
         { "properties": { "value": { "expr": { "Literal": { "Value": "86D" } } } }, "selector": { "metadata": "_Measures.Incomplete Collector Runs" } }
       ],
       "columnHeaders": [ { "properties": {
-        "fontFamily": { "expr": { "Literal": { "Value": "'''Segoe UI Semibold'', wf_segoe-ui_semibold, helvetica, arial, sans-serif" } } }, "fontSize": { "expr": { "Literal": { "Value": "8D" } } },
+        "fontFamily": { "expr": { "Literal": { "Value": "'''Segoe UI Semibold'', wf_segoe-ui_semibold, helvetica, arial, sans-serif" } } }, "fontSize": { "expr": { "Literal": { "Value": "9D" } } },
         "fontColor": { "solid": { "color": { "expr": { "Literal": { "Value": "'#1F2933'" } } } } }, "backColor": { "solid": { "color": { "expr": { "Literal": { "Value": "'#E6EEF2'" } } } } },
         "autoSizeColumnWidth": { "expr": { "Literal": { "Value": "false" } } }, "wordWrap": { "expr": { "Literal": { "Value": "true" } } }
       } } ],

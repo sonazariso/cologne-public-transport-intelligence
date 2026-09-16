@@ -44,7 +44,7 @@
         "width": { "expr": { "Literal": { "Value": "1D" } } }
       }, "selector": { "id": "default" } } ]
     },
-    "visualContainerObjects": { "title": [ { "properties": { "show": { "expr": { "Literal": { "Value": "false" } } } } } ] },
+    "visualContainerObjects": { "visualHeader": [ { "properties": { "show": { "expr": { "Literal": { "Value": "false" } } } } } ], "title": [ { "properties": { "show": { "expr": { "Literal": { "Value": "false" } } } } } ] },
     "drillFilterOtherVisuals": true
   }
 }

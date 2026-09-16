@@ -3,7 +3,7 @@
   "name": "808f0000000000000001",
   "position": {
     "x": 32,
-    "y": 334,
+    "y": 316,
     "z": 3000,
     "height": 220,
     "width": 596,
@@ -290,14 +290,14 @@
             "top": {
               "expr": {
                 "Literal": {
-                  "Value": "12D"
+                  "Value": "8D"
                 }
               }
             },
             "bottom": {
               "expr": {
                 "Literal": {
-                  "Value": "12D"
+                  "Value": "8D"
                 }
               }
             },

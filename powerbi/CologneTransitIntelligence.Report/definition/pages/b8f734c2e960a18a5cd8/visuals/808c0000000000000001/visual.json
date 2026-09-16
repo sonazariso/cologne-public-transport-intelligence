@@ -5,7 +5,7 @@
     "x": 32,
     "y": 150,
     "z": 2000,
-    "height": 168,
+    "height": 150,
     "width": 380,
     "tabOrder": 2000
   },
@@ -166,14 +166,14 @@
             "top": {
               "expr": {
                 "Literal": {
-                  "Value": "12D"
+                  "Value": "8D"
                 }
               }
             },
             "bottom": {
               "expr": {
                 "Literal": {
-                  "Value": "12D"
+                  "Value": "8D"
                 }
               }
             },
