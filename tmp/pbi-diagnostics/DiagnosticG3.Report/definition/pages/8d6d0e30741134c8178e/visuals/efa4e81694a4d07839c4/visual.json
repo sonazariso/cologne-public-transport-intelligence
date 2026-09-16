@@ -1,0 +1,153 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "efa4e81694a4d07839c4",
+  "position": {
+    "x": 9.770992366412214,
+    "y": 0,
+    "z": 0,
+    "height": 87.938931297709928,
+    "width": 1270.2290076335878,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Active Dates in Context"
+                }
+              },
+              "queryRef": "_Measures.Active Dates in Context",
+              "nativeQueryRef": "Active Dates in Context"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Average Scheduled Trips per Active Day"
+                }
+              },
+              "queryRef": "_Measures.Average Scheduled Trips per Active Day",
+              "nativeQueryRef": "Average Scheduled Trips per Active Day"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Mode Share of Scheduled Trips"
+                }
+              },
+              "queryRef": "_Measures.Mode Share of Scheduled Trips",
+              "nativeQueryRef": "Mode Share of Scheduled Trips"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Routes in Context"
+                }
+              },
+              "queryRef": "_Measures.Routes in Context",
+              "nativeQueryRef": "Routes in Context"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Scheduled Trips"
+                }
+              },
+              "queryRef": "_Measures.Scheduled Trips",
+              "nativeQueryRef": "Scheduled Trips"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Weekend Scheduled Trips"
+                }
+              },
+              "queryRef": "_Measures.Weekend Scheduled Trips",
+              "nativeQueryRef": "Weekend Scheduled Trips"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Weekday Scheduled Trips"
+                }
+              },
+              "queryRef": "_Measures.Weekday Scheduled Trips",
+              "nativeQueryRef": "Weekday Scheduled Trips"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Weekend Share"
+                }
+              },
+              "queryRef": "_Measures.Weekend Share",
+              "nativeQueryRef": "Weekend Share"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "_Measures"
+                  }
+                },
+                "Property": "Weekend Scheduled Trips"
+              }
+            },
+            "direction": "Descending"
+          }
+        ]
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}
