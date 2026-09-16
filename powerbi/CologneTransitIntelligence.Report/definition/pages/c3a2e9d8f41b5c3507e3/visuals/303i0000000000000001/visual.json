@@ -518,23 +518,8 @@
           "Where": [
             {
               "Condition": {
-                "Top": {
-                  "Count": 10,
-                  "OrderBy": [
-                    {
-                      "Direction": 2,
-                      "Expression": {
-                        "Measure": {
-                          "Expression": {
-                            "SourceRef": {
-                              "Source": "m"
-                            }
-                          },
-                          "Property": "Scheduled Trips"
-                        }
-                      }
-                    }
-                  ]
+                "VisualTopN": {
+                  "ItemCount": 10
                 }
               }
             }
