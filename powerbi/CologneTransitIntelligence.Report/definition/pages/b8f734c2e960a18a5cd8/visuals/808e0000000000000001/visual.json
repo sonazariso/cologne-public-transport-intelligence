@@ -33,7 +33,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "Inputs remain distinct until Staging:",
+                    "value": "Separate source-specific staging paths converge in the Working Layer:",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
@@ -47,7 +47,35 @@
               {
                 "textRuns": [
                   {
-                    "value": "Static GTFS + Realtime TRIAS → Staging → Working / normalization / matching → Operational warehouse → Analytics views → Power BI",
+                    "value": "Static GTFS → static staging",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Segoe UI Semibold",
+                      "fontSize": "8pt",
+                      "color": "#1F2933"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "left"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Realtime TRIAS → realtime staging",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Segoe UI Semibold",
+                      "fontSize": "8pt",
+                      "color": "#1F2933"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "left"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "→ Working / normalization / matching → Operational warehouse → Analytics views → Power BI",
                     "textStyle": {
                       "fontWeight": "bold",
                       "fontFamily": "Segoe UI Semibold",

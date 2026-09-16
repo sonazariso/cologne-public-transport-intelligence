@@ -5,7 +5,7 @@
     "x": 32,
     "y": 570,
     "z": 4000,
-    "height": 112,
+    "height": 146,
     "width": 1216,
     "tabOrder": 4000
   },
@@ -52,6 +52,135 @@
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
                       "fontSize": "9pt",
+                      "color": "#5F6B6D"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "left"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Platform Evidence",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Segoe UI Semibold",
+                      "fontSize": "10pt",
+                      "color": "#0B6E8A"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "left"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Changed",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Segoe UI Semibold",
+                      "fontSize": "8pt",
+                      "color": "#2A9D8F"
+                    }
+                  },
+                  {
+                    "value": " — comparable evidence explicitly shows a difference between planned and observed estimated platform/bay. ",
+                    "textStyle": {
+                      "fontWeight": "normal",
+                      "fontFamily": "Segoe UI",
+                      "fontSize": "8pt",
+                      "color": "#1F2933"
+                    }
+                  },
+                  {
+                    "value": "Unchanged",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Segoe UI Semibold",
+                      "fontSize": "8pt",
+                      "color": "#2A9D8F"
+                    }
+                  },
+                  {
+                    "value": " — comparable evidence explicitly shows the same value. ",
+                    "textStyle": {
+                      "fontWeight": "normal",
+                      "fontFamily": "Segoe UI",
+                      "fontSize": "8pt",
+                      "color": "#1F2933"
+                    }
+                  },
+                  {
+                    "value": "Unknown",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Segoe UI Semibold",
+                      "fontSize": "8pt",
+                      "color": "#E76F51"
+                    }
+                  },
+                  {
+                    "value": " — evidence is insufficient to establish either Changed or Unchanged.",
+                    "textStyle": {
+                      "fontWeight": "normal",
+                      "fontFamily": "Segoe UI",
+                      "fontSize": "8pt",
+                      "color": "#1F2933"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "left"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Platform Unknown != Platform Unchanged. Missing estimated platform/bay information must not be interpreted as Unchanged.",
+                    "textStyle": {
+                      "fontWeight": "normal",
+                      "fontFamily": "Segoe UI",
+                      "fontSize": "8pt",
+                      "color": "#5F6B6D"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "left"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Cancellation / departure limitation",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Segoe UI Semibold",
+                      "fontSize": "10pt",
+                      "color": "#0B6E8A"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "left"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "The current realtime implementation is arrival-oriented. Cancellation and departure semantics have not been sufficiently validated for reporting, so the report does not present validated cancellation rate, departure reliability or departure-delay KPI. A missing observation must not be interpreted as a cancellation.",
+                    "textStyle": {
+                      "fontWeight": "normal",
+                      "fontFamily": "Segoe UI",
+                      "fontSize": "8pt",
+                      "color": "#1F2933"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "left"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Collector Health and Coverage are evaluated separately from Reliability.",
+                    "textStyle": {
+                      "fontWeight": "normal",
+                      "fontFamily": "Segoe UI",
+                      "fontSize": "8pt",
                       "color": "#5F6B6D"
                     }
                   }
