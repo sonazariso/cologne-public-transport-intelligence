@@ -1,0 +1,94 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "24cd1fd0963ee1c72077",
+  "position": {
+    "x": 0,
+    "y": 171.69230769230771,
+    "z": 1000,
+    "height": 88.615384615384627,
+    "width": 1238.7692307692309,
+    "tabOrder": 1000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Observations with Estimated Bay"
+                }
+              },
+              "queryRef": "_Measures.Observations with Estimated Bay",
+              "nativeQueryRef": "Observations with Estimated Bay"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Observations with Situation Evidence"
+                }
+              },
+              "queryRef": "_Measures.Observations with Situation Evidence",
+              "nativeQueryRef": "Observations with Situation Evidence"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Situation Links"
+                }
+              },
+              "queryRef": "_Measures.Situation Links",
+              "nativeQueryRef": "Situation Links"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Estimated Bay Availability Rate"
+                }
+              },
+              "queryRef": "_Measures.Estimated Bay Availability Rate",
+              "nativeQueryRef": "Estimated Bay Availability Rate"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Situation Evidence Availability Rate"
+                }
+              },
+              "queryRef": "_Measures.Situation Evidence Availability Rate",
+              "nativeQueryRef": "Situation Evidence Availability Rate"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

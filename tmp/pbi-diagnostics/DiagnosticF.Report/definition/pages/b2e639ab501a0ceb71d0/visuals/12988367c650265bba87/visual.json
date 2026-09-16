@@ -1,0 +1,94 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "12988367c650265bba87",
+  "position": {
+    "x": 9.2307692307692317,
+    "y": 0,
+    "z": 0,
+    "height": 84.923076923076934,
+    "width": 843.69230769230774,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Parent Station Fallback Rate"
+                }
+              },
+              "queryRef": "_Measures.Parent Station Fallback Rate",
+              "nativeQueryRef": "Parent Station Fallback Rate"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Static Coverage Missing Rate"
+                }
+              },
+              "queryRef": "_Measures.Static Coverage Missing Rate",
+              "nativeQueryRef": "Static Coverage Missing Rate"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Usable Match Rate"
+                }
+              },
+              "queryRef": "_Measures.Usable Match Rate",
+              "nativeQueryRef": "Usable Match Rate"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Exact Stop Match Rate"
+                }
+              },
+              "queryRef": "_Measures.Exact Stop Match Rate",
+              "nativeQueryRef": "Exact Stop Match Rate"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Unresolved Match Rate"
+                }
+              },
+              "queryRef": "_Measures.Unresolved Match Rate",
+              "nativeQueryRef": "Unresolved Match Rate"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

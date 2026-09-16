@@ -1,0 +1,111 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "81e369e7b0c0030d25ad",
+  "position": {
+    "x": 293.12977099236639,
+    "y": 128.84677135563413,
+    "z": 2000,
+    "height": 85.984732824427482,
+    "width": 654.6564885496183,
+    "tabOrder": 2000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Baseline Agencies"
+                }
+              },
+              "queryRef": "_Measures.Baseline Agencies",
+              "nativeQueryRef": "Baseline Agencies"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Baseline Modes"
+                }
+              },
+              "queryRef": "_Measures.Baseline Modes",
+              "nativeQueryRef": "Baseline Modes"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Baseline Parent Stations"
+                }
+              },
+              "queryRef": "_Measures.Baseline Parent Stations",
+              "nativeQueryRef": "Baseline Parent Stations"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Baseline Routes"
+                }
+              },
+              "queryRef": "_Measures.Baseline Routes",
+              "nativeQueryRef": "Baseline Routes"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Baseline Stop Positions"
+                }
+              },
+              "queryRef": "_Measures.Baseline Stop Positions",
+              "nativeQueryRef": "Baseline Stop Positions"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "_Measures"
+                  }
+                },
+                "Property": "Baseline Parent Stations"
+              }
+            },
+            "direction": "Descending"
+          }
+        ]
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

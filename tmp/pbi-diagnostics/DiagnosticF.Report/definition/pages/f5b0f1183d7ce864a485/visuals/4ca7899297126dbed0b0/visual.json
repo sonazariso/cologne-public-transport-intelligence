@@ -1,0 +1,125 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "4ca7899297126dbed0b0",
+  "position": {
+    "x": 10.110584518167457,
+    "y": 418.57819905213273,
+    "z": 2000,
+    "height": 149.63665086887838,
+    "width": 1235.5134281200633,
+    "tabOrder": 2000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Operational Outcomes"
+                }
+              },
+              "queryRef": "_Measures.Operational Outcomes",
+              "nativeQueryRef": "Operational Outcomes"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Usable Realtime Observations"
+                }
+              },
+              "queryRef": "_Measures.Usable Realtime Observations",
+              "nativeQueryRef": "Usable Realtime Observations"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Repeated Observations Consolidated"
+                }
+              },
+              "queryRef": "_Measures.Repeated Observations Consolidated",
+              "nativeQueryRef": "Repeated Observations Consolidated"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Consolidation Reduction Share"
+                }
+              },
+              "queryRef": "_Measures.Consolidation Reduction Share",
+              "nativeQueryRef": "Consolidation Reduction Share"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Observations per Operational Outcome"
+                }
+              },
+              "queryRef": "_Measures.Observations per Operational Outcome",
+              "nativeQueryRef": "Observations per Operational Outcome"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Average Observations per Outcome"
+                }
+              },
+              "queryRef": "_Measures.Average Observations per Outcome",
+              "nativeQueryRef": "Average Observations per Outcome"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "_Measures"
+                  }
+                },
+                "Property": "Consolidation Reduction Share"
+              }
+            },
+            "direction": "Descending"
+          }
+        ]
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}
