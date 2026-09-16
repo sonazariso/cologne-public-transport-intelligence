@@ -1,0 +1,415 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "d9a83cf840234bd87558",
+  "position": {
+    "x": 11.076923076923078,
+    "y": 555.69230769230774,
+    "z": 6000,
+    "height": 149.53846153846155,
+    "width": 1268.3076923076924,
+    "tabOrder": 6000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "RT_ReliabilityByDimension"
+                    }
+                  },
+                  "Property": "DimensionType"
+                }
+              },
+              "queryRef": "RT_ReliabilityByDimension.DimensionType",
+              "nativeQueryRef": "DimensionType"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "RT_ReliabilityByDimension"
+                    }
+                  },
+                  "Property": "ObservedMatchedServiceCount"
+                }
+              },
+              "queryRef": "RT_ReliabilityByDimension.ObservedMatchedServiceCount",
+              "nativeQueryRef": "ObservedMatchedServiceCount"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "RT_ReliabilityByDimension"
+                    }
+                  },
+                  "Property": "DelayObservationCount"
+                }
+              },
+              "queryRef": "RT_ReliabilityByDimension.DelayObservationCount",
+              "nativeQueryRef": "DelayObservationCount"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "RT_ReliabilityByDimension"
+                    }
+                  },
+                  "Property": "AverageObservedEstimatedDelayMinutes"
+                }
+              },
+              "queryRef": "RT_ReliabilityByDimension.AverageObservedEstimatedDelayMinutes",
+              "nativeQueryRef": "AverageObservedEstimatedDelayMinutes"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "RT_ReliabilityByDimension"
+                    }
+                  },
+                  "Property": "MedianObservedEstimatedDelayMinutes"
+                }
+              },
+              "queryRef": "RT_ReliabilityByDimension.MedianObservedEstimatedDelayMinutes",
+              "nativeQueryRef": "MedianObservedEstimatedDelayMinutes"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "RT_ReliabilityByDimension"
+                    }
+                  },
+                  "Property": "P95ObservedEstimatedDelayMinutes"
+                }
+              },
+              "queryRef": "RT_ReliabilityByDimension.P95ObservedEstimatedDelayMinutes",
+              "nativeQueryRef": "P95ObservedEstimatedDelayMinutes"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "RT_ReliabilityByDimension"
+                    }
+                  },
+                  "Property": "MinimumObservedEstimatedDelayMinutes"
+                }
+              },
+              "queryRef": "RT_ReliabilityByDimension.MinimumObservedEstimatedDelayMinutes",
+              "nativeQueryRef": "MinimumObservedEstimatedDelayMinutes"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "RT_ReliabilityByDimension"
+                    }
+                  },
+                  "Property": "MaximumObservedEstimatedDelayMinutes"
+                }
+              },
+              "queryRef": "RT_ReliabilityByDimension.MaximumObservedEstimatedDelayMinutes",
+              "nativeQueryRef": "MaximumObservedEstimatedDelayMinutes"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "RT_ReliabilityByDimension"
+                    }
+                  },
+                  "Property": "AverageObservationsPerOutcome"
+                }
+              },
+              "queryRef": "RT_ReliabilityByDimension.AverageObservationsPerOutcome",
+              "nativeQueryRef": "AverageObservationsPerOutcome"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "RT_ReliabilityByDimension"
+                    }
+                  },
+                  "Property": "SituationLinkedOutcomeCount"
+                }
+              },
+              "queryRef": "RT_ReliabilityByDimension.SituationLinkedOutcomeCount",
+              "nativeQueryRef": "SituationLinkedOutcomeCount"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "RT_ReliabilityByDimension"
+                    }
+                  },
+                  "Property": "PlatformChangedEvidenceCount"
+                }
+              },
+              "queryRef": "RT_ReliabilityByDimension.PlatformChangedEvidenceCount",
+              "nativeQueryRef": "PlatformChangedEvidenceCount"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "RT_ReliabilityByDimension"
+                  }
+                },
+                "Property": "PlatformChangedEvidenceCount"
+              }
+            },
+            "direction": "Ascending"
+          }
+        ]
+      }
+    },
+    "objects": {
+      "columnWidth": [
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "92.67641097332951D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "RT_ReliabilityByDimension.ObservedMatchedServiceCount"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "88.16414247858216D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "RT_ReliabilityByDimension.DelayObservationCount"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "133.1115386673067D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "RT_ReliabilityByDimension.AverageObservedEstimatedDelayMinutes"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "113.33823172674929D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "RT_ReliabilityByDimension.MedianObservedEstimatedDelayMinutes"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "121.77769998431744D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "RT_ReliabilityByDimension.P95ObservedEstimatedDelayMinutes"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "117.9739501615853D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "RT_ReliabilityByDimension.MinimumObservedEstimatedDelayMinutes"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "105.34748174878223D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "RT_ReliabilityByDimension.MaximumObservedEstimatedDelayMinutes"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "60.34803302262931D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "RT_ReliabilityByDimension.DimensionType"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "118.57635363958228D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "RT_ReliabilityByDimension.AverageObservationsPerOutcome"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "118.16906522490572D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "RT_ReliabilityByDimension.SituationLinkedOutcomeCount"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "169.6153846153846D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "RT_ReliabilityByDimension.PlatformChangedEvidenceCount"
+          }
+        }
+      ],
+      "columnHeaders": [
+        {
+          "properties": {}
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "bfe99f1b278e7e1030a5",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "RT_ReliabilityByDimension"
+              }
+            },
+            "Property": "DimensionType"
+          }
+        },
+        "type": "Categorical",
+        "filter": {
+          "Version": 2,
+          "From": [
+            {
+              "Name": "r",
+              "Entity": "RT_ReliabilityByDimension",
+              "Type": 0
+            }
+          ],
+          "Where": [
+            {
+              "Condition": {
+                "In": {
+                  "Expressions": [
+                    {
+                      "Column": {
+                        "Expression": {
+                          "SourceRef": {
+                            "Source": "r"
+                          }
+                        },
+                        "Property": "DimensionType"
+                      }
+                    }
+                  ],
+                  "Values": [
+                    [
+                      {
+                        "Literal": {
+                          "Value": "'Overall'"
+                        }
+                      }
+                    ]
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

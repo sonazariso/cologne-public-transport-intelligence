@@ -1,0 +1,132 @@
+table ActiveDate
+	lineageTag: d2f2c2cb-60f2-44b3-a601-4f1eb97e23d8
+	dataCategory: Time
+
+	column DateKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: a160c685-e4a2-4d67-b3d8-031a48da1623
+		summarizeBy: none
+		sourceColumn: DateKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column DateValue
+		dataType: dateTime
+		isKey
+		formatString: Short Date
+		lineageTag: bbca4223-2c7a-4148-8485-beab61382959
+		summarizeBy: none
+		sourceColumn: DateValue
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column CalendarYear
+		dataType: int64
+		formatString: 0
+		lineageTag: 64bbbe07-d255-4f29-8302-d6585c7fc1a1
+		summarizeBy: none
+		sourceColumn: CalendarYear
+
+		annotation SummarizationSetBy = User
+
+	column CalendarQuarter
+		dataType: int64
+		formatString: 0
+		lineageTag: 5a946d59-a014-49b6-8042-1897fddd4126
+		summarizeBy: none
+		sourceColumn: CalendarQuarter
+
+		annotation SummarizationSetBy = User
+
+	column CalendarMonth
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 7a6a60a4-d23b-480c-97dc-e26a15eecbfa
+		summarizeBy: sum
+		sourceColumn: CalendarMonth
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column MonthName
+		dataType: string
+		lineageTag: 09040289-66c3-4d5d-87d7-ca54334a8324
+		summarizeBy: none
+		sourceColumn: MonthName
+		sortByColumn: CalendarMonth
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column DayOfMonth
+		dataType: int64
+		formatString: 0
+		lineageTag: af8f69e7-0478-496b-906a-2e2f076cdd97
+		summarizeBy: none
+		sourceColumn: DayOfMonth
+
+		annotation SummarizationSetBy = User
+
+	column IsoWeekNumber
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: d10b6a36-94e3-458e-be50-40f3f71e4810
+		summarizeBy: none
+		sourceColumn: IsoWeekNumber
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	column IsoWeekdayNumber
+		dataType: int64
+		formatString: 0
+		lineageTag: 10e7da41-7ae7-42b9-8de5-8c33d5144f35
+		summarizeBy: sum
+		sourceColumn: IsoWeekdayNumber
+
+		annotation SummarizationSetBy = Automatic
+
+	column WeekdayName
+		dataType: string
+		lineageTag: de7387f1-55e9-4717-9460-554c1138503e
+		summarizeBy: none
+		sourceColumn: WeekdayName
+		sortByColumn: IsoWeekdayNumber
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column IsWeekend
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: f2f22425-db9d-4375-a3e1-4f562184f422
+		summarizeBy: none
+		sourceColumn: IsWeekend
+
+		annotation SummarizationSetBy = Automatic
+
+	partition ActiveDate = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("localhost", "CologneTransitIntelligence"),
+				    analytics_vwActiveDateProfile = Source{[Schema="analytics",Item="vwActiveDateProfile"]}[Data]
+				in
+				    analytics_vwActiveDateProfile
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

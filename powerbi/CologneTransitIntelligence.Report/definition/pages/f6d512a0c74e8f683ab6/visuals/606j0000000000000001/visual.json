@@ -1,0 +1,66 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "606j0000000000000001",
+  "position": { "x": 644, "y": 286, "z": 3001, "height": 252, "width": 604, "tabOrder": 3001 },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            { "field": { "Column": { "Expression": { "SourceRef": { "Entity": "RT_CollectorRunHealth" } }, "Property": "SamplingTargetName" } }, "queryRef": "RT_CollectorRunHealth.SamplingTargetName", "nativeQueryRef": "SamplingTargetName" },
+            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Collector Runs" } }, "queryRef": "_Measures.Collector Runs", "nativeQueryRef": "Collector Runs" },
+            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Completed Collector Runs" } }, "queryRef": "_Measures.Completed Collector Runs", "nativeQueryRef": "Completed Collector Runs" },
+            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Successful Collector Runs" } }, "queryRef": "_Measures.Successful Collector Runs", "nativeQueryRef": "Successful Collector Runs" },
+            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Failed Collector Runs" } }, "queryRef": "_Measures.Failed Collector Runs", "nativeQueryRef": "Failed Collector Runs" },
+            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Incomplete Collector Runs" } }, "queryRef": "_Measures.Incomplete Collector Runs", "nativeQueryRef": "Incomplete Collector Runs" }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          { "field": { "Column": { "Expression": { "SourceRef": { "Entity": "RT_CollectorRunHealth" } }, "Property": "SamplingTargetName" } }, "direction": "Ascending" }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "visualContainerObjects": {
+      "title": [ { "properties": {
+        "show": { "expr": { "Literal": { "Value": "true" } } }, "text": { "expr": { "Literal": { "Value": "'Collector runs by Sampling Panel target'" } } },
+        "fontFamily": { "expr": { "Literal": { "Value": "'''Segoe UI Semibold'', wf_segoe-ui_semibold, helvetica, arial, sans-serif" } } }, "fontSize": { "expr": { "Literal": { "Value": "12D" } } },
+        "fontColor": { "solid": { "color": { "expr": { "Literal": { "Value": "'#1F2933'" } } } } }, "titleWrap": { "expr": { "Literal": { "Value": "false" } } }, "alignment": { "expr": { "Literal": { "Value": "'left'" } } }
+      } } ],
+      "stylePreset": [ { "properties": { "name": { "expr": { "Literal": { "Value": "'None'" } } } } } ],
+      "background": [ { "properties": {
+        "show": { "expr": { "Literal": { "Value": "true" } } }, "color": { "solid": { "color": { "expr": { "Literal": { "Value": "'#FFFFFF'" } } } } }, "transparency": { "expr": { "Literal": { "Value": "0D" } } }
+      } } ],
+      "border": [ { "properties": {
+        "show": { "expr": { "Literal": { "Value": "true" } } }, "color": { "solid": { "color": { "expr": { "Literal": { "Value": "'#D8E1E7'" } } } } }, "width": { "expr": { "Literal": { "Value": "1D" } } }, "radius": { "expr": { "Literal": { "Value": "6L" } } }
+      } } ],
+      "padding": [ { "properties": {
+        "top": { "expr": { "Literal": { "Value": "8D" } } }, "bottom": { "expr": { "Literal": { "Value": "8D" } } }, "left": { "expr": { "Literal": { "Value": "8D" } } }, "right": { "expr": { "Literal": { "Value": "8D" } } }
+      } } ],
+      "visualHeader": [ { "properties": { "show": { "expr": { "Literal": { "Value": "false" } } } } } ]
+    },
+    "objects": {
+      "columnWidth": [
+        { "properties": { "value": { "expr": { "Literal": { "Value": "168D" } } } }, "selector": { "metadata": "RT_CollectorRunHealth.SamplingTargetName" } },
+        { "properties": { "value": { "expr": { "Literal": { "Value": "84D" } } } }, "selector": { "metadata": "_Measures.Collector Runs" } },
+        { "properties": { "value": { "expr": { "Literal": { "Value": "84D" } } } }, "selector": { "metadata": "_Measures.Completed Collector Runs" } },
+        { "properties": { "value": { "expr": { "Literal": { "Value": "88D" } } } }, "selector": { "metadata": "_Measures.Successful Collector Runs" } },
+        { "properties": { "value": { "expr": { "Literal": { "Value": "68D" } } } }, "selector": { "metadata": "_Measures.Failed Collector Runs" } },
+        { "properties": { "value": { "expr": { "Literal": { "Value": "86D" } } } }, "selector": { "metadata": "_Measures.Incomplete Collector Runs" } }
+      ],
+      "columnHeaders": [ { "properties": {
+        "fontFamily": { "expr": { "Literal": { "Value": "'''Segoe UI Semibold'', wf_segoe-ui_semibold, helvetica, arial, sans-serif" } } }, "fontSize": { "expr": { "Literal": { "Value": "8D" } } },
+        "fontColor": { "solid": { "color": { "expr": { "Literal": { "Value": "'#1F2933'" } } } } }, "backColor": { "solid": { "color": { "expr": { "Literal": { "Value": "'#E6EEF2'" } } } } },
+        "autoSizeColumnWidth": { "expr": { "Literal": { "Value": "false" } } }, "wordWrap": { "expr": { "Literal": { "Value": "true" } } }
+      } } ],
+      "values": [ { "properties": {
+        "fontFamily": { "expr": { "Literal": { "Value": "'''Segoe UI'', wf_segoe-ui_normal, helvetica, arial, sans-serif" } } }, "fontSize": { "expr": { "Literal": { "Value": "9D" } } },
+        "fontColorPrimary": { "solid": { "color": { "expr": { "Literal": { "Value": "'#1F2933'" } } } } }, "fontColorSecondary": { "solid": { "color": { "expr": { "Literal": { "Value": "'#1F2933'" } } } } },
+        "backColorPrimary": { "solid": { "color": { "expr": { "Literal": { "Value": "'#FFFFFF'" } } } } }, "backColorSecondary": { "solid": { "color": { "expr": { "Literal": { "Value": "'#F5F7F9'" } } } } }
+      } } ]
+    }
+  }
+}

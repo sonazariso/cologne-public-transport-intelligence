@@ -1,0 +1,232 @@
+table Route
+	lineageTag: 1dc5bc22-f756-4e03-99ee-9d73e869e1f9
+
+	column RouteKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 57e80da5-ce83-408d-805b-a1ef6010d98e
+		summarizeBy: none
+		sourceColumn: RouteKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column RouteId
+		dataType: string
+		isHidden
+		lineageTag: 7f6fd682-8abc-40aa-994d-01537d6d598c
+		summarizeBy: none
+		sourceColumn: RouteId
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column RouteShortName
+		dataType: string
+		lineageTag: 189df432-fc48-4d3b-800c-20ca9036ccd2
+		summarizeBy: none
+		sourceColumn: RouteShortName
+
+		annotation SummarizationSetBy = Automatic
+
+	column RouteLongName
+		dataType: string
+		lineageTag: b3bcb196-d959-46cc-ac8d-b8164988f229
+		summarizeBy: none
+		sourceColumn: RouteLongName
+
+		annotation SummarizationSetBy = Automatic
+
+	column RouteTypeCode
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 84ece39e-ac7e-4dc8-9c8c-9764e043820e
+		summarizeBy: count
+		sourceColumn: RouteTypeCode
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column AgencyId
+		dataType: string
+		isHidden
+		lineageTag: 927c23e5-46c4-4d4b-9f61-9ec1ce59bcb2
+		summarizeBy: none
+		sourceColumn: AgencyId
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column AgencyName
+		dataType: string
+		lineageTag: d3ab309b-5358-4d7b-b7f3-eb8fc8dc3a19
+		summarizeBy: none
+		sourceColumn: AgencyName
+
+		annotation SummarizationSetBy = Automatic
+
+	column ModeKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 298d9f21-2897-4399-9790-0e7bb69bf44f
+		summarizeBy: none
+		sourceColumn: ModeKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ModeSortOrder
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 61294309-86c6-4adf-b6e4-b17688f574c0
+		summarizeBy: sum
+		sourceColumn: ModeSortOrder
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ModeGroup
+		dataType: string
+		isHidden
+		lineageTag: 90e0f278-602c-4c9a-89da-6be031a841b0
+		summarizeBy: none
+		sourceColumn: ModeGroup
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ModeDetail
+		dataType: string
+		isHidden
+		lineageTag: ff79ca89-f7de-4960-8f0c-1d0df0d0c077
+		summarizeBy: none
+		sourceColumn: ModeDetail
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column IsRailReplacementService
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 21bea38b-fc60-4d20-94c2-da21e21c43bc
+		summarizeBy: none
+		sourceColumn: IsRailReplacementService
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ScheduledTripPatternCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 3aeb139f-be8c-4bcd-8505-c98950304fa4
+		summarizeBy: none
+		sourceColumn: ScheduledTripPatternCount
+
+		annotation SummarizationSetBy = User
+
+	column ServicePatternCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 1be811bd-cd21-49a9-adc9-8b9b5d5e3927
+		summarizeBy: none
+		sourceColumn: ServicePatternCount
+
+		annotation SummarizationSetBy = User
+
+	column ScheduledTripOccurrenceCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 1ac030b2-73e7-4a15-b4ed-360fed73556e
+		summarizeBy: none
+		sourceColumn: ScheduledTripOccurrenceCount
+
+		annotation SummarizationSetBy = User
+
+	column ActiveServiceDateCount
+		dataType: int64
+		formatString: 0
+		lineageTag: cad17596-066f-46f2-af0c-d7b90b13be1a
+		summarizeBy: none
+		sourceColumn: ActiveServiceDateCount
+
+		annotation SummarizationSetBy = User
+
+	column ScheduledStopEventPatternCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 1e68fb4a-06a0-463f-beb7-5daa7ecbe43f
+		summarizeBy: none
+		sourceColumn: ScheduledStopEventPatternCount
+
+		annotation SummarizationSetBy = User
+
+	column ServedStopPositionCount
+		dataType: int64
+		formatString: 0
+		lineageTag: f1576dd5-5b23-4e57-9398-8b226619e100
+		summarizeBy: none
+		sourceColumn: ServedStopPositionCount
+
+		annotation SummarizationSetBy = User
+
+	column EarliestScheduledDepartureSeconds
+		dataType: int64
+		formatString: 0
+		lineageTag: cde99210-8f72-4e6a-a7b7-d08b9d93c797
+		summarizeBy: sum
+		sourceColumn: EarliestScheduledDepartureSeconds
+
+		annotation SummarizationSetBy = Automatic
+
+	column LatestScheduledArrivalSeconds
+		dataType: int64
+		formatString: 0
+		lineageTag: 375b3804-3552-43c8-9305-406ba8c16b76
+		summarizeBy: sum
+		sourceColumn: LatestScheduledArrivalSeconds
+
+		annotation SummarizationSetBy = Automatic
+
+	column RouteColor
+		dataType: string
+		lineageTag: 505c67d5-b3a6-4e7d-8e6f-de163831aabc
+		summarizeBy: none
+		sourceColumn: RouteColor
+
+		annotation SummarizationSetBy = Automatic
+
+	column RouteTextColor
+		dataType: string
+		lineageTag: eec97fae-b15b-4338-9f6c-c01da6949b26
+		summarizeBy: none
+		sourceColumn: RouteTextColor
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Route = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("localhost", "CologneTransitIntelligence"),
+				    analytics_vwRouteScheduleProfile = Source{[Schema="analytics",Item="vwRouteScheduleProfile"]}[Data]
+				in
+				    analytics_vwRouteScheduleProfile
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

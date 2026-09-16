@@ -14,7 +14,7 @@
 
 An end-to-end analytics project for understanding the reliability and performance of multimodal public transport in Cologne, Germany.
 
-The project combines a validated **VRS/go.Rheinland static GTFS baseline** with **MDD NRW / DELFI / TRIAS 1.2 realtime observations**. SQL Server is used for staging, transformation, service-day normalization, schedule matching, warehouse modeling, and analytics. Power BI currently represents the validated scheduled-service baseline; the realtime operational fact and SQL analytics layer are now prepared, while Power BI remains a later reporting step after more history accumulates.
+The project combines a validated **VRS/go.Rheinland static GTFS baseline** with **MDD NRW / DELFI / TRIAS 1.2 realtime observations**. SQL Server is used for staging, transformation, service-day normalization, schedule matching, warehouse modeling, and analytics. SQL and realtime analytics are complete, and Power BI development is actively underway through the established PBIP + TMDL + PBIR workflow with VS Code/Codex and Power BI Desktop. Chat 07 completed the report architecture; Chat 08 — Executive Overview is next.
 
 This repository is the narrowed Cologne successor to an earlier NRW-wide
 public-transport project. Some runtime names still carry that historical scope.
@@ -44,7 +44,9 @@ Validated static scope:
 - 1,551,343 Cologne scheduled stop-event patterns
 - 1,878,944 dated scheduled trip occurrences
 
-The existing Power BI model remains a **planned supply baseline**, not a reliability dashboard.
+The static baseline remains the preserved scheduled-service foundation. The
+active Power BI project now also contains Static and Realtime Reliability
+measures and the validated report architecture.
 
 ### Historical realtime collection phase
 
@@ -136,7 +138,8 @@ Estimated arrival/delay values are explicitly source estimates, platform
 changes require comparable bay evidence, and linked situations are evidence
 only—not confirmed causality. The 14/28-day period remains a later history and
 interpretation milestone; it is not a prerequisite for this database design or
-SQL validation. Power BI has not been started in this task.
+SQL validation. At the time of this database-task validation, Power BI had not
+yet been started.
 
 Subsequent GTFS/static warehouse reloads now clear and rebuild only the derived
 operational outcome fact within the same transaction as the static replacement,
@@ -190,7 +193,8 @@ more genuine observations and left 527 outcomes.
 view existence/queryability, Data Quality/Coverage, reliability reconciliation
 (527 fact rows and 527 consumer rows), dimensions, and platform/situation
 semantics. Overall observed estimated delay remained valid at average 9.00,
-median 3.85, and P95 35.80 minutes. Power BI was not started.
+median 3.85, and P95 35.80 minutes. At that 2026-09-08 validation checkpoint,
+Power BI had not yet been started.
 
 ### Realtime collector
 

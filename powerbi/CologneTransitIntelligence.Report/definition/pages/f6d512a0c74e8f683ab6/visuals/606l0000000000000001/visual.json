@@ -1,0 +1,52 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "606l0000000000000001",
+  "position": { "x": 644, "y": 554, "z": 4001, "height": 134, "width": 604, "tabOrder": 4001 },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "horizontalTextAlignment": "left",
+                "textRuns": [
+                  {
+                    "textStyle": { "color": "#1F2933", "fontFamily": "Segoe UI Semibold", "fontSize": "12pt", "fontWeight": "bold" },
+                    "value": "Interpretation & scope"
+                  }
+                ]
+              },
+              {
+                "horizontalTextAlignment": "left",
+                "textRuns": [
+                  {
+                    "textStyle": { "color": "#1F2933", "fontFamily": "Segoe UI", "fontSize": "9pt", "fontWeight": "normal" },
+                    "value": "Exact Stop Match and Parent Station Fallback are usable matching outcomes. Static Coverage Missing and Unresolved are Data Quality states, not reliability outcomes. Repeated observations are consolidated into operational outcomes rather than counted as separate services. Collector evidence covers the seven-location Sampling Panel only, not full Cologne realtime network coverage."
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [ { "properties": {
+        "color": { "solid": { "color": { "expr": { "Literal": { "Value": "'#E6EEF2'" } } } } }, "show": { "expr": { "Literal": { "Value": "true" } } }, "transparency": { "expr": { "Literal": { "Value": "0D" } } }
+      } } ],
+      "border": [ { "properties": {
+        "color": { "solid": { "color": { "expr": { "Literal": { "Value": "'#D8E1E7'" } } } } }, "radius": { "expr": { "Literal": { "Value": "6L" } } },
+        "show": { "expr": { "Literal": { "Value": "true" } } }, "width": { "expr": { "Literal": { "Value": "1D" } } }
+      } } ],
+      "padding": [ { "properties": {
+        "bottom": { "expr": { "Literal": { "Value": "12D" } } }, "left": { "expr": { "Literal": { "Value": "12D" } } },
+        "right": { "expr": { "Literal": { "Value": "12D" } } }, "top": { "expr": { "Literal": { "Value": "12D" } } }
+      } } ],
+      "title": [ { "properties": { "show": { "expr": { "Literal": { "Value": "false" } } } } } ],
+      "visualHeader": [ { "properties": { "show": { "expr": { "Literal": { "Value": "false" } } } } } ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

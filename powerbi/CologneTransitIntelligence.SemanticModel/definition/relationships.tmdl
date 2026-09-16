@@ -1,0 +1,127 @@
+relationship 6e249e15-fc26-415a-9f6c-0180c01f28dd
+	joinOnDateBehavior: datePartOnly
+	fromColumn: DailySchedule.DateValue
+	toColumn: LocalDateTable_8d3d726e-5bc7-4ade-90cc-004adab77097.Date
+
+relationship 93693fd6-9d6b-4294-8c6b-f07a89153a1d
+	joinOnDateBehavior: datePartOnly
+	fromColumn: RT_CollectorRunHealth.CollectionDateUtc
+	toColumn: LocalDateTable_1dae7e85-1d66-4b1a-844f-8526e900bbb2.Date
+
+relationship c1bb401e-a072-44dd-8d87-9f231593e41a
+	joinOnDateBehavior: datePartOnly
+	fromColumn: RT_CollectorRunHealth.CollectionDateLocal
+	toColumn: LocalDateTable_fa31f15f-568e-4569-b590-22743dcadb6a.Date
+
+relationship 07534daf-4d1a-44f8-b559-36a0afcfddff
+	joinOnDateBehavior: datePartOnly
+	fromColumn: RT_CollectorRunHealth.StartedAtUtc
+	toColumn: LocalDateTable_95f0fb2e-c960-4599-a9f9-a626cdc0901e.Date
+
+relationship 6de71a82-050e-4cba-a62b-dd33e1260881
+	joinOnDateBehavior: datePartOnly
+	fromColumn: RT_CollectorRunHealth.CompletedAtUtc
+	toColumn: LocalDateTable_a7d90dc6-24e5-43db-8c19-bad63f51df2d.Date
+
+relationship 197805d3-3388-4fe1-ab69-afd3dff207fb
+	joinOnDateBehavior: datePartOnly
+	fromColumn: RT_CollectorRunHealth.SamplingBucketUtc
+	toColumn: LocalDateTable_2aebfa76-e759-491f-b4dd-ee74495220e6.Date
+
+relationship 76edc461-bd7e-4e5e-b6be-22ee70cd7914
+	joinOnDateBehavior: datePartOnly
+	fromColumn: RT_CollectorRunHealth.ObservedAtUtc
+	toColumn: LocalDateTable_93b916cd-e150-4b72-9a3b-fafc2ad08a28.Date
+
+relationship 8e34a9b3-d6bb-4396-bb0c-ba5615e51579
+	joinOnDateBehavior: datePartOnly
+	fromColumn: RT_DataQualityCoverage.CollectionDateUtc
+	toColumn: LocalDateTable_42f63192-3be5-4ca4-87bc-3e15b7951f06.Date
+
+relationship b8ab9f51-5c9c-4265-b8da-1d0cd9119d41
+	joinOnDateBehavior: datePartOnly
+	fromColumn: RT_DataQualityCoverage.FirstSourceObservationAtUtc
+	toColumn: LocalDateTable_aae62ca4-9930-4156-af4b-0348d1c61241.Date
+
+relationship e95bda48-63a2-40d4-9f87-589bf5306792
+	joinOnDateBehavior: datePartOnly
+	fromColumn: RT_DataQualityCoverage.LastSourceObservationAtUtc
+	toColumn: LocalDateTable_9daf2b86-364c-4479-8d2f-c5447fdc4273.Date
+
+relationship bb720ef2-e336-493d-9c29-71a69c7c0fde
+	joinOnDateBehavior: datePartOnly
+	fromColumn: RT_ConsolidationQuality.ServiceDate
+	toColumn: LocalDateTable_71724097-7cf3-4c3e-b615-4fe9a34aa95a.Date
+
+relationship c6276bbc-7975-43d4-9c70-d252478cfb2f
+	joinOnDateBehavior: datePartOnly
+	fromColumn: RT_ReliabilityOutcome.ServiceDate
+	toColumn: LocalDateTable_795cbcd6-e74c-4586-bc4f-b3d26250a9fe.Date
+
+relationship 7080987e-b3ac-44c1-ad39-626c1183f443
+	joinOnDateBehavior: datePartOnly
+	fromColumn: RT_ReliabilityOutcome.ScheduledArrivalUtc
+	toColumn: LocalDateTable_a5de2fbe-f735-43ec-abb8-07e541312a45.Date
+
+relationship 6e5555ea-a13d-4848-8cd6-39c090b86738
+	joinOnDateBehavior: datePartOnly
+	fromColumn: RT_ReliabilityOutcome.ScheduledArrival
+	toColumn: LocalDateTable_5f70b578-7fd6-4479-aa68-bc54eba795b8.Date
+
+relationship 10b4c194-31eb-472e-ad4d-b8dc659d3ebb
+	joinOnDateBehavior: datePartOnly
+	fromColumn: RT_ReliabilityOutcome.LatestObservedEstimatedArrival
+	toColumn: LocalDateTable_ef48eb9b-677f-49d5-9fd8-45df252d5505.Date
+
+relationship 4f7442d8-6e21-4726-8f2f-c0a7dfcb394f
+	joinOnDateBehavior: datePartOnly
+	fromColumn: RT_ReliabilityOutcome.LatestObservedEstimatedArrivalLocal
+	toColumn: LocalDateTable_188bc582-0098-4979-be96-18fee972181c.Date
+
+relationship 1bdedd13-4c66-47f1-ae41-9b4540d2969e
+	joinOnDateBehavior: datePartOnly
+	fromColumn: RT_ReliabilityOutcome.FirstObservedAtUtc
+	toColumn: LocalDateTable_e205e702-5f10-4b41-8cba-b6886ca61e22.Date
+
+relationship 6772c866-3773-4a69-aa90-a8c76f67f1f4
+	joinOnDateBehavior: datePartOnly
+	fromColumn: RT_ReliabilityOutcome.LastObservedAtUtc
+	toColumn: LocalDateTable_a38b5805-9b72-4b16-b431-2d172a4531a5.Date
+
+relationship 5c658535-c5b5-4095-bcf9-dc383b658c43
+	joinOnDateBehavior: datePartOnly
+	fromColumn: RT_ReliabilityOutcome.RefreshedAtUtc
+	toColumn: LocalDateTable_cf101cbc-431c-4774-be2b-b13c423a200c.Date
+
+relationship 0a8ed2d4-7dbc-2d37-4156-9a626f825141
+	fromColumn: Route.ModeKey
+	toColumn: Mode.ModeKey
+
+relationship d1b4ba9a-7e9f-9fc1-3d5b-eb300d5afd42
+	fromColumn: DailySchedule.RouteKey
+	toColumn: Route.RouteKey
+
+relationship 97860d02-0bb9-09d9-f521-626aefffde00
+	fromColumn: DailySchedule.DateKey
+	toColumn: ActiveDate.DateKey
+
+relationship 1d07dc04-06e4-e97c-f986-5ae01f7f1e65
+	fromColumn: RT_ReliabilityOutcome.RouteKey
+	toColumn: Route.RouteKey
+
+relationship 6ce9e3bb-85b7-de44-45b9-04d0c2e055c0
+	fromColumn: RT_ReliabilityOutcome.DateKey
+	toColumn: ActiveDate.DateKey
+
+relationship 1a955dd3-7997-021f-ae6b-f8bbbba701d7
+	fromColumn: RT_ReliabilityOutcome.StopKey
+	toColumn: StopPosition.StopKey
+
+relationship c0cb5f1d-903f-075b-a57f-2fb46d5ce616
+	fromColumn: StopPosition.ParentStopKey
+	toColumn: ParentStation.ParentStationKey
+
+relationship 8e2c1feb-05a0-79ff-5808-ab31543c0089
+	fromColumn: RT_ConsolidationQuality.DateKey
+	toColumn: ActiveDate.DateKey
+

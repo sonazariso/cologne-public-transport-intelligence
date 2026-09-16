@@ -1,0 +1,330 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "f09d231f9385cd809392",
+  "position": {
+    "x": 5.5384615384615392,
+    "y": 411.69230769230774,
+    "z": 5000,
+    "height": 144,
+    "width": 1270.1538461538462,
+    "tabOrder": 5000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Observed Matched Services"
+                }
+              },
+              "queryRef": "_Measures.Observed Matched Services",
+              "nativeQueryRef": "Observed Matched Services"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Delay Observations"
+                }
+              },
+              "queryRef": "_Measures.Delay Observations",
+              "nativeQueryRef": "Delay Observations"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Average Observed Estimated Delay (min)"
+                }
+              },
+              "queryRef": "_Measures.Average Observed Estimated Delay (min)",
+              "nativeQueryRef": "Average Observed Estimated Delay (min)"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Median Observed Estimated Delay (min)"
+                }
+              },
+              "queryRef": "_Measures.Median Observed Estimated Delay (min)",
+              "nativeQueryRef": "Median Observed Estimated Delay (min)"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "P95 Observed Estimated Delay (min)"
+                }
+              },
+              "queryRef": "_Measures.P95 Observed Estimated Delay (min)",
+              "nativeQueryRef": "P95 Observed Estimated Delay (min)"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Minimum Observed Estimated Delay (min)"
+                }
+              },
+              "queryRef": "_Measures.Minimum Observed Estimated Delay (min)",
+              "nativeQueryRef": "Minimum Observed Estimated Delay (min)"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Maximum Observed Estimated Delay (min)"
+                }
+              },
+              "queryRef": "_Measures.Maximum Observed Estimated Delay (min)",
+              "nativeQueryRef": "Maximum Observed Estimated Delay (min)"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Average Observations per Outcome"
+                }
+              },
+              "queryRef": "_Measures.Average Observations per Outcome",
+              "nativeQueryRef": "Average Observations per Outcome"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Situation-Linked Outcomes"
+                }
+              },
+              "queryRef": "_Measures.Situation-Linked Outcomes",
+              "nativeQueryRef": "Situation-Linked Outcomes"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Platform Changed Evidence Outcomes"
+                }
+              },
+              "queryRef": "_Measures.Platform Changed Evidence Outcomes",
+              "nativeQueryRef": "Platform Changed Evidence Outcomes"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "_Measures"
+                  }
+                },
+                "Property": "Platform Changed Evidence Outcomes"
+              }
+            },
+            "direction": "Ascending"
+          }
+        ]
+      }
+    },
+    "objects": {
+      "columnWidth": [
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "136.52967315742754D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Measures.Average Observed Estimated Delay (min)"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "83.53846153846153D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Measures.Observed Matched Services"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "138.07694195037925D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Measures.Median Observed Estimated Delay (min)"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "130.79460897679988D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Measures.P95 Observed Estimated Delay (min)"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "133.49532438160082D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Measures.Minimum Observed Estimated Delay (min)"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "129.91088955919463D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Measures.Maximum Observed Estimated Delay (min)"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "119.51704093693232D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Measures.Average Observations per Outcome"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "91.76923576183357D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Measures.Delay Observations"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "112.02524580144329D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Measures.Situation-Linked Outcomes"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "152.07692307692307D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Measures.Platform Changed Evidence Outcomes"
+          }
+        }
+      ],
+      "columnHeaders": [
+        {
+          "properties": {}
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}
