@@ -14,20 +14,21 @@
     "query": {
       "queryState": {
         "Category": {
+          "showAll": true,
           "projections": [
             {
               "field": {
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "RT_ReliabilityOutcome"
+                      "Entity": "ActiveDate"
                     }
                   },
-                  "Property": "ServiceDate"
+                  "Property": "DateValue"
                 }
               },
-              "queryRef": "RT_ReliabilityOutcome.ServiceDate",
-              "nativeQueryRef": "ServiceDate"
+              "queryRef": "ActiveDate.DateValue",
+              "nativeQueryRef": "DateValue"
             }
           ]
         },
@@ -71,10 +72,10 @@
               "Column": {
                 "Expression": {
                   "SourceRef": {
-                    "Entity": "RT_ReliabilityOutcome"
+                    "Entity": "ActiveDate"
                   }
                 },
-                "Property": "ServiceDate"
+                "Property": "DateValue"
               }
             },
             "direction": "Ascending"
@@ -87,6 +88,13 @@
       "categoryAxis": [
         {
           "properties": {
+            "axisType": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Categorical'"
+                }
+              }
+            },
             "showTitle": {
               "expr": {
                 "Literal": {
