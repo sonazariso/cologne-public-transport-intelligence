@@ -3,9 +3,9 @@
   "name": "808g0000000000000001",
   "position": {
     "x": 644,
-    "y": 316,
+    "y": 308,
     "z": 3001,
-    "height": 220,
+    "height": 236,
     "width": 604,
     "tabOrder": 3001
   },
@@ -33,21 +33,16 @@
               {
                 "textRuns": [
                   {
-                    "value": "Sampling Panel scope",
+                    "value": "Sampling Panel scope: ",
                     "textStyle": {
                       "fontWeight": "bold",
                       "fontFamily": "Segoe UI Semibold",
                       "fontSize": "10pt",
                       "color": "#0B6E8A"
                     }
-                  }
-                ],
-                "horizontalTextAlignment": "left"
-              },
-              {
-                "textRuns": [
+                  },
                   {
-                    "value": "Seven configured realtime locations form the Sampling Panel. This is sampled evidence, not a complete measurement of Cologne's realtime network.",
+                    "value": "Seven configured realtime locations provide sampled evidence, not a complete measurement of the Cologne realtime network.",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
@@ -61,19 +56,14 @@
               {
                 "textRuns": [
                   {
-                    "value": "Delay terminology",
+                    "value": "Delay terminology: ",
                     "textStyle": {
                       "fontWeight": "bold",
                       "fontFamily": "Segoe UI Semibold",
                       "fontSize": "10pt",
                       "color": "#0B6E8A"
                     }
-                  }
-                ],
-                "horizontalTextAlignment": "left"
-              },
-              {
-                "textRuns": [
+                  },
                   {
                     "value": "Observed Estimated Delay · Final Observed Estimated Delay · Latest Observed Estimated Arrival are source estimates, not confirmed physical arrival timestamps.",
                     "textStyle": {
@@ -89,21 +79,16 @@
               {
                 "textRuns": [
                   {
-                    "value": "Reliability methodology",
+                    "value": "Reliability methodology: ",
                     "textStyle": {
                       "fontWeight": "bold",
                       "fontFamily": "Segoe UI Semibold",
                       "fontSize": "10pt",
                       "color": "#0B6E8A"
                     }
-                  }
-                ],
-                "horizontalTextAlignment": "left"
-              },
-              {
-                "textRuns": [
+                  },
                   {
-                    "value": "Continuous metrics are Average, Median and P95. No arbitrary on-time threshold or unapproved delay bands are used.",
+                    "value": "Average, Median and P95 are continuous metrics; no arbitrary On-Time threshold or unapproved delay bands are used.",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
@@ -231,14 +216,14 @@
             "top": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "4D"
                 }
               }
             },
             "bottom": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "4D"
                 }
               }
             },
@@ -266,6 +251,19 @@
               "expr": {
                 "Literal": {
                   "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Explains Sampling Panel scope, delay terminology, continuous metrics, and Situation Evidence limits.'"
                 }
               }
             }

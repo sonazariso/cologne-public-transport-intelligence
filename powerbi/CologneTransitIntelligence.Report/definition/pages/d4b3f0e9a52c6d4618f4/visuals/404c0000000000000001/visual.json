@@ -290,7 +290,19 @@
       ]
     },
     "visualContainerObjects": {
-      "visualHeader": [ { "properties": { "show": { "expr": { "Literal": { "Value": "false" } } } } } ],
+      "visualHeader": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
       "title": [
         {
           "properties": {
@@ -298,6 +310,19 @@
               "expr": {
                 "Literal": {
                   "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Shows the count of parent stations in the static GTFS baseline.'"
                 }
               }
             }

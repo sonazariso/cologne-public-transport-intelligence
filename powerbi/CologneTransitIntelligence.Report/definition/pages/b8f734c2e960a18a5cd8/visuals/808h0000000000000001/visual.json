@@ -3,9 +3,9 @@
   "name": "808h0000000000000001",
   "position": {
     "x": 32,
-    "y": 552,
+    "y": 544,
     "z": 4000,
-    "height": 168,
+    "height": 176,
     "width": 1216,
     "tabOrder": 4000
   },
@@ -33,7 +33,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "Read realtime findings as consolidated matched scheduled stop events from the seven-location Sampling Panel. Static GTFS is the scheduled baseline; realtime values are observed estimates.",
+                    "value": "Realtime findings are consolidated matched scheduled stop events from the seven-location Sampling Panel. Static GTFS is the scheduled baseline; realtime values are observed estimates.",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
@@ -61,19 +61,14 @@
               {
                 "textRuns": [
                   {
-                    "value": "Platform Evidence",
+                    "value": "Platform Evidence: ",
                     "textStyle": {
                       "fontWeight": "bold",
                       "fontFamily": "Segoe UI Semibold",
                       "fontSize": "10pt",
                       "color": "#0B6E8A"
                     }
-                  }
-                ],
-                "horizontalTextAlignment": "left"
-              },
-              {
-                "textRuns": [
+                  },
                   {
                     "value": "Changed",
                     "textStyle": {
@@ -84,7 +79,7 @@
                     }
                   },
                   {
-                    "value": " — comparable evidence shows a difference between planned and observed estimated platform/bay. ",
+                    "value": " means planned and observed estimated platform/bay values differ; ",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
@@ -102,7 +97,7 @@
                     }
                   },
                   {
-                    "value": " — comparable evidence shows the same value. ",
+                    "value": " means comparable values match; ",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
@@ -120,7 +115,7 @@
                     }
                   },
                   {
-                    "value": " — evidence is insufficient to establish either state.",
+                    "value": " means evidence is insufficient.",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
@@ -134,7 +129,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "Platform Unknown != Platform Unchanged. Missing estimated platform/bay information must not be interpreted as Unchanged.",
+                    "value": "Platform Unknown != Platform Unchanged. Missing estimated platform/bay information is not Unchanged.",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
@@ -148,21 +143,16 @@
               {
                 "textRuns": [
                   {
-                    "value": "Cancellation / departure limitation",
+                    "value": "Cancellation / departure limitation: ",
                     "textStyle": {
                       "fontWeight": "bold",
                       "fontFamily": "Segoe UI Semibold",
                       "fontSize": "10pt",
                       "color": "#0B6E8A"
                     }
-                  }
-                ],
-                "horizontalTextAlignment": "left"
-              },
-              {
-                "textRuns": [
+                  },
                   {
-                    "value": "The current realtime implementation is arrival-oriented. Cancellation and departure semantics are not sufficiently validated for reporting, so no validated cancellation-rate, departure-reliability or departure-delay KPI is presented. A missing observation is not a cancellation.",
+                    "value": "the current realtime implementation is arrival-oriented. Cancellation and departure semantics are not sufficiently validated, so no validated cancellation-rate, departure-reliability, or departure-delay KPI is presented. A missing observation is not a cancellation.",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
@@ -281,14 +271,14 @@
             "top": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "4D"
                 }
               }
             },
             "bottom": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "4D"
                 }
               }
             },
@@ -316,6 +306,19 @@
               "expr": {
                 "Literal": {
                   "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Summarizes interpretation guardrails for matching, platform evidence, arrival-oriented limitations, and Collector Health.'"
                 }
               }
             }

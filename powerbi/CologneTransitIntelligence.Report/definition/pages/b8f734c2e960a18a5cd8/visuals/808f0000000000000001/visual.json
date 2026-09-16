@@ -3,9 +3,9 @@
   "name": "808f0000000000000001",
   "position": {
     "x": 32,
-    "y": 316,
+    "y": 308,
     "z": 3000,
-    "height": 220,
+    "height": 236,
     "width": 596,
     "tabOrder": 3000
   },
@@ -33,7 +33,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "TRIAS identifiers are not assumed to be identical to GTFS identifiers.",
+                    "value": "TRIAS identifiers are not assumed identical to GTFS identifiers. Matching uses normalized line, GTFS service date, scheduled local time, exact stop where possible, and parent station as a controlled fallback.",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
@@ -47,33 +47,14 @@
               {
                 "textRuns": [
                   {
-                    "value": "Matching evidence: normalized line · GTFS service date · scheduled local time · exact stop where possible · parent station as a controlled fallback.",
-                    "textStyle": {
-                      "fontWeight": "normal",
-                      "fontFamily": "Segoe UI",
-                      "fontSize": "9pt",
-                      "color": "#5F6B6D"
-                    }
-                  }
-                ],
-                "horizontalTextAlignment": "left"
-              },
-              {
-                "textRuns": [
-                  {
-                    "value": "Validated matching states",
+                    "value": "Validated matching states: ",
                     "textStyle": {
                       "fontWeight": "bold",
                       "fontFamily": "Segoe UI Semibold",
                       "fontSize": "10pt",
                       "color": "#0B6E8A"
                     }
-                  }
-                ],
-                "horizontalTextAlignment": "left"
-              },
-              {
-                "textRuns": [
+                  },
                   {
                     "value": "ExactStopMatch",
                     "textStyle": {
@@ -84,7 +65,7 @@
                     }
                   },
                   {
-                    "value": " · ",
+                    "value": " and ",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
@@ -102,19 +83,14 @@
                     }
                   },
                   {
-                    "value": " — usable for normal reliability analysis.",
+                    "value": " support normal reliability analysis; ",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
                       "fontSize": "9pt",
                       "color": "#1F2933"
                     }
-                  }
-                ],
-                "horizontalTextAlignment": "left"
-              },
-              {
-                "textRuns": [
+                  },
                   {
                     "value": "StaticCoverageMissing",
                     "textStyle": {
@@ -125,7 +101,7 @@
                     }
                   },
                   {
-                    "value": " · ",
+                    "value": " and ",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
@@ -143,7 +119,7 @@
                     }
                   },
                   {
-                    "value": " — remain Data Quality states; not every realtime observation is successfully matched.",
+                    "value": " remain Data Quality states, and not every realtime observation is matched.",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
@@ -157,40 +133,21 @@
               {
                 "textRuns": [
                   {
-                    "value": "Operational consolidation & grain",
+                    "value": "Operational consolidation & grain: ",
                     "textStyle": {
                       "fontWeight": "bold",
                       "fontFamily": "Segoe UI Semibold",
                       "fontSize": "10pt",
                       "color": "#0B6E8A"
                     }
-                  }
-                ],
-                "horizontalTextAlignment": "left"
-              },
-              {
-                "textRuns": [
+                  },
                   {
-                    "value": "dw.FactOperationalStopOutcome represents one matched scheduled stop event on one GTFS service date.",
+                    "value": "dw.FactOperationalStopOutcome is one matched scheduled stop event on one GTFS service date. Repeated observations are consolidated into that outcome, not separate services; first/latest evidence is preserved.",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
                       "fontSize": "9pt",
                       "color": "#1F2933"
-                    }
-                  }
-                ],
-                "horizontalTextAlignment": "left"
-              },
-              {
-                "textRuns": [
-                  {
-                    "value": "Repeated observations belong to that event, not separate operational services; they are consolidated into one outcome while first/latest observation evidence is preserved.",
-                    "textStyle": {
-                      "fontWeight": "normal",
-                      "fontFamily": "Segoe UI",
-                      "fontSize": "9pt",
-                      "color": "#5F6B6D"
                     }
                   }
                 ],
@@ -290,14 +247,14 @@
             "top": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "4D"
                 }
               }
             },
             "bottom": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "4D"
                 }
               }
             },
@@ -325,6 +282,19 @@
               "expr": {
                 "Literal": {
                   "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Explains matching evidence, validation states, operational consolidation grain, and repeated observations.'"
                 }
               }
             }
