@@ -8,6 +8,7 @@ All report measures belong to the disconnected `_Measures` home table in the PBI
 
 - `StaticBaselineMeasures.dax` — folders 01–02.
 - `RealtimeReliabilityMeasures.dax` — folders 03–07.
+- `ManagementOverviewMeasures.dax` — folder 08 and the dynamic Key Insights text measures.
 
 These files are the source-controlled DAX definitions. Display-folder metadata is configured in the PBIX and documented below.
 
@@ -102,12 +103,26 @@ These files are the source-controlled DAX definitions. Display-folder metadata i
 - Sampling Panel Targets Observed
 - Average Successful Run Duration (sec)
 
+### 08 Management Overview
+
+- Mode Share of Observed Services
+- Routes
+- % of Scheduled Trips
+- % of Observed Services
+- Median Delay
+- P95 Delay
+- Insight Largest Planned Mode
+- Insight Highest Typical Delay
+- Insight Highest Severe Delay
+- Insight Observed Sample Composition
+
 ## Formatting conventions
 
-- Count measures: Whole number, zero decimals, thousands separator on where useful.
-- Delay measures: Decimal number, two decimals, minutes in the measure name.
-- `Average Observations...` and duration: Decimal number, two decimals.
-- Share/rate measures: Percentage. One decimal is the report default; additional decimals may be used temporarily for validation.
+- Count measures: Whole number with a thousands separator (`#,0`).
+- Delay measures: One decimal minute value (`#,0.0`) for management-facing views; the measure name retains the observed-estimated qualifier.
+- `Average Observations...` and duration: Decimal number with two decimals (`#,0.00`).
+- Share/rate measures: Percentage with one decimal (`0.0%`).
+- Technical identifiers, route names, years, dates, times, codes, GTFS IDs, and keys retain identifier-safe formatting.
 
 ## Semantic notes
 
@@ -116,3 +131,5 @@ These files are the source-controlled DAX definitions. Display-folder metadata i
 - Data Quality rates are recomputed from summed counts rather than averaging daily percentages.
 - `NetworkKPI` stays disconnected; baseline measures intentionally remain whole-network values under connected-model filters.
 - The current model is single-direction. Do not introduce bidirectional relationships solely to make dimension counts respond to unrelated dimension filters.
+- The management page uses `Mode[ModeDetail]` for the seven model values: Urban Bus, Stadtbahn / Tram, Regional Bus, S-Bahn, RE, RB, and SEV.
+- Route length and scheduled-duration metrics are intentionally not synthesized in the management page: the current imported model does not expose trip-level duration or validated `ShapeDistanceTraveled` units.

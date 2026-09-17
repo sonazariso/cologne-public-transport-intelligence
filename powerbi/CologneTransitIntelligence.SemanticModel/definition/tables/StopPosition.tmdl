@@ -98,7 +98,7 @@ table StopPosition
 
 	column ServedRouteCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 2c9a2b5e-7a94-44d9-aad4-6d440a57388d
 		summarizeBy: none
 		sourceColumn: ServedRouteCount
@@ -107,7 +107,7 @@ table StopPosition
 
 	column ScheduledTripPatternCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 50aa836f-1496-4c08-be40-f0d522f0d6b3
 		summarizeBy: none
 		sourceColumn: ScheduledTripPatternCount
@@ -116,7 +116,7 @@ table StopPosition
 
 	column ScheduledStopEventPatternCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 061b43f9-7fda-4fb7-9fa7-4d5b6f9ff832
 		summarizeBy: none
 		sourceColumn: ScheduledStopEventPatternCount

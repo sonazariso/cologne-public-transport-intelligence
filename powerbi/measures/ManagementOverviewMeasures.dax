@@ -1,0 +1,134 @@
+-- Power BI Chat 44 - management overview measures.
+--
+-- Folder: 08 Management Overview
+-- These measures are dynamic and filter-aware. Realtime measures describe the
+-- selected Sampling Panel and must not be read as full-network Cologne coverage.
+
+Mode Share of Observed Services =
+DIVIDE (
+    [Observed Matched Services],
+    CALCULATE (
+        [Observed Matched Services],
+        REMOVEFILTERS ( Mode[ModeDetail] )
+    ),
+    0
+)
+
+Routes =
+[Routes in Context]
+
+% of Scheduled Trips =
+[Mode Share of Scheduled Trips]
+
+% of Observed Services =
+[Mode Share of Observed Services]
+
+Median Delay =
+[Median Observed Estimated Delay (min)]
+
+P95 Delay =
+[P95 Observed Estimated Delay (min)]
+
+Insight Largest Planned Mode =
+VAR ModeRows =
+    ADDCOLUMNS (
+        ALLSELECTED ( Mode[ModeDetail] ),
+        "__ScheduledTrips", CALCULATE ( [Scheduled Trips] ),
+        "__Share", CALCULATE ( [Mode Share of Scheduled Trips] )
+    )
+VAR TopMode =
+    TOPN (
+        1,
+        FILTER ( ModeRows, [__ScheduledTrips] > 0 ),
+        [__ScheduledTrips], DESC,
+        Mode[ModeDetail], ASC
+    )
+VAR ModeName = MAXX ( TopMode, Mode[ModeDetail] )
+VAR ModeShare = MAXX ( TopMode, [__Share] )
+RETURN
+    IF (
+        ISBLANK ( ModeName ),
+        "No scheduled trip data is available for the current selection.",
+        "Largest planned mode: " & ModeName & " ("
+            & FORMAT ( ModeShare, "0.0%" ) & " of scheduled trips)."
+    )
+
+Insight Highest Typical Delay =
+VAR ModeRows =
+    ADDCOLUMNS (
+        ALLSELECTED ( Mode[ModeDetail] ),
+        "__ObservedServices", CALCULATE ( [Observed Matched Services] ),
+        "__MedianDelay", CALCULATE ( [Median Observed Estimated Delay (min)] )
+    )
+VAR TopMode =
+    TOPN (
+        1,
+        FILTER (
+            ModeRows,
+            [__ObservedServices] > 0
+                && NOT ISBLANK ( [__MedianDelay] )
+        ),
+        [__MedianDelay], DESC,
+        Mode[ModeDetail], ASC
+    )
+VAR ModeName = MAXX ( TopMode, Mode[ModeDetail] )
+VAR MedianDelay = MAXX ( TopMode, [__MedianDelay] )
+RETURN
+    IF (
+        ISBLANK ( ModeName ),
+        "No observed delay evidence is available for the current selection.",
+        "Highest median delay: " & ModeName & " ("
+            & FORMAT ( MedianDelay, "#,0.0" ) & " min)."
+    )
+
+Insight Highest Severe Delay =
+VAR ModeRows =
+    ADDCOLUMNS (
+        ALLSELECTED ( Mode[ModeDetail] ),
+        "__ObservedServices", CALCULATE ( [Observed Matched Services] ),
+        "__P95Delay", CALCULATE ( [P95 Observed Estimated Delay (min)] )
+    )
+VAR TopMode =
+    TOPN (
+        1,
+        FILTER (
+            ModeRows,
+            [__ObservedServices] > 0
+                && NOT ISBLANK ( [__P95Delay] )
+        ),
+        [__P95Delay], DESC,
+        Mode[ModeDetail], ASC
+    )
+VAR ModeName = MAXX ( TopMode, Mode[ModeDetail] )
+VAR P95Delay = MAXX ( TopMode, [__P95Delay] )
+RETURN
+    IF (
+        ISBLANK ( ModeName ),
+        "No observed severe-delay evidence is available for the current selection.",
+        "Highest P95 delay: " & ModeName & " ("
+            & FORMAT ( P95Delay, "#,0.0" ) & " min)."
+    )
+
+Insight Observed Sample Composition =
+VAR ModeRows =
+    ADDCOLUMNS (
+        ALLSELECTED ( Mode[ModeDetail] ),
+        "__ObservedServices", CALCULATE ( [Observed Matched Services] ),
+        "__Share", CALCULATE ( [Mode Share of Observed Services] )
+    )
+VAR TopMode =
+    TOPN (
+        1,
+        FILTER ( ModeRows, [__ObservedServices] > 0 ),
+        [__ObservedServices], DESC,
+        Mode[ModeDetail], ASC
+    )
+VAR ModeName = MAXX ( TopMode, Mode[ModeDetail] )
+VAR ModeShare = MAXX ( TopMode, [__Share] )
+RETURN
+    IF (
+        ISBLANK ( ModeName ),
+        "No observed services are available for the current selection.",
+        "Sampling Panel mix: " & FORMAT ( ModeShare, "0.0%" ) & " "
+            & ModeName & "."
+    )

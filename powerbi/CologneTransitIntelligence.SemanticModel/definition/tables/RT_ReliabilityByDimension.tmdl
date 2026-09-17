@@ -35,7 +35,7 @@ table RT_ReliabilityByDimension
 
 	column ObservedMatchedServiceCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: c4a0d731-a449-45be-9c38-e5e77332bddc
 		summarizeBy: none
 		sourceColumn: ObservedMatchedServiceCount
@@ -44,7 +44,7 @@ table RT_ReliabilityByDimension
 
 	column DelayObservationCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 37c1fefc-6f3a-404e-8656-111e223c3a5a
 		summarizeBy: none
 		sourceColumn: DelayObservationCount
@@ -53,6 +53,7 @@ table RT_ReliabilityByDimension
 
 	column AverageObservedEstimatedDelayMinutes
 		dataType: double
+		formatString: #,0.0
 		lineageTag: 99714683-3f15-4cc2-8f96-f61d81d50d56
 		summarizeBy: none
 		sourceColumn: AverageObservedEstimatedDelayMinutes
@@ -63,6 +64,7 @@ table RT_ReliabilityByDimension
 
 	column MinimumObservedEstimatedDelayMinutes
 		dataType: double
+		formatString: #,0.0
 		lineageTag: 4fce9bd3-e329-4804-becc-8f51d6b17dd7
 		summarizeBy: none
 		sourceColumn: MinimumObservedEstimatedDelayMinutes
@@ -73,6 +75,7 @@ table RT_ReliabilityByDimension
 
 	column MaximumObservedEstimatedDelayMinutes
 		dataType: double
+		formatString: #,0.0
 		lineageTag: 41a4bc15-b975-4e40-afca-707466a208b4
 		summarizeBy: none
 		sourceColumn: MaximumObservedEstimatedDelayMinutes
@@ -83,6 +86,7 @@ table RT_ReliabilityByDimension
 
 	column MedianObservedEstimatedDelayMinutes
 		dataType: double
+		formatString: #,0.0
 		lineageTag: dda68c79-838b-4254-b4c4-83b2eb0b2e50
 		summarizeBy: none
 		sourceColumn: MedianObservedEstimatedDelayMinutes
@@ -93,6 +97,7 @@ table RT_ReliabilityByDimension
 
 	column P95ObservedEstimatedDelayMinutes
 		dataType: double
+		formatString: #,0.0
 		lineageTag: c70fb7d5-fd6a-464c-a183-8d992f3e4d01
 		summarizeBy: none
 		sourceColumn: P95ObservedEstimatedDelayMinutes
@@ -103,6 +108,7 @@ table RT_ReliabilityByDimension
 
 	column AverageObservationsPerOutcome
 		dataType: double
+		formatString: #,0.00
 		lineageTag: 82fed1ef-eb00-4ba6-bade-e4313fd4c5d5
 		summarizeBy: none
 		sourceColumn: AverageObservationsPerOutcome
@@ -113,7 +119,7 @@ table RT_ReliabilityByDimension
 
 	column SituationLinkedOutcomeCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 9297bf1f-aac8-45b8-9a1b-d7d7e2132d82
 		summarizeBy: none
 		sourceColumn: SituationLinkedOutcomeCount
@@ -122,7 +128,7 @@ table RT_ReliabilityByDimension
 
 	column PlatformChangedEvidenceCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: ba7178ba-0e38-49cb-9ad8-bd7266578f69
 		summarizeBy: none
 		sourceColumn: PlatformChangedEvidenceCount

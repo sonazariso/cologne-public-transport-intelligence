@@ -136,7 +136,7 @@ table RT_CollectorRunHealth
 
 	column NumberOfResults
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 05e3673e-d122-448f-a753-c13e9dcd0904
 		summarizeBy: none
 		sourceColumn: NumberOfResults
@@ -168,7 +168,7 @@ table RT_CollectorRunHealth
 
 	column HttpAttempts
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: bb4caf14-6294-4f47-acbe-beaa53a6d724
 		summarizeBy: sum
 		sourceColumn: HttpAttempts
@@ -177,7 +177,7 @@ table RT_CollectorRunHealth
 
 	column SourceStopEventsReturned
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 989b673e-ad64-4aac-aeeb-e0ba56c951c2
 		summarizeBy: none
 		sourceColumn: SourceStopEventsReturned
@@ -186,7 +186,7 @@ table RT_CollectorRunHealth
 
 	column SituationsInContext
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 4b4fe3ab-f019-4844-af60-94e5a4ba9470
 		summarizeBy: none
 		sourceColumn: SituationsInContext
@@ -195,7 +195,7 @@ table RT_CollectorRunHealth
 
 	column UnidentifiedSituations
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 93102a8b-44e5-42a8-ba74-b3f1d0ab375d
 		summarizeBy: none
 		sourceColumn: UnidentifiedSituations
@@ -204,7 +204,7 @@ table RT_CollectorRunHealth
 
 	column LinksObserved
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 7b5ec2e8-0945-4c4a-8dc2-cb329aabe279
 		summarizeBy: none
 		sourceColumn: LinksObserved
@@ -213,7 +213,7 @@ table RT_CollectorRunHealth
 
 	column StopsInserted
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 257d971c-eccb-486f-a92f-ba0f0bce343a
 		summarizeBy: none
 		sourceColumn: StopsInserted
@@ -222,7 +222,7 @@ table RT_CollectorRunHealth
 
 	column StopsAlreadyPresent
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 8e85d617-7e8c-4346-9cee-f04f85922de4
 		summarizeBy: none
 		sourceColumn: StopsAlreadyPresent
@@ -231,7 +231,7 @@ table RT_CollectorRunHealth
 
 	column SituationsInserted
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 19b9182e-f4bc-474e-ac1d-f1a35be13c34
 		summarizeBy: none
 		sourceColumn: SituationsInserted
@@ -240,7 +240,7 @@ table RT_CollectorRunHealth
 
 	column SituationsAlreadyPresent
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 1714b843-9d2a-46dd-ab98-88ebd2550dc1
 		summarizeBy: none
 		sourceColumn: SituationsAlreadyPresent
@@ -249,7 +249,7 @@ table RT_CollectorRunHealth
 
 	column LinksInserted
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 22bb4ddc-27a3-49ab-9f90-58427bda26c9
 		summarizeBy: none
 		sourceColumn: LinksInserted
@@ -258,7 +258,7 @@ table RT_CollectorRunHealth
 
 	column LinksAlreadyPresent
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 47a5953f-225b-40b3-b24e-5be2ad2b9e1b
 		summarizeBy: none
 		sourceColumn: LinksAlreadyPresent
@@ -267,7 +267,7 @@ table RT_CollectorRunHealth
 
 	column LinksSkippedUnresolved
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 1e4b29b0-d006-42dd-8faa-98eb284d1c1b
 		summarizeBy: none
 		sourceColumn: LinksSkippedUnresolved
@@ -276,7 +276,7 @@ table RT_CollectorRunHealth
 
 	column DurationMs
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: d77e3dc4-fcee-4449-ad90-92a4d5f2ef53
 		summarizeBy: none
 		sourceColumn: DurationMs

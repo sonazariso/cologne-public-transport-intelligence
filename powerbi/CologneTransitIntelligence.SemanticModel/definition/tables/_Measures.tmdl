@@ -4,21 +4,21 @@ table _Measures
 	measure 'Scheduled Trips' =
 			
 			SUM ( DailySchedule[ScheduledTripCount] )
-		formatString: 0
+		formatString: #,0
 		displayFolder: 01 Static Schedule
 		lineageTag: cbb19cc5-b59a-480f-a6e5-5c135a43be7d
 
 	measure 'Active Dates in Context' =
 			
 			DISTINCTCOUNT ( DailySchedule[DateKey] )
-		formatString: 0
+		formatString: #,0
 		displayFolder: 01 Static Schedule
 		lineageTag: 39733a6c-f9ff-419a-9cfa-7c689d91c0ff
 
 	measure 'Routes in Context' =
 			
 			DISTINCTCOUNT ( DailySchedule[RouteKey] )
-		formatString: 0
+		formatString: #,0
 		displayFolder: 01 Static Schedule
 		lineageTag: 534a6ab0-eb05-4d79-a0e4-92fa2ea6650e
 
@@ -28,7 +28,7 @@ table _Measures
 			    [Scheduled Trips],
 			    [Active Dates in Context]
 			)
-		formatString: 0.00
+		formatString: #,0.00
 		displayFolder: 01 Static Schedule
 		lineageTag: 308f3f01-34c9-4643-a963-cda8dc1737ff
 
@@ -38,7 +38,7 @@ table _Measures
 			    [Weekend Scheduled Trips],
 			    [Scheduled Trips]
 			)
-		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		displayFolder: 01 Static Schedule
 		lineageTag: 9021d09f-889c-418a-96cb-34f96664d05d
 
@@ -51,7 +51,7 @@ table _Measures
 			        REMOVEFILTERS ( Mode[ModeDetail] )
 			    )
 			)
-		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		displayFolder: 01 Static Schedule
 		lineageTag: d36fde52-aa38-4f20-a022-183d5d9e845e
 
@@ -61,7 +61,7 @@ table _Measures
 			    [Scheduled Trips],
 			    KEEPFILTERS ( ActiveDate[IsWeekend] = TRUE () )
 			)
-		formatString: 0
+		formatString: #,0
 		displayFolder: 01 Static Schedule
 		lineageTag: 4a80c147-e0f9-4db7-9cf6-96e85d990549
 
@@ -73,77 +73,77 @@ table _Measures
 			    [Scheduled Trips],
 			    KEEPFILTERS ( ActiveDate[IsWeekend] = FALSE () )
 			)
-		formatString: 0
+		formatString: #,0
 		displayFolder: 01 Static Schedule
 		lineageTag: 04dd82f8-1c8f-4ee7-9dda-31d768ee55f5
 
 	measure 'Baseline Agencies' =
 			
 			MAX ( NetworkKPI[AgencyCount] )
-		formatString: 0
+		formatString: #,0
 		displayFolder: 02 Network Baseline
 		lineageTag: 27725019-7b68-46db-a1ab-6f40d4ef4f4a
 
 	measure 'Baseline Modes' =
 			
 			MAX ( NetworkKPI[ModeCount] )
-		formatString: 0
+		formatString: #,0
 		displayFolder: 02 Network Baseline
 		lineageTag: 566f05e1-8b6b-42eb-9ba7-67751bc33259
 
 	measure 'Baseline Routes' =
 			
 			MAX ( NetworkKPI[RouteCount] )
-		formatString: 0
+		formatString: #,0
 		displayFolder: 02 Network Baseline
 		lineageTag: 3dac2baa-ebec-44db-8dc9-41d88ea87155
 
 	measure 'Baseline Parent Stations' =
 			
 			MAX ( NetworkKPI[ParentStationCount] )
-		formatString: 0
+		formatString: #,0
 		displayFolder: 02 Network Baseline
 		lineageTag: dafc932d-0eb0-47fb-97ef-5b210fdcdad9
 
 	measure 'Baseline Stop Positions' =
 			
 			MAX ( NetworkKPI[StopPositionCount] )
-		formatString: 0
+		formatString: #,0
 		displayFolder: 02 Network Baseline
 		lineageTag: 0546d3eb-da9d-4e59-a147-b096bab39077
 
 	measure 'Baseline Used Stop Positions' =
 			
 			MAX ( NetworkKPI[UsedStopPositionCount] )
-		formatString: 0
+		formatString: #,0
 		displayFolder: 02 Network Baseline
 		lineageTag: b322d958-1abd-4d8d-bbda-878bcce81d36
 
 	measure 'Baseline Active Service Dates' =
 			
 			MAX ( NetworkKPI[ActiveServiceDateCount] )
-		formatString: 0
+		formatString: #,0
 		displayFolder: 02 Network Baseline
 		lineageTag: 1957e796-3f55-438a-a082-d2ba8b720193
 
 	measure 'Baseline Scheduled Trip Patterns' =
 			
 			MAX ( NetworkKPI[ScheduledTripPatternCount] )
-		formatString: 0
+		formatString: #,0
 		displayFolder: 02 Network Baseline
 		lineageTag: 3842d4a6-015d-45f2-89c3-b20dc4c0a97f
 
 	measure 'Baseline Scheduled Trip Occurrences' =
 			
 			MAX ( NetworkKPI[ScheduledTripOccurrenceCount] )
-		formatString: 0
+		formatString: #,0
 		displayFolder: 02 Network Baseline
 		lineageTag: 8ef9d683-0125-42f9-8ec3-93cf9decf961
 
 	measure 'Baseline Scheduled Stop-Event Patterns' =
 			
 			MAX ( NetworkKPI[ScheduledStopEventPatternCount] )
-		formatString: 0
+		formatString: #,0
 		displayFolder: 02 Network Baseline
 		lineageTag: dae1f2ae-83d8-469d-b74b-4f1be7d123c2
 
@@ -153,7 +153,7 @@ table _Measures
 			    COUNTROWS ( StopPosition ),
 			    StopPosition[IsUsedInCurrentSchedule] = TRUE ()
 			)
-		formatString: 0
+		formatString: #,0
 		displayFolder: 02 Network Baseline
 		lineageTag: 7494e2f8-5218-49ad-99f3-b9d63908c33e
 
@@ -163,7 +163,7 @@ table _Measures
 			    COUNTROWS ( StopPosition ),
 			    StopPosition[IsUsedInCurrentSchedule] = FALSE ()
 			)
-		formatString: 0
+		formatString: #,0
 		displayFolder: 02 Network Baseline
 		lineageTag: e7bc0b69-35cd-4415-9487-3ba5afe82f40
 
@@ -172,22 +172,23 @@ table _Measures
 	measure 'Observed Matched Services' =
 			
 			COUNTROWS ( RT_ReliabilityOutcome )
-		formatString: 0
+		formatString: #,0
 		displayFolder: 03 Realtime Reliability
 		lineageTag: d498b684-c8f5-4614-b36e-7fc42359e199
 
 	measure 'Delay Observations' =
 			
 			COUNT ( RT_ReliabilityOutcome[FinalObservedEstimatedDelayMinutes] )
-		formatString: 0
+		formatString: #,0
 		displayFolder: 03 Realtime Reliability
 		lineageTag: 454edb5c-e930-49f8-8472-258f87fc5564
 
 	measure 'Average Observed Estimated Delay (min)' =
-			
+
 			AVERAGE (
 			    RT_ReliabilityOutcome[FinalObservedEstimatedDelayMinutes]
 			)
+		formatString: #,0.0
 		displayFolder: 03 Realtime Reliability
 		lineageTag: 1214f78a-3e00-4899-abd2-982348557f92
 
@@ -204,6 +205,7 @@ table _Measures
 			    ),
 			    RT_ReliabilityOutcome[FinalObservedEstimatedDelayMinutes]
 			)
+		formatString: #,0.0
 		displayFolder: 03 Realtime Reliability
 		lineageTag: b331bcd0-31fe-4e53-8ca0-e154ab48efea
 
@@ -221,6 +223,7 @@ table _Measures
 			    RT_ReliabilityOutcome[FinalObservedEstimatedDelayMinutes],
 			    0.95
 			)
+		formatString: #,0.0
 		displayFolder: 03 Realtime Reliability
 		lineageTag: 22963654-18c6-44b6-a110-2bd611add83a
 
@@ -231,6 +234,7 @@ table _Measures
 			MIN (
 			    RT_ReliabilityOutcome[FinalObservedEstimatedDelayMinutes]
 			)
+		formatString: #,0.0
 		displayFolder: 03 Realtime Reliability
 		lineageTag: 6a069ffc-77ce-45dc-8d91-f80d43d89e36
 
@@ -241,6 +245,7 @@ table _Measures
 			MAX (
 			    RT_ReliabilityOutcome[FinalObservedEstimatedDelayMinutes]
 			)
+		formatString: #,0.0
 		displayFolder: 03 Realtime Reliability
 		lineageTag: 5a6a43bc-27a8-447e-a85d-f6b369406a81
 
@@ -251,6 +256,7 @@ table _Measures
 			AVERAGE (
 			    RT_ReliabilityOutcome[ObservationCount]
 			)
+		formatString: #,0.00
 		displayFolder: 03 Realtime Reliability
 		lineageTag: 2e29a229-68fb-469e-bf9f-a8eaf424b9f8
 
@@ -262,7 +268,7 @@ table _Measures
 			    [Observed Matched Services],
 			    RT_ReliabilityOutcome[HasSituationEvidence] = TRUE ()
 			)
-		formatString: 0
+		formatString: #,0
 		displayFolder: 04 Evidence
 		lineageTag: 3b63d469-9f0e-42b6-aec3-b2d985b929a9
 
@@ -272,7 +278,7 @@ table _Measures
 			    [Situation-Linked Outcomes],
 			    [Observed Matched Services]
 			)
-		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		displayFolder: 04 Evidence
 		lineageTag: 7dff8496-b7e7-4ef5-8d38-131098cf850d
 
@@ -282,7 +288,7 @@ table _Measures
 			    [Observed Matched Services],
 			    RT_ReliabilityOutcome[PlatformChangeEvidence] = "Changed"
 			)
-		formatString: 0
+		formatString: #,0
 		displayFolder: 04 Evidence
 		lineageTag: 6914f4a6-133c-4cf6-98d0-07627f742cc2
 
@@ -292,7 +298,7 @@ table _Measures
 			    [Platform Changed Evidence Outcomes],
 			    [Observed Matched Services]
 			)
-		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		displayFolder: 04 Evidence
 		lineageTag: ba48ff5c-3164-406f-aba6-85c687dda0f3
 
@@ -305,7 +311,7 @@ table _Measures
 			    ),
 			    0
 			)
-		formatString: 0
+		formatString: #,0
 		displayFolder: 04 Evidence
 		lineageTag: c1ab4256-9ddc-4af2-8f71-86bb41797615
 
@@ -315,7 +321,7 @@ table _Measures
 			    [Observed Matched Services],
 			    RT_ReliabilityOutcome[PlatformChangeEvidence] = "Unknown"
 			)
-		formatString: 0
+		formatString: #,0
 		displayFolder: 04 Evidence
 		lineageTag: 8bf3e87a-6aaa-41d0-a824-efc3e7442a2a
 
@@ -326,7 +332,7 @@ table _Measures
 			    [Observed Matched Services],
 			    0
 			)
-		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		displayFolder: 04 Evidence
 		lineageTag: 170eab5a-9f99-49f7-95a8-ea5e1c9faeef
 
@@ -336,7 +342,7 @@ table _Measures
 			    [Platform Unknown Evidence Outcomes],
 			    [Observed Matched Services]
 			)
-		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		displayFolder: 04 Evidence
 		lineageTag: 4d9eefdf-0c75-46e7-92d6-e1f013c4f0a2
 
@@ -345,7 +351,7 @@ table _Measures
 			SUM (
 			    RT_ConsolidationQuality[OperationalOutcomeCount]
 			)
-		formatString: 0
+		formatString: #,0
 		displayFolder: 05 Consolidation
 		lineageTag: 193d5a7a-385c-4357-985e-3f4a62f16897
 
@@ -354,7 +360,7 @@ table _Measures
 			SUM (
 			    RT_ConsolidationQuality[UsableObservationCount]
 			)
-		formatString: 0
+		formatString: #,0
 		displayFolder: 05 Consolidation
 		lineageTag: 090eb729-c24c-4bc1-b63d-b1adb98f9f84
 
@@ -363,7 +369,7 @@ table _Measures
 			SUM (
 			    RT_ConsolidationQuality[RepeatedObservationsConsolidated]
 			)
-		formatString: 0
+		formatString: #,0
 		displayFolder: 05 Consolidation
 		lineageTag: 83892f88-dcbe-42d1-be9b-a19481c6aebc
 
@@ -374,17 +380,17 @@ table _Measures
 			    [Usable Realtime Observations],
 			    0
 			)
-		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		displayFolder: 05 Consolidation
 		lineageTag: fa684f8a-cd47-4fe3-846e-5674d4244a31
 
 	measure 'Observations per Operational Outcome' =
-			
+
 			DIVIDE (
 			    [Usable Realtime Observations],
 			    [Operational Outcomes]
 			)
-		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		formatString: #,0.00
 		displayFolder: 05 Consolidation
 		lineageTag: 2033793b-04cd-4981-8543-b697df5b47fe
 
@@ -393,7 +399,7 @@ table _Measures
 			SUM (
 			    RT_DataQualityCoverage[SourceObservationCount]
 			)
-		formatString: 0
+		formatString: #,0
 		displayFolder: 06 Data Quality
 		lineageTag: 1405091c-03fe-434a-88b9-287bb1a2e1cd
 
@@ -402,7 +408,7 @@ table _Measures
 			SUM (
 			    RT_DataQualityCoverage[MatchedViewObservationCount]
 			)
-		formatString: 0
+		formatString: #,0
 		displayFolder: 06 Data Quality
 		lineageTag: f7b71172-e68e-4118-8436-4e86074e88c8
 
@@ -411,7 +417,7 @@ table _Measures
 			SUM (
 			    RT_DataQualityCoverage[ExactStopMatchCount]
 			)
-		formatString: 0
+		formatString: #,0
 		displayFolder: 06 Data Quality
 		lineageTag: a8559c9b-a9b3-47ac-b2e5-cd9f111a98a2
 
@@ -420,7 +426,7 @@ table _Measures
 			SUM (
 			    RT_DataQualityCoverage[ParentStationFallbackCount]
 			)
-		formatString: 0
+		formatString: #,0
 		displayFolder: 06 Data Quality
 		lineageTag: fe8cca6f-66c0-4db0-9239-f1ba80f43376
 
@@ -429,7 +435,7 @@ table _Measures
 			SUM (
 			    RT_DataQualityCoverage[StaticCoverageMissingCount]
 			)
-		formatString: 0
+		formatString: #,0
 		displayFolder: 06 Data Quality
 		lineageTag: 336f7df4-b865-4d43-b3a5-d60d4005780e
 
@@ -438,7 +444,7 @@ table _Measures
 			SUM (
 			    RT_DataQualityCoverage[UnresolvedCount]
 			)
-		formatString: 0
+		formatString: #,0
 		displayFolder: 06 Data Quality
 		lineageTag: 21754dfc-e7c4-4b2c-afbc-3091c322a78f
 
@@ -447,7 +453,7 @@ table _Measures
 			SUM (
 			    RT_DataQualityCoverage[UsableMatchCount]
 			)
-		formatString: 0
+		formatString: #,0
 		displayFolder: 06 Data Quality
 		lineageTag: b09e8a9f-7ba6-4268-9732-239a467a5773
 
@@ -458,7 +464,7 @@ table _Measures
 			    [Matched View Observations],
 			    0
 			)
-		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		displayFolder: 06 Data Quality
 		lineageTag: 129fc6bc-d136-4ec4-ad64-e50e0bd0b2b5
 
@@ -469,7 +475,7 @@ table _Measures
 			    [Matched View Observations],
 			    0
 			)
-		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		displayFolder: 06 Data Quality
 		lineageTag: 64dbccea-4a84-4361-bbff-8619dc734350
 
@@ -480,7 +486,7 @@ table _Measures
 			    [Matched View Observations],
 			    0
 			)
-		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		displayFolder: 06 Data Quality
 		lineageTag: 11c623bc-a575-432d-83d2-72498658ccf5
 
@@ -491,7 +497,7 @@ table _Measures
 			    [Matched View Observations],
 			    0
 			)
-		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		displayFolder: 06 Data Quality
 		lineageTag: 0c959424-190f-47b6-b316-a44ca05c218a
 
@@ -502,7 +508,7 @@ table _Measures
 			    [Matched View Observations],
 			    0
 			)
-		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		displayFolder: 06 Data Quality
 		lineageTag: e482cf26-37cb-4175-b07a-68f637f4e595
 
@@ -511,7 +517,7 @@ table _Measures
 			SUM (
 			    RT_DataQualityCoverage[ObservationsWithEstimatedBayCount]
 			)
-		formatString: 0
+		formatString: #,0
 		displayFolder: 06 Data Quality
 		lineageTag: 164c4529-f84b-431c-a3f1-9ef36748941b
 
@@ -522,7 +528,7 @@ table _Measures
 			    [Matched View Observations],
 			    0
 			)
-		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		displayFolder: 06 Data Quality
 		lineageTag: 21854a4e-f455-428b-acea-ec5d5f432df3
 
@@ -531,7 +537,7 @@ table _Measures
 			SUM (
 			    RT_DataQualityCoverage[ObservationsWithSituationEvidenceCount]
 			)
-		formatString: 0
+		formatString: #,0
 		displayFolder: 06 Data Quality
 		lineageTag: 29ca4d9c-3cea-4c7e-8e53-241ce2201461
 
@@ -542,7 +548,7 @@ table _Measures
 			    [Matched View Observations],
 			    0
 			)
-		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		displayFolder: 06 Data Quality
 		lineageTag: cc80bdf2-86a4-429f-93b0-573ce354fe63
 
@@ -551,14 +557,14 @@ table _Measures
 			SUM (
 			    RT_DataQualityCoverage[SituationLinkCount]
 			)
-		formatString: 0
+		formatString: #,0
 		displayFolder: 06 Data Quality
 		lineageTag: 4f8adf49-3c26-4029-b093-56b59f793c36
 
 	measure 'Collector Runs' =
 			
 			COUNTROWS ( RT_CollectorRunHealth )
-		formatString: 0
+		formatString: #,0
 		displayFolder: 07 Collector Health
 		lineageTag: 3270dbcc-4ac4-482f-9177-544b2c83623b
 
@@ -568,7 +574,7 @@ table _Measures
 			    [Collector Runs],
 			    RT_CollectorRunHealth[IsSuccessfulRun] = TRUE ()
 			)
-		formatString: 0
+		formatString: #,0
 		displayFolder: 07 Collector Health
 		lineageTag: e8f5b604-8d01-48f1-a1df-8d53e4b29368
 
@@ -578,7 +584,7 @@ table _Measures
 			    [Collector Runs],
 			    RT_CollectorRunHealth[IsFailedRun] = TRUE ()
 			)
-		formatString: 0
+		formatString: #,0
 		displayFolder: 07 Collector Health
 		lineageTag: 88beac19-c78c-4037-b317-36c8321f07d8
 
@@ -588,7 +594,7 @@ table _Measures
 			    [Collector Runs],
 			    RT_CollectorRunHealth[IsIncompleteStartedRun] = TRUE ()
 			)
-		formatString: 0
+		formatString: #,0
 		displayFolder: 07 Collector Health
 		lineageTag: 2609ab0f-7046-46d4-afe7-b5460422bdd0
 
@@ -598,7 +604,7 @@ table _Measures
 			    [Collector Runs],
 			    RT_CollectorRunHealth[IsSuccessfulAutomaticRun] = TRUE ()
 			)
-		formatString: 0
+		formatString: #,0
 		displayFolder: 07 Collector Health
 		lineageTag: be58d68a-d826-45f8-85ef-a386abf40ac3
 
@@ -606,7 +612,7 @@ table _Measures
 			
 			[Successful Collector Runs]
 			    + [Failed Collector Runs]
-		formatString: 0
+		formatString: #,0
 		displayFolder: 07 Collector Health
 		lineageTag: c04312d7-4ef0-438c-81d3-fd1b013b8a50
 
@@ -617,7 +623,7 @@ table _Measures
 			    [Completed Collector Runs],
 			    0
 			)
-		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		displayFolder: 07 Collector Health
 		lineageTag: 6e31910f-98a6-4839-90bb-8b5a35dc480e
 
@@ -627,7 +633,7 @@ table _Measures
 			    DISTINCTCOUNT ( RT_CollectorRunHealth[SamplingTargetId] ),
 			    RT_CollectorRunHealth[ParticipatedInSamplingPanel] = TRUE ()
 			)
-		formatString: 0
+		formatString: #,0
 		displayFolder: 07 Collector Health
 		lineageTag: c11e7411-1d59-442c-8e1a-af30a1778e71
 
@@ -640,14 +646,14 @@ table _Measures
 			    ),
 			    1000
 			)
-		formatString: 0.00
+		formatString: #,0.00
 		displayFolder: 07 Collector Health
 		lineageTag: 8637b6b8-4db8-4204-b8f6-a126e07f0f79
 
 	measure 'Agencies in Context' =
 			
 			DISTINCTCOUNT ( DailySchedule[AgencyId] )
-		formatString: 0
+		formatString: #,0
 		displayFolder: 01 Static Schedule
 		lineageTag: 8be1fb2f-c122-42f8-a65a-92a9ae3e0869
 
@@ -657,9 +663,176 @@ table _Measures
 	measure 'Parent Station Scheduled Trip Patterns' =
 			
 			SUM ( ParentStation[ScheduledTripPatternCount] )
-		formatString: 0
+		formatString: #,0
 		displayFolder: 01 Static Schedule
 		lineageTag: 87fac219-e1da-44ec-82c7-4b7d9e97764b
+
+	/// Observed matched services represented by each transport mode as a
+	/// share of the current Sampling Panel outcome total.
+	measure 'Mode Share of Observed Services' =
+
+			DIVIDE (
+			    [Observed Matched Services],
+			    CALCULATE (
+			        [Observed Matched Services],
+			        REMOVEFILTERS ( Mode[ModeDetail] )
+			    ),
+			    0
+			)
+		formatString: 0.0\ %;-0.0\ %;0.0\ %
+		displayFolder: 08 Management Overview
+		lineageTag: 4c8f6a1d-3c2a-4d1e-a879-1b2c3d4e5f60
+
+	measure 'Routes' =
+
+			[Routes in Context]
+		formatString: #,0
+		displayFolder: 08 Management Overview
+		lineageTag: 5d9a7b2e-4d3b-4e2f-b980-2c3d4e5f6071
+
+	measure '% of Scheduled Trips' =
+
+			[Mode Share of Scheduled Trips]
+		formatString: 0.0\ %;-0.0\ %;0.0\ %
+		displayFolder: 08 Management Overview
+		lineageTag: 6eab8c3f-5e4c-4f30-ca91-3d4e5f607182
+
+	measure '% of Observed Services' =
+
+			[Mode Share of Observed Services]
+		formatString: 0.0\ %;-0.0\ %;0.0\ %
+		displayFolder: 08 Management Overview
+		lineageTag: 7fbc9d40-6f5d-4031-dba2-4e5f60718293
+
+	measure 'Median Delay' =
+
+			[Median Observed Estimated Delay (min)]
+		formatString: #,0.0
+		displayFolder: 08 Management Overview
+		lineageTag: 80cdae51-706e-4142-ecb3-5f607182934a
+
+	measure 'P95 Delay' =
+
+			[P95 Observed Estimated Delay (min)]
+		formatString: #,0.0
+		displayFolder: 08 Management Overview
+		lineageTag: 91debf62-817f-4253-fdc4-607182934a5b
+
+	measure 'Insight Largest Planned Mode' =
+
+			VAR ModeRows =
+			    ADDCOLUMNS (
+			        ALLSELECTED ( Mode[ModeDetail] ),
+			        "__ScheduledTrips", CALCULATE ( [Scheduled Trips] ),
+			        "__Share", CALCULATE ( [Mode Share of Scheduled Trips] )
+			    )
+			VAR TopMode =
+			    TOPN (
+			        1,
+			        FILTER ( ModeRows, [__ScheduledTrips] > 0 ),
+			        [__ScheduledTrips], DESC,
+			        Mode[ModeDetail], ASC
+			    )
+			VAR ModeName = MAXX ( TopMode, Mode[ModeDetail] )
+			VAR ModeShare = MAXX ( TopMode, [__Share] )
+			RETURN
+			    IF (
+			        ISBLANK ( ModeName ),
+			        "No scheduled trip data is available for the current selection.",
+				"Largest planned mode: " & ModeName & " ("
+				    & FORMAT ( ModeShare, "0.0%" ) & " of scheduled trips)."
+			    )
+		displayFolder: 08 Management Overview
+		lineageTag: a2efc073-9280-4364-aed5-7182934a5b6c
+
+	measure 'Insight Highest Typical Delay' =
+
+			VAR ModeRows =
+			    ADDCOLUMNS (
+			        ALLSELECTED ( Mode[ModeDetail] ),
+			        "__ObservedServices", CALCULATE ( [Observed Matched Services] ),
+			        "__MedianDelay", CALCULATE ( [Median Observed Estimated Delay (min)] )
+			    )
+			VAR TopMode =
+			    TOPN (
+			        1,
+			        FILTER (
+			            ModeRows,
+			            [__ObservedServices] > 0
+			                && NOT ISBLANK ( [__MedianDelay] )
+			        ),
+			        [__MedianDelay], DESC,
+			        Mode[ModeDetail], ASC
+			    )
+			VAR ModeName = MAXX ( TopMode, Mode[ModeDetail] )
+			VAR MedianDelay = MAXX ( TopMode, [__MedianDelay] )
+			RETURN
+			    IF (
+			        ISBLANK ( ModeName ),
+			        "No observed delay evidence is available for the current selection.",
+				"Highest median delay: " & ModeName & " ("
+				    & FORMAT ( MedianDelay, "#,0.0" ) & " min)."
+			    )
+		displayFolder: 08 Management Overview
+		lineageTag: b3f0d184-a391-4475-bfe6-8293a5b6c7d8
+
+	measure 'Insight Highest Severe Delay' =
+
+			VAR ModeRows =
+			    ADDCOLUMNS (
+			        ALLSELECTED ( Mode[ModeDetail] ),
+			        "__ObservedServices", CALCULATE ( [Observed Matched Services] ),
+			        "__P95Delay", CALCULATE ( [P95 Observed Estimated Delay (min)] )
+			    )
+			VAR TopMode =
+			    TOPN (
+			        1,
+			        FILTER (
+			            ModeRows,
+			            [__ObservedServices] > 0
+			                && NOT ISBLANK ( [__P95Delay] )
+			        ),
+			        [__P95Delay], DESC,
+			        Mode[ModeDetail], ASC
+			    )
+			VAR ModeName = MAXX ( TopMode, Mode[ModeDetail] )
+			VAR P95Delay = MAXX ( TopMode, [__P95Delay] )
+			RETURN
+			    IF (
+			        ISBLANK ( ModeName ),
+			        "No observed severe-delay evidence is available for the current selection.",
+				"Highest P95 delay: " & ModeName & " ("
+				    & FORMAT ( P95Delay, "#,0.0" ) & " min)."
+			    )
+		displayFolder: 08 Management Overview
+		lineageTag: c401e295-b4a2-4586-c0f7-93a4b6c7d8e9
+
+	measure 'Insight Observed Sample Composition' =
+
+			VAR ModeRows =
+			    ADDCOLUMNS (
+			        ALLSELECTED ( Mode[ModeDetail] ),
+			        "__ObservedServices", CALCULATE ( [Observed Matched Services] ),
+			        "__Share", CALCULATE ( [Mode Share of Observed Services] )
+			    )
+			VAR TopMode =
+			    TOPN (
+			        1,
+			        FILTER ( ModeRows, [__ObservedServices] > 0 ),
+			        [__ObservedServices], DESC,
+			        Mode[ModeDetail], ASC
+			    )
+			VAR ModeName = MAXX ( TopMode, Mode[ModeDetail] )
+			VAR ModeShare = MAXX ( TopMode, [__Share] )
+			RETURN
+			    IF (
+			        ISBLANK ( ModeName ),
+			        "No observed services are available for the current selection.",
+				"Sampling Panel mix: " & FORMAT ( ModeShare, "0.0%" ) & " "
+				    & ModeName & "."
+			    )
+		displayFolder: 08 Management Overview
+		lineageTag: d512f3a6-c5b3-4697-d108-a4b5c7d8e9f0
 
 	column _Placeholder
 		dataType: int64

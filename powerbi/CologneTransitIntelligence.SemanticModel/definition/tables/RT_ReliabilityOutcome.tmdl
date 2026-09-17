@@ -265,6 +265,7 @@ table RT_ReliabilityOutcome
 
 	column FirstObservedEstimatedDelayMinutes
 		dataType: double
+		formatString: #,0.0
 		lineageTag: 4f875ecc-8b54-491a-8231-30da09cb6702
 		summarizeBy: none
 		sourceColumn: FirstObservedEstimatedDelayMinutes
@@ -275,6 +276,7 @@ table RT_ReliabilityOutcome
 
 	column FinalObservedEstimatedDelayMinutes
 		dataType: double
+		formatString: #,0.0
 		lineageTag: 735676eb-6c6f-4eef-ad77-ff65c74cf025
 		summarizeBy: none
 		sourceColumn: FinalObservedEstimatedDelayMinutes
@@ -285,7 +287,7 @@ table RT_ReliabilityOutcome
 
 	column ObservationCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 4950b7b9-090b-4d36-818a-8fc3d544ca5c
 		summarizeBy: none
 		sourceColumn: ObservationCount
@@ -379,7 +381,7 @@ table RT_ReliabilityOutcome
 
 	column SituationLinkCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 2b1c6e2e-24e5-4328-86fe-4f282ba721d9
 		summarizeBy: none
 		sourceColumn: SituationLinkCount

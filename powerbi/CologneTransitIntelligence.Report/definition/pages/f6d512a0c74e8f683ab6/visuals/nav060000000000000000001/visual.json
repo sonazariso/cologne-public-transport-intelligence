@@ -18,6 +18,20 @@
             "showPage": {
               "expr": {
                 "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          },
+          "selector": {
+            "id": "a9b0c1d2e3f456789012"
+          }
+        },
+        {
+          "properties": {
+            "showPage": {
+              "expr": {
+                "Literal": {
                   "Value": "false"
                 }
               }

@@ -19,7 +19,7 @@ table RT_DataQualityCoverage
 
 	column CollectorRunCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 503edfbb-2eb0-4b3f-835b-5f0346bea5bd
 		summarizeBy: sum
 		sourceColumn: CollectorRunCount
@@ -28,7 +28,7 @@ table RT_DataQualityCoverage
 
 	column SuccessfulCollectorRunCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 1c030752-c966-4915-9e24-419761850844
 		summarizeBy: none
 		sourceColumn: SuccessfulCollectorRunCount
@@ -37,7 +37,7 @@ table RT_DataQualityCoverage
 
 	column FailedCollectorRunCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 07591888-fa95-4f3d-a2fa-5a9c1ae82de0
 		summarizeBy: none
 		sourceColumn: FailedCollectorRunCount
@@ -46,7 +46,7 @@ table RT_DataQualityCoverage
 
 	column IncompleteStartedRunCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 5beea1b8-eefc-45ae-a52f-5d3931d8d4a4
 		summarizeBy: none
 		sourceColumn: IncompleteStartedRunCount
@@ -55,7 +55,7 @@ table RT_DataQualityCoverage
 
 	column SuccessfulAutomaticRunCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 3472f90d-8ab2-4df5-abc8-cb1769caaaaa
 		summarizeBy: none
 		sourceColumn: SuccessfulAutomaticRunCount
@@ -64,7 +64,7 @@ table RT_DataQualityCoverage
 
 	column ConfiguredSamplingPanelTargetCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 26443f21-e1f3-49b0-b31a-6f526228e402
 		summarizeBy: none
 		sourceColumn: ConfiguredSamplingPanelTargetCount
@@ -73,7 +73,7 @@ table RT_DataQualityCoverage
 
 	column ParticipatingSamplingTargetCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 1114a99f-8f68-4122-8f9f-7a3390c59ac3
 		summarizeBy: none
 		sourceColumn: ParticipatingSamplingTargetCount
@@ -82,7 +82,7 @@ table RT_DataQualityCoverage
 
 	column SamplingPanelParticipationRate
 		dataType: double
-		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		lineageTag: 217dba74-a161-40cf-80b7-0cffc1688f9b
 		summarizeBy: none
 		sourceColumn: SamplingPanelParticipationRate
@@ -91,7 +91,7 @@ table RT_DataQualityCoverage
 
 	column SourceObservationCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: bfeda9be-71a9-48ad-927f-d0a12749db82
 		summarizeBy: none
 		sourceColumn: SourceObservationCount
@@ -100,7 +100,7 @@ table RT_DataQualityCoverage
 
 	column SourceSnapshotCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 9781e71b-f063-4c92-95ef-648c15401f4b
 		summarizeBy: none
 		sourceColumn: SourceSnapshotCount
@@ -137,7 +137,7 @@ table RT_DataQualityCoverage
 
 	column MatchedViewObservationCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: aab9461d-b889-438b-9174-25ba0b01fe7e
 		summarizeBy: none
 		sourceColumn: MatchedViewObservationCount
@@ -146,7 +146,7 @@ table RT_DataQualityCoverage
 
 	column ExactStopMatchCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: c2cf75d9-34ac-4e12-a6c4-33f5872a8a40
 		summarizeBy: none
 		sourceColumn: ExactStopMatchCount
@@ -155,7 +155,7 @@ table RT_DataQualityCoverage
 
 	column ParentStationFallbackCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 561bba3e-dce4-4438-ba12-1f4de04ba1d4
 		summarizeBy: none
 		sourceColumn: ParentStationFallbackCount
@@ -164,7 +164,7 @@ table RT_DataQualityCoverage
 
 	column StaticCoverageMissingCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 535cc578-848d-4d82-89eb-c61e8bf2b3c6
 		summarizeBy: none
 		sourceColumn: StaticCoverageMissingCount
@@ -173,7 +173,7 @@ table RT_DataQualityCoverage
 
 	column UnresolvedCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 69c08b41-09ac-4c75-b8c1-30fbda812160
 		summarizeBy: none
 		sourceColumn: UnresolvedCount
@@ -182,7 +182,7 @@ table RT_DataQualityCoverage
 
 	column UsableMatchCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 77aaddf9-3fe8-4b3d-9e73-4a716da88291
 		summarizeBy: none
 		sourceColumn: UsableMatchCount
@@ -191,7 +191,7 @@ table RT_DataQualityCoverage
 
 	column ExactStopMatchRate
 		dataType: double
-		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		lineageTag: dbfdc254-15f5-41e4-82ab-37757ddad6d2
 		summarizeBy: none
 		sourceColumn: ExactStopMatchRate
@@ -200,7 +200,7 @@ table RT_DataQualityCoverage
 
 	column ParentStationFallbackRate
 		dataType: double
-		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		lineageTag: 982b1a9a-261c-4fe6-b6e6-d526e99608ed
 		summarizeBy: none
 		sourceColumn: ParentStationFallbackRate
@@ -209,7 +209,7 @@ table RT_DataQualityCoverage
 
 	column StaticCoverageMissingRate
 		dataType: double
-		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		lineageTag: e35dd692-a805-4991-acc9-eb13905481e7
 		summarizeBy: none
 		sourceColumn: StaticCoverageMissingRate
@@ -218,7 +218,7 @@ table RT_DataQualityCoverage
 
 	column UnresolvedRate
 		dataType: double
-		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		lineageTag: 1cd34db6-8895-4405-8b60-8427e465fb05
 		summarizeBy: none
 		sourceColumn: UnresolvedRate
@@ -227,7 +227,7 @@ table RT_DataQualityCoverage
 
 	column UsableMatchRate
 		dataType: double
-		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		lineageTag: 85b2d03e-a6dc-410d-a5af-8575f04911ee
 		summarizeBy: none
 		sourceColumn: UsableMatchRate
@@ -236,7 +236,7 @@ table RT_DataQualityCoverage
 
 	column ObservationsWithEstimatedBayCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: ba511dc2-0359-4a4e-ba1c-d37d5075c9fc
 		summarizeBy: none
 		sourceColumn: ObservationsWithEstimatedBayCount
@@ -245,7 +245,7 @@ table RT_DataQualityCoverage
 
 	column EstimatedBayAvailabilityRate
 		dataType: double
-		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		lineageTag: 2936d3ee-0ff6-44c8-a27d-99477f3ca6d5
 		summarizeBy: none
 		sourceColumn: EstimatedBayAvailabilityRate
@@ -254,7 +254,7 @@ table RT_DataQualityCoverage
 
 	column ObservationsWithSituationEvidenceCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: f6166011-6d9b-42d4-aa5e-77153fd16960
 		summarizeBy: none
 		sourceColumn: ObservationsWithSituationEvidenceCount
@@ -263,7 +263,7 @@ table RT_DataQualityCoverage
 
 	column SituationEvidenceAvailabilityRate
 		dataType: double
-		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		lineageTag: 8feb09fc-9df9-496c-a627-be13ad5ba78e
 		summarizeBy: none
 		sourceColumn: SituationEvidenceAvailabilityRate
@@ -272,7 +272,7 @@ table RT_DataQualityCoverage
 
 	column SituationLinkCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 47b6fbd6-55f9-40fe-864e-097b8c757db3
 		summarizeBy: none
 		sourceColumn: SituationLinkCount
@@ -281,7 +281,7 @@ table RT_DataQualityCoverage
 
 	column OperationalOutcomeFirstObservedCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: a888ef49-065d-4182-8a7e-c971dc09ab92
 		summarizeBy: none
 		sourceColumn: OperationalOutcomeFirstObservedCount
@@ -290,7 +290,7 @@ table RT_DataQualityCoverage
 
 	column OperationalOutcomeObservationCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: ab53b782-8567-4d9a-81f9-cc63432669f2
 		summarizeBy: none
 		sourceColumn: OperationalOutcomeObservationCount
@@ -299,6 +299,7 @@ table RT_DataQualityCoverage
 
 	column ObservationsPerOperationalOutcome
 		dataType: double
+		formatString: #,0.00
 		lineageTag: da53db64-d8a2-4a43-9c3a-7b44d8673539
 		summarizeBy: none
 		sourceColumn: ObservationsPerOperationalOutcome

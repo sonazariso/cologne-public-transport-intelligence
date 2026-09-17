@@ -253,7 +253,7 @@ table DailySchedule
 
 	column ScheduledTripCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 0bcf0df9-75e4-41a6-b35a-d22e4e61fc88
 		summarizeBy: sum
 		sourceColumn: ScheduledTripCount

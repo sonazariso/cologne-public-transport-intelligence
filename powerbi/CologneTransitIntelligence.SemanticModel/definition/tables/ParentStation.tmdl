@@ -56,7 +56,7 @@ table ParentStation
 
 	column ChildStopPositionCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: d2408103-b6a1-4ed1-9ce8-164d8160f431
 		summarizeBy: none
 		sourceColumn: ChildStopPositionCount
@@ -65,7 +65,7 @@ table ParentStation
 
 	column UsedStopPositionCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: e4be4d7a-24d7-450b-9a05-e29ef6de404e
 		summarizeBy: none
 		sourceColumn: UsedStopPositionCount
@@ -74,7 +74,7 @@ table ParentStation
 
 	column ServedRouteCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 92796768-1218-4b75-9950-e702f3765c7a
 		summarizeBy: none
 		sourceColumn: ServedRouteCount
@@ -83,7 +83,7 @@ table ParentStation
 
 	column ScheduledTripPatternCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: 2520a902-0864-49a5-b611-09145dda475a
 		summarizeBy: none
 		sourceColumn: ScheduledTripPatternCount
@@ -92,7 +92,7 @@ table ParentStation
 
 	column ScheduledStopEventPatternCount
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		lineageTag: fb64540e-8486-4a2c-8ecd-ebbb3a3e6296
 		summarizeBy: none
 		sourceColumn: ScheduledStopEventPatternCount
