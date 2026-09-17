@@ -4,16 +4,16 @@
   "position": {
     "x": 950,
     "y": 358,
-    "z": 4102,
+    "z": 4300,
     "height": 34,
     "width": 298,
-    "tabOrder": 4102
+    "tabOrder": 4300
   },
   "visual": {
-    "visualType": "cardVisual",
+    "visualType": "tableEx",
     "query": {
       "queryState": {
-        "Data": {
+        "Values": {
           "projections": [
             {
               "field": {
@@ -34,7 +34,34 @@
       }
     },
     "objects": {
-      "value": [
+      "columnHeaders": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "columnAdjustment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'growToFit'"
+                }
+              }
+            },
+            "autoSizeColumnWidth": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "values": [
         {
           "properties": {
             "fontFamily": {
@@ -47,11 +74,11 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "7D"
                 }
               }
             },
-            "fontColor": {
+            "fontColorPrimary": {
               "solid": {
                 "color": {
                   "expr": {
@@ -62,20 +89,43 @@
                 }
               }
             },
-            "horizontalAlignment": {
-              "expr": {
-                "Literal": {
-                  "Value": "'left'"
+            "fontColorSecondary": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#1F2933'"
+                    }
+                  }
+                }
+              }
+            },
+            "backColorPrimary": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#F5F7F9'"
+                    }
+                  }
+                }
+              }
+            },
+            "backColorSecondary": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#F5F7F9'"
+                    }
+                  }
                 }
               }
             }
-          },
-          "selector": {
-            "id": "default"
           }
         }
       ],
-      "label": [
+      "total": [
         {
           "properties": {
             "show": {
@@ -85,9 +135,6 @@
                 }
               }
             }
-          },
-          "selector": {
-            "id": "default"
           }
         }
       ]
@@ -174,14 +221,14 @@
             "top": {
               "expr": {
                 "Literal": {
-                  "Value": "4D"
+                  "Value": "2D"
                 }
               }
             },
             "bottom": {
               "expr": {
                 "Literal": {
-                  "Value": "4D"
+                  "Value": "2D"
                 }
               }
             },
@@ -221,7 +268,7 @@
             "altText": {
               "expr": {
                 "Literal": {
-                  "Value": "'Dynamically identifies the transport mode with the highest P95 observed estimated delay in the selected context.'"
+                  "Value": "'Dynamically shows the transport mode with the highest P95 observed estimated delay.'"
                 }
               }
             }

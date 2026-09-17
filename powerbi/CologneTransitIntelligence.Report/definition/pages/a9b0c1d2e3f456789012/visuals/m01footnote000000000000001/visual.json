@@ -3,9 +3,9 @@
   "name": "m01footnote000000000000001",
   "position": {
     "x": 32,
-    "y": 660,
+    "y": 682,
     "z": 6000,
-    "height": 44,
+    "height": 38,
     "width": 1216,
     "tabOrder": 6000
   },
@@ -19,11 +19,11 @@
               {
                 "textRuns": [
                   {
-                    "value": "Scope: Realtime findings represent the selected Cologne Sampling Panel, not full-network realtime coverage. Observed Estimated Delay is not confirmed physical arrival delay. Typical route length and scheduled duration are omitted until trip-level schedule duration and route-distance units are validated.",
+                    "value": "Scope: Realtime findings represent the selected Cologne Sampling Panel, not full-network realtime coverage. Observed Estimated Delay is not confirmed physical arrival delay. Typical Scheduled Duration is derived from first scheduled departure to final scheduled arrival per trip. Typical Route Length uses the validated VRS ShapeDistanceTraveled kilometre scale.",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
-                      "fontSize": "8pt",
+                      "fontSize": "7pt",
                       "color": "#1F2933"
                     }
                   }
@@ -116,28 +116,28 @@
             "top": {
               "expr": {
                 "Literal": {
-                  "Value": "5D"
+                  "Value": "3D"
                 }
               }
             },
             "bottom": {
               "expr": {
                 "Literal": {
-                  "Value": "5D"
+                  "Value": "3D"
                 }
               }
             },
             "left": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "6D"
                 }
               }
             },
             "right": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "6D"
                 }
               }
             }
@@ -163,7 +163,7 @@
             "altText": {
               "expr": {
                 "Literal": {
-                  "Value": "'States the Realtime Sampling Panel scope, observed-estimated-delay semantics, and the pending validation status of route length and scheduled duration.'"
+                  "Value": "'States the Realtime Sampling Panel scope, observed-estimated-delay semantics, trip-level scheduled-duration derivation, and validated kilometre distance scale.'"
                 }
               }
             }

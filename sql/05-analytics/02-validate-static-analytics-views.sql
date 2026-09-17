@@ -24,6 +24,9 @@ FROM
     SELECT N'Route profile rows', 153,
            (SELECT COUNT_BIG(*) FROM analytics.vwRouteScheduleProfile)
     UNION ALL
+    SELECT N'Scheduled trip profile rows', 90331,
+           (SELECT COUNT_BIG(*) FROM analytics.vwScheduledTripProfile)
+    UNION ALL
     SELECT N'Stop-position profile rows', 2290,
            (SELECT COUNT_BIG(*) FROM analytics.vwStopPositionScheduleProfile)
     UNION ALL
@@ -101,4 +104,67 @@ SELECT
         ELSE 'REVIEW'
     END AS CheckStatus
 FROM analytics.vwDailyScheduledTripProfile;
+GO
+
+/* 5. Validate trip-level endpoint derivation and distance coverage. */
+SELECT
+    COUNT_BIG(*) AS ScheduledTripProfileRows,
+    COUNT_BIG(CASE WHEN TripScheduledDurationMinutes >= 0 THEN 1 END)
+        AS ValidTripDurationRows,
+    COUNT_BIG(CASE WHEN TripScheduledRouteLengthKm IS NOT NULL THEN 1 END)
+        AS TripDistanceRows,
+    MIN(TripScheduledDurationMinutes) AS MinimumTripDurationMinutes,
+    MAX(TripScheduledDurationMinutes) AS MaximumTripDurationMinutes,
+    CASE
+        WHEN COUNT_BIG(*) = 90331
+         AND COUNT_BIG(CASE WHEN TripScheduledDurationMinutes >= 0 THEN 1 END) = 90331
+         AND COUNT_BIG(CASE WHEN TripScheduledRouteLengthKm IS NOT NULL THEN 1 END) = 90331
+        THEN 'MATCH'
+        ELSE 'REVIEW'
+    END AS CheckStatus
+FROM analytics.vwScheduledTripProfile;
+GO
+
+/* 6. Confirm terminal distance equals each trip's maximum distance and
+       document the expected route-level variation for median profiling. */
+WITH TripDistanceStats AS
+(
+    SELECT
+        TripKey,
+        MAX(CONVERT(DECIMAL(18, 3), ShapeDistanceTraveled)) AS MaxShapeDistance
+    FROM dw.FactScheduledStopEvent
+    GROUP BY TripKey
+)
+SELECT
+    COUNT_BIG(*) AS ScheduledTripProfileRows,
+    COUNT_BIG(CASE
+        WHEN profile.TripScheduledRouteLengthKm = distance.MaxShapeDistance THEN 1
+    END) AS TerminalDistanceMatchesMaxRows,
+    COUNT_BIG(DISTINCT profile.RouteKey) AS RoutesWithDistance,
+    CASE
+        WHEN COUNT_BIG(*) = 90331
+         AND COUNT_BIG(CASE
+                WHEN profile.TripScheduledRouteLengthKm = distance.MaxShapeDistance THEN 1
+             END) = 90331
+         AND COUNT_BIG(DISTINCT profile.RouteKey) = 153
+        THEN 'MATCH'
+        ELSE 'REVIEW'
+    END AS CheckStatus
+FROM analytics.vwScheduledTripProfile AS profile
+JOIN TripDistanceStats AS distance ON distance.TripKey = profile.TripKey;
+
+WITH RouteDistanceStats AS
+(
+    SELECT
+        RouteKey,
+        COUNT_BIG(DISTINCT TripScheduledRouteLengthKm) AS DistinctTripDistances
+    FROM analytics.vwScheduledTripProfile
+    WHERE TripScheduledRouteLengthKm IS NOT NULL
+    GROUP BY RouteKey
+)
+SELECT
+    COUNT_BIG(*) AS RoutesWithDistance,
+    COUNT_BIG(CASE WHEN DistinctTripDistances > 1 THEN 1 END)
+        AS RoutesWithVaryingTripDistances
+FROM RouteDistanceStats;
 GO

@@ -1,0 +1,103 @@
+table ScheduledTripProfile
+	lineageTag: 1f5e7a3c-6b9d-4e21-8f43-a7c9d1e2b5f6
+
+	column TripKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 2a6b8c0d-1e3f-4a5b-9c7d-e1f2a3b4c5d6
+		summarizeBy: none
+		sourceColumn: TripKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column RouteKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 3b7d9e1f-2a4c-5b6d-8e0f-f2a3b4c5d6e7
+		summarizeBy: none
+		sourceColumn: RouteKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ModeKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 4c8e0a2f-3b5d-6c7e-9f1a-03b4c5d6e7f8
+		summarizeBy: none
+		sourceColumn: ModeKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column FirstScheduledDepartureSeconds
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 5d9f1b3a-4c6e-7d8f-0a2b-14c5d6e7f809
+		summarizeBy: none
+		sourceColumn: FirstScheduledDepartureSeconds
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column FinalScheduledArrivalSeconds
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 6e0a2c4b-5d7f-8e9a-1b3c-25d6e7f8091a
+		summarizeBy: none
+		sourceColumn: FinalScheduledArrivalSeconds
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column TripScheduledDurationMinutes
+		dataType: double
+		isHidden
+		formatString: #,0.0
+		lineageTag: 7f1b3d5c-6e8a-9f0b-2c4d-36e7f8091a2b
+		summarizeBy: none
+		sourceColumn: TripScheduledDurationMinutes
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column TripScheduledRouteLengthKm
+		dataType: double
+		isHidden
+		formatString: #,0.0
+		lineageTag: 8a2c4e6d-7f9b-0a1c-3d5e-47f8091a2b3c
+		summarizeBy: none
+		sourceColumn: TripScheduledRouteLengthKm
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition ScheduledTripProfile = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("localhost", "CologneTransitIntelligence"),
+				    analytics_vwScheduledTripProfile = Source{[Schema="analytics",Item="vwScheduledTripProfile"]}[Data]
+				in
+				    analytics_vwScheduledTripProfile
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table

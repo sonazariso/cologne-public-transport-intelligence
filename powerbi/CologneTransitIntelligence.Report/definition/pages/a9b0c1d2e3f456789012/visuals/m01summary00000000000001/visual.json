@@ -3,9 +3,9 @@
   "name": "m01summary00000000000001",
   "position": {
     "x": 32,
-    "y": 486,
+    "y": 478,
     "z": 5000,
-    "height": 166,
+    "height": 204,
     "width": 1216,
     "tabOrder": 5000
   },
@@ -127,8 +127,37 @@
               },
               "queryRef": "_Measures.P95 Delay",
               "nativeQueryRef": "P95 Delay"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Typical Scheduled Duration"
+                }
+              },
+              "queryRef": "_Measures.Typical Scheduled Duration",
+              "nativeQueryRef": "Typical Scheduled Duration"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Typical Route Length"
+                }
+              },
+              "queryRef": "_Measures.Typical Route Length",
+              "nativeQueryRef": "Typical Route Length"
             }
-          ]
+          ],
+          "showAll": true
         }
       },
       "sortDefinition": {
@@ -157,7 +186,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "180D"
+                  "Value": "170D"
                 }
               }
             }
@@ -171,7 +200,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "84D"
+                  "Value": "60D"
                 }
               }
             }
@@ -185,7 +214,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "126D"
+                  "Value": "110D"
                 }
               }
             }
@@ -199,7 +228,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "106D"
+                  "Value": "90D"
                 }
               }
             }
@@ -213,7 +242,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "132D"
+                  "Value": "110D"
                 }
               }
             }
@@ -227,7 +256,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "106D"
+                  "Value": "90D"
                 }
               }
             }
@@ -241,7 +270,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "112D"
+                  "Value": "86D"
                 }
               }
             }
@@ -255,7 +284,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "100D"
+                  "Value": "86D"
                 }
               }
             }
@@ -263,11 +292,46 @@
           "selector": {
             "metadata": "_Measures.P95 Delay"
           }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "130D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Measures.Typical Scheduled Duration"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "130D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Measures.Typical Route Length"
+          }
         }
       ],
       "columnHeaders": [
         {
           "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
             "fontFamily": {
               "expr": {
                 "Literal": {
@@ -278,7 +342,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "7D"
                 }
               }
             },
@@ -310,6 +374,20 @@
                   "Value": "true"
                 }
               }
+            },
+            "columnAdjustment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'growToFit'"
+                }
+              }
+            },
+            "autoSizeColumnWidth": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
             }
           }
         }
@@ -327,7 +405,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "9D"
+                  "Value": "8D"
                 }
               }
             },
@@ -377,6 +455,50 @@
             }
           }
         }
+      ],
+      "total": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "bold": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "backColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#E6EEF2'"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "grid": [
+        {
+          "properties": {
+            "rowPadding": {
+              "expr": {
+                "Literal": {
+                  "Value": "1D"
+                }
+              }
+            }
+          }
+        }
       ]
     },
     "visualContainerObjects": {
@@ -407,7 +529,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "11D"
+                  "Value": "10D"
                 }
               }
             },
@@ -493,28 +615,41 @@
             "top": {
               "expr": {
                 "Literal": {
-                  "Value": "6D"
+                  "Value": "2D"
                 }
               }
             },
             "bottom": {
               "expr": {
                 "Literal": {
-                  "Value": "6D"
+                  "Value": "2D"
                 }
               }
             },
             "left": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "6D"
                 }
               }
             },
             "right": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "6D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "stylePreset": [
+        {
+          "properties": {
+            "name": {
+              "expr": {
+                "Literal": {
+                  "Value": "'None'"
                 }
               }
             }
@@ -540,7 +675,7 @@
             "altText": {
               "expr": {
                 "Literal": {
-                  "Value": "'Summarizes routes, scheduled trips and share, observed services and share, median delay, and P95 delay by transport mode. Typical route length and scheduled duration are omitted pending source validation.'"
+                  "Value": "'Shows routes, scheduled trips and shares, observed services and shares, median and P95 observed estimated delay, typical trip duration, and validated typical route length by transport mode. Duration is trip-level; distance is validated in kilometres from the VRS feed geometry scale.'"
                 }
               }
             }

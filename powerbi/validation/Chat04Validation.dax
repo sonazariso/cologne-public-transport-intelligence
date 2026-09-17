@@ -14,7 +14,8 @@ UNION (
     ROW ( "TableName", "StopPosition", "PowerBIRowCount", COUNTROWS ( 'StopPosition' ) ),
     ROW ( "TableName", "ParentStation", "PowerBIRowCount", COUNTROWS ( 'ParentStation' ) ),
     ROW ( "TableName", "ActiveDate", "PowerBIRowCount", COUNTROWS ( 'ActiveDate' ) ),
-    ROW ( "TableName", "DailySchedule", "PowerBIRowCount", COUNTROWS ( 'DailySchedule' ) )
+    ROW ( "TableName", "DailySchedule", "PowerBIRowCount", COUNTROWS ( 'DailySchedule' ) ),
+    ROW ( "TableName", "ScheduledTripProfile", "PowerBIRowCount", COUNTROWS ( 'ScheduledTripProfile' ) )
 )
 ORDER BY [TableName]
 
@@ -116,6 +117,27 @@ SUMMARIZECOLUMNS (
     "PowerBIScheduledTripCount", SUM ( 'DailySchedule'[ScheduledTripCount] )
 )
 ORDER BY 'ActiveDate'[DateValue]
+
+// 16. M01 mode-share and derived trip-profile checks
+EVALUATE
+SUMMARIZECOLUMNS (
+    'Mode'[ModeSortOrder],
+    'Mode'[ModeDetail],
+    "ScheduledTrips", [Scheduled Trips],
+    "ScheduledShare", [% of Scheduled Trips],
+    "ObservedServices", [Observed Matched Services],
+    "ObservedShare", [% of Observed Services],
+    "TypicalScheduledDuration", [Typical Scheduled Duration],
+    "TypicalRouteLength", [Typical Route Length]
+)
+ORDER BY 'Mode'[ModeSortOrder]
+
+EVALUATE
+ROW (
+    "ScheduledShareSum", SUMX ( VALUES ( 'Mode'[ModeDetail] ), [% of Scheduled Trips] ),
+    "ObservedShareSum", SUMX ( VALUES ( 'Mode'[ModeDetail] ), [% of Observed Services] ),
+    "ScheduledDurationRows", COUNTROWS ( 'ScheduledTripProfile' )
+)
 
 // 12. RT_CollectorRunHealth disconnected behavior
 EVALUATE

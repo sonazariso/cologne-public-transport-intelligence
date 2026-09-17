@@ -6,15 +6,15 @@
     "y": 258,
     "z": 3000,
     "height": 216,
-    "width": 290,
+    "width": 296,
     "tabOrder": 3000
   },
   "visual": {
     "visualType": "donutChart",
     "query": {
       "queryState": {
-        "Category": {
-          "projections": [
+          "Category": {
+            "projections": [
             {
               "field": {
                 "Column": {
@@ -31,8 +31,9 @@
               "displayName": "Transport Mode",
               "active": true
             }
-          ]
-        },
+            ],
+            "showAll": true
+          },
         "Y": {
           "projections": [
             {
@@ -138,7 +139,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "7D"
                 }
               }
             },
@@ -176,7 +177,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "7D"
                 }
               }
             },

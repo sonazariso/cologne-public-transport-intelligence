@@ -9,9 +9,45 @@ DIVIDE (
     [Observed Matched Services],
     CALCULATE (
         [Observed Matched Services],
-        REMOVEFILTERS ( Mode[ModeDetail] )
+        REMOVEFILTERS ( Mode )
     ),
     0
+)
+
+Typical Scheduled Duration =
+VAR TripRows =
+    CALCULATETABLE (
+        ScheduledTripProfile,
+        TREATAS ( VALUES ( Route[RouteKey] ), ScheduledTripProfile[RouteKey] ),
+        TREATAS ( VALUES ( Mode[ModeKey] ), ScheduledTripProfile[ModeKey] )
+    )
+RETURN
+    MEDIANX (
+        TripRows,
+        ScheduledTripProfile[TripScheduledDurationMinutes]
+    )
+
+Typical Route Length =
+VAR TripRows =
+    CALCULATETABLE (
+        ScheduledTripProfile,
+        TREATAS ( VALUES ( Route[RouteKey] ), ScheduledTripProfile[RouteKey] ),
+        TREATAS ( VALUES ( Mode[ModeKey] ), ScheduledTripProfile[ModeKey] )
+    )
+RETURN
+    MEDIANX (
+        FILTER (
+            TripRows,
+            NOT ISBLANK ( ScheduledTripProfile[TripScheduledRouteLengthKm] )
+        ),
+        ScheduledTripProfile[TripScheduledRouteLengthKm]
+    )
+
+Parent Station KPI Support =
+IF (
+    ISBLANK ( [Baseline Stop Positions] ),
+    "Stop positions unavailable",
+    FORMAT ( [Baseline Stop Positions], "#,0" ) & " Stop Positions"
 )
 
 Routes =

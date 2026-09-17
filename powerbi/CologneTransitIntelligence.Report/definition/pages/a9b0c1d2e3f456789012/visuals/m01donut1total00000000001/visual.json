@@ -10,10 +10,10 @@
     "tabOrder": 3500
   },
   "visual": {
-    "visualType": "cardVisual",
+    "visualType": "tableEx",
     "query": {
       "queryState": {
-        "Data": {
+        "Values": {
           "projections": [
             {
               "field": {
@@ -34,7 +34,34 @@
       }
     },
     "objects": {
-      "value": [
+      "columnHeaders": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "columnAdjustment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'growToFit'"
+                }
+              }
+            },
+            "autoSizeColumnWidth": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "values": [
         {
           "properties": {
             "fontFamily": {
@@ -51,7 +78,7 @@
                 }
               }
             },
-            "fontColor": {
+            "fontColorPrimary": {
               "solid": {
                 "color": {
                   "expr": {
@@ -62,14 +89,46 @@
                 }
               }
             },
-            "bold": {
-              "expr": {
-                "Literal": {
-                  "Value": "true"
+            "fontColorSecondary": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#1F2933'"
+                    }
+                  }
                 }
               }
             },
-            "horizontalAlignment": {
+            "backColorPrimary": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#FFFFFF'"
+                    }
+                  }
+                }
+              }
+            },
+            "backColorSecondary": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#FFFFFF'"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "columnFormatting": [
+        {
+          "properties": {
+            "alignment": {
               "expr": {
                 "Literal": {
                   "Value": "'center'"
@@ -78,11 +137,11 @@
             }
           },
           "selector": {
-            "id": "default"
+            "metadata": "_Measures.Scheduled Trips"
           }
         }
       ],
-      "label": [
+      "total": [
         {
           "properties": {
             "show": {
@@ -92,9 +151,6 @@
                 }
               }
             }
-          },
-          "selector": {
-            "id": "default"
           }
         }
       ]
@@ -139,6 +195,40 @@
           }
         }
       ],
+      "padding": [
+        {
+          "properties": {
+            "top": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            },
+            "bottom": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            },
+            "left": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            },
+            "right": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            }
+          }
+        }
+      ],
       "visualHeader": [
         {
           "properties": {
@@ -158,7 +248,7 @@
             "altText": {
               "expr": {
                 "Literal": {
-                  "Value": "'Shows the dynamic scheduled-trip total at the center of the donut.'"
+                  "Value": "'Shows the dynamic total scheduled trips at the center of the Scheduled Trips donut.'"
                 }
               }
             }

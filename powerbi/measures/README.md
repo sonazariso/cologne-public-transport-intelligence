@@ -111,6 +111,9 @@ These files are the source-controlled DAX definitions. Display-folder metadata i
 - % of Observed Services
 - Median Delay
 - P95 Delay
+- Typical Scheduled Duration
+- Typical Route Length
+- Parent Station KPI Support
 - Insight Largest Planned Mode
 - Insight Highest Typical Delay
 - Insight Highest Severe Delay
@@ -132,4 +135,4 @@ These files are the source-controlled DAX definitions. Display-folder metadata i
 - `NetworkKPI` stays disconnected; baseline measures intentionally remain whole-network values under connected-model filters.
 - The current model is single-direction. Do not introduce bidirectional relationships solely to make dimension counts respond to unrelated dimension filters.
 - The management page uses `Mode[ModeDetail]` for the seven model values: Urban Bus, Stadtbahn / Tram, Regional Bus, S-Bahn, RE, RB, and SEV.
-- Route length and scheduled-duration metrics are intentionally not synthesized in the management page: the current imported model does not expose trip-level duration or validated `ShapeDistanceTraveled` units.
+- `Typical Scheduled Duration` uses the median of trip-level final-arrival minus first-departure values from `ScheduledTripProfile`, and `Typical Route Length` uses the median terminal shape-distance value in the validated VRS kilometre scale. Both measures apply Route and Mode context with `TREATAS` without changing the existing relationship topology.

@@ -22,6 +22,7 @@ Data connectivity mode: Import
 | `vwNetworkBaselineKpi` | `NetworkKPI` |
 | `vwModeScheduleProfile` | `Mode` |
 | `vwRouteScheduleProfile` | `Route` |
+| `vwScheduledTripProfile` | `ScheduledTripProfile` |
 | `vwActiveDateProfile` | `ActiveDate` |
 | `vwDailyScheduledTripProfile` | `DailySchedule` |
 | `vwStopPositionScheduleProfile` | `StopPosition` |

@@ -141,6 +141,65 @@ JOIN TripOccurrenceStats AS trip_occurrence ON trip_occurrence.RouteKey = route.
 JOIN StopEventStats AS stop_event ON stop_event.RouteKey = route.RouteKey;
 GO
 
+/* One row per scheduled trip pattern with trip-level duration and route length. */
+CREATE OR ALTER VIEW analytics.vwScheduledTripProfile
+AS
+WITH RankedStopEvent AS
+(
+    SELECT
+        stop_event.TripKey,
+        stop_event.RouteKey,
+        stop_event.ModeKey,
+        stop_event.StopSequence,
+        stop_event.ScheduledArrivalSeconds,
+        stop_event.ScheduledDepartureSeconds,
+        stop_event.ShapeDistanceTraveled,
+        ROW_NUMBER() OVER
+        (
+            PARTITION BY stop_event.TripKey
+            ORDER BY stop_event.StopSequence
+        ) AS FirstStopRank,
+        ROW_NUMBER() OVER
+        (
+            PARTITION BY stop_event.TripKey
+            ORDER BY stop_event.StopSequence DESC
+        ) AS LastStopRank
+    FROM dw.FactScheduledStopEvent AS stop_event
+),
+TripEndpoints AS
+(
+    SELECT
+        TripKey,
+        RouteKey,
+        ModeKey,
+        MAX(CASE WHEN FirstStopRank = 1 THEN ScheduledDepartureSeconds END)
+            AS FirstScheduledDepartureSeconds,
+        MAX(CASE WHEN LastStopRank = 1 THEN ScheduledArrivalSeconds END)
+            AS FinalScheduledArrivalSeconds,
+        MAX(CASE WHEN LastStopRank = 1 THEN ShapeDistanceTraveled END)
+            AS FinalShapeDistanceTraveled
+    FROM RankedStopEvent
+    GROUP BY TripKey, RouteKey, ModeKey
+)
+SELECT
+    TripKey,
+    RouteKey,
+    ModeKey,
+    FirstScheduledDepartureSeconds,
+    FinalScheduledArrivalSeconds,
+    CONVERT
+    (
+        DECIMAL(18, 1),
+        (FinalScheduledArrivalSeconds - FirstScheduledDepartureSeconds) / 60.0
+    ) AS TripScheduledDurationMinutes,
+    CONVERT(DECIMAL(18, 3), FinalShapeDistanceTraveled)
+        AS TripScheduledRouteLengthKm
+FROM TripEndpoints
+WHERE FirstScheduledDepartureSeconds IS NOT NULL
+  AND FinalScheduledArrivalSeconds IS NOT NULL
+  AND FinalScheduledArrivalSeconds >= FirstScheduledDepartureSeconds;
+GO
+
 /* One row per physical stop position, including unused positions with zero counts. */
 CREATE OR ALTER VIEW analytics.vwStopPositionScheduleProfile
 AS

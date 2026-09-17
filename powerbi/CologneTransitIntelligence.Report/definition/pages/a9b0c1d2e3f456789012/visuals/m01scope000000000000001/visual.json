@@ -23,7 +23,7 @@
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
-                      "fontSize": "8pt",
+                      "fontSize": "7pt",
                       "color": "#1F2933"
                     }
                   }
@@ -116,14 +116,14 @@
             "top": {
               "expr": {
                 "Literal": {
-                  "Value": "4D"
+                  "Value": "3D"
                 }
               }
             },
             "bottom": {
               "expr": {
                 "Literal": {
-                  "Value": "4D"
+                  "Value": "3D"
                 }
               }
             },

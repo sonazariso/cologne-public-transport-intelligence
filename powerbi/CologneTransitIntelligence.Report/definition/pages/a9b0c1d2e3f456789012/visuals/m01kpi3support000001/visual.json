@@ -1,13 +1,13 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
-  "name": "m01insight400000000000001",
+  "name": "m01kpi3support000001",
   "position": {
-    "x": 950,
-    "y": 394,
-    "z": 4400,
-    "height": 34,
-    "width": 298,
-    "tabOrder": 4400
+    "x": 548,
+    "y": 218,
+    "z": 2003,
+    "height": 20,
+    "width": 190,
+    "tabOrder": 2003
   },
   "visual": {
     "visualType": "tableEx",
@@ -23,11 +23,11 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Insight Observed Sample Composition"
+                  "Property": "Parent Station KPI Support"
                 }
               },
-              "queryRef": "_Measures.Insight Observed Sample Composition",
-              "nativeQueryRef": "Insight Observed Sample Composition"
+              "queryRef": "_Measures.Parent Station KPI Support",
+              "nativeQueryRef": "Parent Station KPI Support"
             }
           ]
         }
@@ -74,7 +74,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "7D"
+                  "Value": "8D"
                 }
               }
             },
@@ -83,7 +83,7 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#1F2933'"
+                      "Value": "'#5F6B6D'"
                     }
                   }
                 }
@@ -94,29 +94,7 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#1F2933'"
-                    }
-                  }
-                }
-              }
-            },
-            "backColorPrimary": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Literal": {
-                      "Value": "'#F5F7F9'"
-                    }
-                  }
-                }
-              }
-            },
-            "backColorSecondary": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Literal": {
-                      "Value": "'#F5F7F9'"
+                      "Value": "'#5F6B6D'"
                     }
                   }
                 }
@@ -159,25 +137,7 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "true"
-                }
-              }
-            },
-            "color": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Literal": {
-                      "Value": "'#F5F7F9'"
-                    }
-                  }
-                }
-              }
-            },
-            "transparency": {
-              "expr": {
-                "Literal": {
-                  "Value": "0D"
+                  "Value": "false"
                 }
               }
             }
@@ -190,25 +150,7 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "true"
-                }
-              }
-            },
-            "color": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Literal": {
-                      "Value": "'#D8E1E7'"
-                    }
-                  }
-                }
-              }
-            },
-            "width": {
-              "expr": {
-                "Literal": {
-                  "Value": "1D"
+                  "Value": "false"
                 }
               }
             }
@@ -221,28 +163,28 @@
             "top": {
               "expr": {
                 "Literal": {
-                  "Value": "2D"
+                  "Value": "0D"
                 }
               }
             },
             "bottom": {
               "expr": {
                 "Literal": {
-                  "Value": "2D"
+                  "Value": "0D"
                 }
               }
             },
             "left": {
               "expr": {
                 "Literal": {
-                  "Value": "6D"
+                  "Value": "0D"
                 }
               }
             },
             "right": {
               "expr": {
                 "Literal": {
-                  "Value": "6D"
+                  "Value": "0D"
                 }
               }
             }
@@ -268,7 +210,7 @@
             "altText": {
               "expr": {
                 "Literal": {
-                  "Value": "'Dynamically shows the largest observed-service share in the Realtime Sampling Panel.'"
+                  "Value": "'Shows the dynamic supporting stop-position count for the Parent Stations KPI.'"
                 }
               }
             }

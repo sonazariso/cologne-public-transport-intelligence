@@ -16,6 +16,7 @@ interpreted as planned supply rather than reliability.
 | `analytics.vwNetworkBaselineKpi` | whole network | 1 |
 | `analytics.vwModeScheduleProfile` | mode | 7 |
 | `analytics.vwRouteScheduleProfile` | route | 153 |
+| `analytics.vwScheduledTripProfile` | scheduled trip pattern | 90,331 |
 | `analytics.vwActiveDateProfile` | active service date | 182 |
 | `analytics.vwStopPositionScheduleProfile` | physical stop | 2,290 |
 | `analytics.vwParentStationScheduleProfile` | parent station | 866 |
@@ -83,6 +84,12 @@ participation, all match-status rates, observations per operational outcome,
 platform-information availability, situation evidence, and continuous observed
 estimated-delay metrics. It deliberately does not create an arbitrary
 `OnTimeRate`, infer cancellation/departure, or claim disruption causality.
+
+The static analytics layer also exposes `analytics.vwScheduledTripProfile` at
+one row per scheduled trip pattern. Its duration is the final scheduled
+arrival minus the first scheduled departure from the persisted stop-event
+sequence, using normalized GTFS seconds; its terminal shape-distance value is
+exposed in the validated VRS kilometre scale for route-length profiling.
 
 This does **not** mean the Power BI static baseline should be converted into a
 final reliability report now. The 14/28-day history window remains necessary

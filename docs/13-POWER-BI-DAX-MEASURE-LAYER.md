@@ -54,7 +54,7 @@ The identity below was explicitly validated under mode filters:
 Weekday Scheduled Trips + Weekend Scheduled Trips = Scheduled Trips
 ```
 
-`Mode Share of Scheduled Trips` uses `REMOVEFILTERS(Mode[ModeDetail])` in its denominator so the selected mode is compared with the mode-detail total in the current higher-level context.
+`Mode Share of Scheduled Trips` uses `REMOVEFILTERS(Mode)` in its denominator so the selected mode is compared with the complete mode total while other applicable filters remain active.
 
 ## 4. Network Baseline Measures
 

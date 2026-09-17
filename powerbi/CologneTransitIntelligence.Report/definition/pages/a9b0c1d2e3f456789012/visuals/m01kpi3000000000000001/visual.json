@@ -28,20 +28,6 @@
               },
               "queryRef": "_Measures.Baseline Parent Stations",
               "nativeQueryRef": "Baseline Parent Stations"
-            },
-            {
-              "field": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "_Measures"
-                    }
-                  },
-                  "Property": "Baseline Stop Positions"
-                }
-              },
-              "queryRef": "_Measures.Baseline Stop Positions",
-              "nativeQueryRef": "Baseline Stop Positions"
             }
           ]
         }
@@ -102,7 +88,7 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "true"
+                  "Value": "false"
                 }
               }
             },

@@ -121,6 +121,7 @@ This is the final SQL snapshot. Power BI values were not collected in this envir
 | `NetworkKPI` | `analytics.vwNetworkBaselineKpi` | 1 | NOT RUN | N/A | PENDING |
 | `Mode` | `analytics.vwModeScheduleProfile` | 7 | NOT RUN | N/A | PENDING |
 | `Route` | `analytics.vwRouteScheduleProfile` | 153 | NOT RUN | N/A | PENDING |
+| `ScheduledTripProfile` | `analytics.vwScheduledTripProfile` | 90,331 | NOT RUN | N/A | PENDING |
 | `ActiveDate` | `analytics.vwActiveDateProfile` | 182 | NOT RUN | N/A | PENDING |
 | `DailySchedule` | `analytics.vwDailyScheduledTripProfile` | 20,059 | NOT RUN | N/A | PENDING |
 | `StopPosition` | `analytics.vwStopPositionScheduleProfile` | 2,290 | NOT RUN | N/A | PENDING |

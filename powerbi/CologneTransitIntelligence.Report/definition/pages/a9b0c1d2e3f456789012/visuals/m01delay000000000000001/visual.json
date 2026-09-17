@@ -5,7 +5,7 @@
     "x": 636,
     "y": 258,
     "z": 3002,
-    "height": 216,
+    "height": 218,
     "width": 294,
     "tabOrder": 3002
   },
@@ -13,8 +13,8 @@
     "visualType": "clusteredBarChart",
     "query": {
       "queryState": {
-        "Category": {
-          "projections": [
+          "Category": {
+            "projections": [
             {
               "field": {
                 "Column": {
@@ -31,8 +31,9 @@
               "displayName": "Transport Mode",
               "active": true
             }
-          ]
-        },
+            ],
+            "showAll": true
+          },
         "Y": {
           "projections": [
             {
@@ -163,7 +164,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "7D"
                 }
               }
             }
@@ -187,7 +188,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "7D"
                 }
               }
             }
@@ -207,7 +208,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "7D"
                 }
               }
             },
@@ -238,7 +239,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "7D"
                 }
               }
             }
@@ -298,7 +299,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Delay by Transport Mode · Observed Estimated Delay – Realtime Sampling Panel'"
+                  "Value": "'Observed Estimated Delay by Mode · Sampling Panel'"
                 }
               }
             },
@@ -312,7 +313,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "9D"
+                  "Value": "8D"
                 }
               }
             },
@@ -405,28 +406,28 @@
             "top": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "4D"
                 }
               }
             },
             "bottom": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "4D"
                 }
               }
             },
             "left": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "4D"
                 }
               }
             },
             "right": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "4D"
                 }
               }
             }

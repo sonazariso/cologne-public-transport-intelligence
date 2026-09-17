@@ -6,15 +6,15 @@
     "y": 258,
     "z": 3001,
     "height": 216,
-    "width": 290,
+    "width": 296,
     "tabOrder": 3001
   },
   "visual": {
     "visualType": "donutChart",
     "query": {
       "queryState": {
-        "Category": {
-          "projections": [
+          "Category": {
+            "projections": [
             {
               "field": {
                 "Column": {
@@ -31,8 +31,9 @@
               "displayName": "Transport Mode",
               "active": true
             }
-          ]
-        },
+            ],
+            "showAll": true
+          },
         "Y": {
           "projections": [
             {
@@ -166,7 +167,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "7D"
                 }
               }
             },
@@ -204,7 +205,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "7D"
                 }
               }
             },
@@ -237,7 +238,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Observed Services by Transport Mode · Realtime – Sampling Panel'"
+                  "Value": "'Observed Services by Transport Mode · Sampling Panel'"
                 }
               }
             },

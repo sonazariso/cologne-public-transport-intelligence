@@ -34,7 +34,7 @@ DIVIDE ( [Weekend Scheduled Trips], [Scheduled Trips] )
 Mode Share of Scheduled Trips =
 DIVIDE (
     [Scheduled Trips],
-    CALCULATE ( [Scheduled Trips], REMOVEFILTERS ( Mode[ModeDetail] ) )
+    CALCULATE ( [Scheduled Trips], REMOVEFILTERS ( Mode ) )
 )
 
 Baseline Agencies =
@@ -78,4 +78,3 @@ CALCULATE (
     COUNTROWS ( StopPosition ),
     StopPosition[IsUsedInCurrentSchedule] = FALSE ()
 )
-
