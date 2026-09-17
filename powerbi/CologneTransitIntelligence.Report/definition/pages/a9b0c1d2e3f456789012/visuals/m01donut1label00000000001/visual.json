@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01donut1label00000000001",
   "position": {
-    "x": 110,
-    "y": 340,
+    "x": 100,
+    "y": 338,
     "z": 3498,
-    "height": 12,
-    "width": 140,
+    "height": 14,
+    "width": 160,
     "tabOrder": 3498
   },
   "visual": {

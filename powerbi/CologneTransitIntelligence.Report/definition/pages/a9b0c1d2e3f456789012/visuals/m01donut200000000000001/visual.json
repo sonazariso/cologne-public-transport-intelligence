@@ -5,7 +5,7 @@
     "x": 334,
     "y": 258,
     "z": 3001,
-    "height": 216,
+    "height": 246,
     "width": 296,
     "tabOrder": 3001
   },
@@ -160,14 +160,14 @@
             "position": {
               "expr": {
                 "Literal": {
-                  "Value": "'RightCenter'"
+                  "Value": "'BottomCenter'"
                 }
               }
             },
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "6D"
+                  "Value": "5D"
                 }
               }
             },
