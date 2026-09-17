@@ -5,7 +5,7 @@
     "x": 636,
     "y": 258,
     "z": 3002,
-    "height": 218,
+    "height": 220,
     "width": 294,
     "tabOrder": 3002
   },
@@ -164,7 +164,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "7D"
+                  "Value": "6D"
                 }
               }
             }
@@ -188,7 +188,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "7D"
+                  "Value": "6D"
                 }
               }
             }
@@ -208,7 +208,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "7D"
+                  "Value": "6D"
                 }
               }
             },
@@ -236,10 +236,17 @@
                 }
               }
             },
+            "position": {
+              "expr": {
+                "Literal": {
+                  "Value": "'TopCenter'"
+                }
+              }
+            },
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "7D"
+                  "Value": "6D"
                 }
               }
             }
@@ -299,7 +306,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Observed Estimated Delay by Mode · Sampling Panel'"
+                  "Value": "'Delay by Transport Mode · Median / P95'"
                 }
               }
             },
@@ -331,7 +338,7 @@
             "titleWrap": {
               "expr": {
                 "Literal": {
-                  "Value": "true"
+                  "Value": "false"
                 }
               }
             }
@@ -406,28 +413,28 @@
             "top": {
               "expr": {
                 "Literal": {
-                  "Value": "4D"
+                  "Value": "2D"
                 }
               }
             },
             "bottom": {
               "expr": {
                 "Literal": {
-                  "Value": "4D"
+                  "Value": "2D"
                 }
               }
             },
             "left": {
               "expr": {
                 "Literal": {
-                  "Value": "4D"
+                  "Value": "2D"
                 }
               }
             },
             "right": {
               "expr": {
                 "Literal": {
-                  "Value": "4D"
+                  "Value": "2D"
                 }
               }
             }

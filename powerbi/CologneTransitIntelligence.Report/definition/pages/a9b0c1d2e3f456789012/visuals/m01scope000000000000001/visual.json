@@ -3,9 +3,9 @@
   "name": "m01scope000000000000001",
   "position": {
     "x": 950,
-    "y": 432,
+    "y": 430,
     "z": 4500,
-    "height": 42,
+    "height": 48,
     "width": 298,
     "tabOrder": 4500
   },
@@ -19,11 +19,11 @@
               {
                 "textRuns": [
                   {
-                    "value": "Realtime findings represent the selected Cologne Sampling Panel, not full-network realtime coverage.",
+                    "value": "Sampling Panel scope: Realtime findings represent the selected Cologne Sampling Panel, not full-network realtime coverage.",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "Segoe UI",
-                      "fontSize": "7pt",
+                      "fontSize": "6pt",
                       "color": "#1F2933"
                     }
                   }
@@ -116,14 +116,14 @@
             "top": {
               "expr": {
                 "Literal": {
-                  "Value": "3D"
+                  "Value": "2D"
                 }
               }
             },
             "bottom": {
               "expr": {
                 "Literal": {
-                  "Value": "3D"
+                  "Value": "2D"
                 }
               }
             },

@@ -10,27 +10,33 @@
     "tabOrder": 1500
   },
   "visual": {
-    "visualType": "pageNavigator",
+    "visualType": "textbox",
     "objects": {
-      "pages": [
+      "general": [
         {
           "properties": {
-            "showPage": {
-              "expr": {
-                "Literal": {
-                  "Value": "true"
-                }
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "M01 - Network & Delay Overview",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Segoe UI Semibold",
+                      "fontSize": "8pt",
+                      "color": "#FFFFFF"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "left"
               }
-            }
-          },
-          "selector": {
-            "id": "a9b0c1d2e3f456789012"
+            ]
           }
         }
       ]
     },
     "visualContainerObjects": {
-      "visualHeader": [
+      "title": [
         {
           "properties": {
             "show": {
@@ -43,7 +49,85 @@
           }
         }
       ],
-      "title": [
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#0B6E8A'"
+                    }
+                  }
+                }
+              }
+            },
+            "transparency": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "padding": [
+        {
+          "properties": {
+            "top": {
+              "expr": {
+                "Literal": {
+                  "Value": "3D"
+                }
+              }
+            },
+            "bottom": {
+              "expr": {
+                "Literal": {
+                  "Value": "3D"
+                }
+              }
+            },
+            "left": {
+              "expr": {
+                "Literal": {
+                  "Value": "8D"
+                }
+              }
+            },
+            "right": {
+              "expr": {
+                "Literal": {
+                  "Value": "8D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
         {
           "properties": {
             "show": {
@@ -62,14 +146,14 @@
             "altText": {
               "expr": {
                 "Literal": {
-                  "Value": "'Navigates within the management report section.'"
+                  "Value": "'Management navigation strip: M01 - Network & Delay Overview.'"
                 }
               }
             }
           }
         }
       ]
-    }
-  },
-  "howCreated": "InsertVisualButton"
+    },
+    "drillFilterOtherVisuals": true
+  }
 }

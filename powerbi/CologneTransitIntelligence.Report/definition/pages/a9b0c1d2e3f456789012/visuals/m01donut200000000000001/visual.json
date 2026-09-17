@@ -32,7 +32,7 @@
               "active": true
             }
             ],
-            "showAll": true
+            "showAll": false
           },
         "Y": {
           "projections": [
@@ -160,14 +160,14 @@
             "position": {
               "expr": {
                 "Literal": {
-                  "Value": "'RightCenter'"
+                  "Value": "'BottomCenter'"
                 }
               }
             },
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "7D"
+                  "Value": "6D"
                 }
               }
             },

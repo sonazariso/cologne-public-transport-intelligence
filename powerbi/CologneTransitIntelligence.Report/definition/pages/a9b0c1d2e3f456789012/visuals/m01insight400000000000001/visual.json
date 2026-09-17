@@ -4,16 +4,16 @@
   "position": {
     "x": 950,
     "y": 394,
-    "z": 4400,
+    "z": 4103,
     "height": 34,
     "width": 298,
-    "tabOrder": 4400
+    "tabOrder": 4103
   },
   "visual": {
-    "visualType": "tableEx",
+    "visualType": "cardVisual",
     "query": {
       "queryState": {
-        "Values": {
+        "Data": {
           "projections": [
             {
               "field": {
@@ -34,34 +34,7 @@
       }
     },
     "objects": {
-      "columnHeaders": [
-        {
-          "properties": {
-            "show": {
-              "expr": {
-                "Literal": {
-                  "Value": "false"
-                }
-              }
-            },
-            "columnAdjustment": {
-              "expr": {
-                "Literal": {
-                  "Value": "'growToFit'"
-                }
-              }
-            },
-            "autoSizeColumnWidth": {
-              "expr": {
-                "Literal": {
-                  "Value": "true"
-                }
-              }
-            }
-          }
-        }
-      ],
-      "values": [
+      "value": [
         {
           "properties": {
             "fontFamily": {
@@ -74,11 +47,11 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "7D"
+                  "Value": "8D"
                 }
               }
             },
-            "fontColorPrimary": {
+            "fontColor": {
               "solid": {
                 "color": {
                   "expr": {
@@ -89,43 +62,20 @@
                 }
               }
             },
-            "fontColorSecondary": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Literal": {
-                      "Value": "'#1F2933'"
-                    }
-                  }
-                }
-              }
-            },
-            "backColorPrimary": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Literal": {
-                      "Value": "'#F5F7F9'"
-                    }
-                  }
-                }
-              }
-            },
-            "backColorSecondary": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Literal": {
-                      "Value": "'#F5F7F9'"
-                    }
-                  }
+            "horizontalAlignment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'left'"
                 }
               }
             }
+          },
+          "selector": {
+            "id": "default"
           }
         }
       ],
-      "total": [
+      "label": [
         {
           "properties": {
             "show": {
@@ -135,6 +85,9 @@
                 }
               }
             }
+          },
+          "selector": {
+            "id": "default"
           }
         }
       ]
@@ -221,14 +174,14 @@
             "top": {
               "expr": {
                 "Literal": {
-                  "Value": "2D"
+                  "Value": "4D"
                 }
               }
             },
             "bottom": {
               "expr": {
                 "Literal": {
-                  "Value": "2D"
+                  "Value": "4D"
                 }
               }
             },
@@ -268,7 +221,7 @@
             "altText": {
               "expr": {
                 "Literal": {
-                  "Value": "'Dynamically shows the largest observed-service share in the Realtime Sampling Panel.'"
+                  "Value": "'Dynamically describes which transport mode dominates observed matched services in the Realtime Sampling Panel.'"
                 }
               }
             }
