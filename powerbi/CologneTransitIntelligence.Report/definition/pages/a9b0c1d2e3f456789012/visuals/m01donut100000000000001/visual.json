@@ -132,7 +132,7 @@
             "position": {
               "expr": {
                 "Literal": {
-                  "Value": "'BottomCenter'"
+                  "Value": "'RightCenter'"
                 }
               }
             },
@@ -163,7 +163,7 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "true"
+                "Value": "false"
                 }
               }
             },

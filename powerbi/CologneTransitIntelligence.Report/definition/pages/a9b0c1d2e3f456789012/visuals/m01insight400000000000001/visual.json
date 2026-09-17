@@ -3,91 +3,100 @@
   "name": "m01insight400000000000001",
   "position": {
     "x": 950,
-    "y": 394,
+    "y": 418,
     "z": 4103,
-    "height": 34,
+    "height": 40,
     "width": 298,
     "tabOrder": 4103
   },
   "visual": {
-    "visualType": "cardVisual",
-    "query": {
-      "queryState": {
-        "Data": {
-          "projections": [
-            {
-              "field": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "_Measures"
-                    }
-                  },
-                  "Property": "Insight Observed Sample Composition"
-                }
-              },
-              "queryRef": "_Measures.Insight Observed Sample Composition",
-              "nativeQueryRef": "Insight Observed Sample Composition"
-            }
-          ]
-        }
-      }
-    },
+    "visualType": "textbox",
     "objects": {
-      "value": [
+      "general": [
         {
           "properties": {
-            "fontFamily": {
-              "expr": {
-                "Literal": {
-                  "Value": "'''Segoe UI'', wf_segoe-ui_normal, helvetica, arial, sans-serif'"
-                }
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": {
+                      "propertyIdentifier": {
+                        "objectName": "values",
+                        "propertyName": "expr"
+                      },
+                      "selector": {
+                        "id": "Value 1"
+                      }
+                    },
+                    "textStyle": {
+                      "fontWeight": "normal",
+                      "fontFamily": "Segoe UI",
+                      "fontSize": "8pt",
+                      "color": "#1F2933"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "left"
               }
-            },
-            "fontSize": {
+            ]
+          }
+        }
+      ],
+      "values": [
+        {
+          "properties": {
+            "expr": {
               "expr": {
-                "Literal": {
-                  "Value": "8D"
-                }
-              }
-            },
-            "fontColor": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Literal": {
-                      "Value": "'#1F2933'"
+                "Min": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "Subquery": {
+                          "Query": {
+                            "Version": 2,
+                            "From": [
+                              {
+                                "Name": "m",
+                                "Entity": "_Measures",
+                                "Type": 0
+                              }
+                            ],
+                            "Select": [
+                              {
+                                "Measure": {
+                                  "Expression": {
+                                    "SourceRef": {
+                                      "Source": "m"
+                                    }
+                                  },
+                                  "Property": "Insight Observed Sample Composition"
+                                },
+                                "Name": "_Measures.Insight Observed Sample Composition"
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      "Property": "_Measures.Insight Observed Sample Composition"
+                    }
+                  },
+                  "IncludeAllTypes": 1
+                },
+                "Annotations": {
+                  "NaturalLanguage": {
+                    "version": 1,
+                    "kind": "NaturalLanguage",
+                    "annotation": {
+                      "name": "Value 1",
+                      "utterance": "Insight Observed Sample Composition"
                     }
                   }
                 }
               }
-            },
-            "horizontalAlignment": {
-              "expr": {
-                "Literal": {
-                  "Value": "'left'"
-                }
-              }
             }
           },
           "selector": {
-            "id": "default"
-          }
-        }
-      ],
-      "label": [
-        {
-          "properties": {
-            "show": {
-              "expr": {
-                "Literal": {
-                  "Value": "false"
-                }
-              }
-            }
-          },
-          "selector": {
-            "id": "default"
+            "id": "Value 1"
           }
         }
       ]

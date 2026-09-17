@@ -3,91 +3,100 @@
   "name": "m01insight300000000000001",
   "position": {
     "x": 950,
-    "y": 358,
+    "y": 374,
     "z": 4102,
-    "height": 34,
+    "height": 40,
     "width": 298,
     "tabOrder": 4102
   },
   "visual": {
-    "visualType": "cardVisual",
-    "query": {
-      "queryState": {
-        "Data": {
-          "projections": [
-            {
-              "field": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "_Measures"
-                    }
-                  },
-                  "Property": "Insight Highest Severe Delay"
-                }
-              },
-              "queryRef": "_Measures.Insight Highest Severe Delay",
-              "nativeQueryRef": "Insight Highest Severe Delay"
-            }
-          ]
-        }
-      }
-    },
+    "visualType": "textbox",
     "objects": {
-      "value": [
+      "general": [
         {
           "properties": {
-            "fontFamily": {
-              "expr": {
-                "Literal": {
-                  "Value": "'''Segoe UI'', wf_segoe-ui_normal, helvetica, arial, sans-serif'"
-                }
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": {
+                      "propertyIdentifier": {
+                        "objectName": "values",
+                        "propertyName": "expr"
+                      },
+                      "selector": {
+                        "id": "Value 1"
+                      }
+                    },
+                    "textStyle": {
+                      "fontWeight": "normal",
+                      "fontFamily": "Segoe UI",
+                      "fontSize": "8pt",
+                      "color": "#1F2933"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "left"
               }
-            },
-            "fontSize": {
+            ]
+          }
+        }
+      ],
+      "values": [
+        {
+          "properties": {
+            "expr": {
               "expr": {
-                "Literal": {
-                  "Value": "8D"
-                }
-              }
-            },
-            "fontColor": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Literal": {
-                      "Value": "'#1F2933'"
+                "Min": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "Subquery": {
+                          "Query": {
+                            "Version": 2,
+                            "From": [
+                              {
+                                "Name": "m",
+                                "Entity": "_Measures",
+                                "Type": 0
+                              }
+                            ],
+                            "Select": [
+                              {
+                                "Measure": {
+                                  "Expression": {
+                                    "SourceRef": {
+                                      "Source": "m"
+                                    }
+                                  },
+                                  "Property": "Insight Highest Severe Delay"
+                                },
+                                "Name": "_Measures.Insight Highest Severe Delay"
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      "Property": "_Measures.Insight Highest Severe Delay"
+                    }
+                  },
+                  "IncludeAllTypes": 1
+                },
+                "Annotations": {
+                  "NaturalLanguage": {
+                    "version": 1,
+                    "kind": "NaturalLanguage",
+                    "annotation": {
+                      "name": "Value 1",
+                      "utterance": "Insight Highest Severe Delay"
                     }
                   }
                 }
               }
-            },
-            "horizontalAlignment": {
-              "expr": {
-                "Literal": {
-                  "Value": "'left'"
-                }
-              }
             }
           },
           "selector": {
-            "id": "default"
-          }
-        }
-      ],
-      "label": [
-        {
-          "properties": {
-            "show": {
-              "expr": {
-                "Literal": {
-                  "Value": "false"
-                }
-              }
-            }
-          },
-          "selector": {
-            "id": "default"
+            "id": "Value 1"
           }
         }
       ]

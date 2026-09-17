@@ -23,6 +23,7 @@ UNION ALL SELECT 'StopPosition', COUNT_BIG(*) FROM analytics.vwStopPositionSched
 UNION ALL SELECT 'ParentStation', COUNT_BIG(*) FROM analytics.vwParentStationScheduleProfile
 UNION ALL SELECT 'ActiveDate', COUNT_BIG(*) FROM analytics.vwActiveDateProfile
 UNION ALL SELECT 'DailySchedule', COUNT_BIG(*) FROM analytics.vwDailyScheduledTripProfile
+UNION ALL SELECT 'ScheduledTripProfile', COUNT_BIG(*) FROM analytics.vwScheduledTripProfile
 ORDER BY TableName;
 
 /* 2. Static baseline KPI reconciliation */

@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01donut1total00000000001",
   "position": {
-    "x": 68,
+    "x": 110,
     "y": 354,
     "z": 3500,
-    "height": 36,
-    "width": 88,
+    "height": 40,
+    "width": 140,
     "tabOrder": 3500
   },
   "visual": {
@@ -47,7 +47,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "11D"
+                  "Value": "14D"
                 }
               }
             },
