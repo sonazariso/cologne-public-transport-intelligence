@@ -2,15 +2,11 @@ table 'Delay Threshold (Minutes)'
 	lineageTag: af123456-7890-4abc-8def-3456789012ab
 
 	column Value
-		dataType: int64
-		isKey
-		formatString: 0
-		lineageTag: af123456-7890-4abc-8def-3456789012ac
-		summarizeBy: none
-		sourceColumn: Value
-
-		annotation SummarizationSetBy = Automatic
+		lineageTag: 0918024a-8d4e-4b1a-8657-4bcd03a4fdc3
+		isNameInferred
+		sourceColumn: [Value]
 
 	partition 'Delay Threshold (Minutes)' = calculated
 		mode: import
 		source = GENERATESERIES ( 0, 15, 1 )
+

@@ -1,27 +1,164 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01modetable",
-  "position": { "x": 32, "y": 462, "z": 40, "height": 286, "width": 760, "tabOrder": 40 },
+  "position": {
+    "x": 32,
+    "y": 462,
+    "z": 40,
+    "height": 286,
+    "width": 760,
+    "tabOrder": 40
+  },
   "visual": {
     "visualType": "tableEx",
     "query": {
       "queryState": {
         "Values": {
           "projections": [
-            { "field": { "Column": { "Expression": { "SourceRef": { "Entity": "Mode" } }, "Property": "ModeDetail" } }, "queryRef": "Mode.ModeDetail", "nativeQueryRef": "ModeDetail", "displayName": "Transport mode" },
-            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Mode Route Count" } }, "queryRef": "_Measures.Mode Route Count", "nativeQueryRef": "Mode Route Count" },
-            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Comparable Scheduled Trips" } }, "queryRef": "_Measures.Comparable Scheduled Trips", "nativeQueryRef": "Comparable Scheduled Trips" },
-            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Observed Matched Trips" } }, "queryRef": "_Measures.Observed Matched Trips", "nativeQueryRef": "Observed Matched Trips" },
-            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "On-Time %" } }, "queryRef": "_Measures.On-Time %", "nativeQueryRef": "On-Time %" },
-            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Average Schedule Difference Minutes" } }, "queryRef": "_Measures.Average Schedule Difference Minutes", "nativeQueryRef": "Average Schedule Difference Minutes" },
-            { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Average Absolute Schedule Gap Minutes" } }, "queryRef": "_Measures.Average Absolute Schedule Gap Minutes", "nativeQueryRef": "Average Absolute Schedule Gap Minutes" }
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Mode"
+                    }
+                  },
+                  "Property": "ModeDetail"
+                }
+              },
+              "queryRef": "Mode.ModeDetail",
+              "nativeQueryRef": "ModeDetail",
+              "displayName": "Transport mode"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Mode Route Count"
+                }
+              },
+              "queryRef": "_Measures.Mode Route Count",
+              "nativeQueryRef": "Mode Route Count"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Comparable Scheduled Trips"
+                }
+              },
+              "queryRef": "_Measures.Comparable Scheduled Trips",
+              "nativeQueryRef": "Comparable Scheduled Trips"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Observed Matched Trips"
+                }
+              },
+              "queryRef": "_Measures.Observed Matched Trips",
+              "nativeQueryRef": "Observed Matched Trips"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "On-Time %"
+                }
+              },
+              "queryRef": "_Measures.On-Time %",
+              "nativeQueryRef": "On-Time %"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Average Schedule Difference Minutes"
+                }
+              },
+              "queryRef": "_Measures.Average Schedule Difference Minutes",
+              "nativeQueryRef": "Average Schedule Difference Minutes"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Average Absolute Schedule Gap Minutes"
+                }
+              },
+              "queryRef": "_Measures.Average Absolute Schedule Gap Minutes",
+              "nativeQueryRef": "Average Absolute Schedule Gap Minutes"
+            }
           ],
           "showAll": true
         }
       },
-      "sortDefinition": { "sort": [ { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Observed Matched Trips" } }, "direction": "Descending" } ], "isDefaultSort": true }
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "_Measures"
+                  }
+                },
+                "Property": "Observed Matched Trips"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
     },
-    "visualContainerObjects": { "title": [ { "properties": { "show": { "expr": { "Literal": { "Value": "true" } } }, "text": { "expr": { "Literal": { "Value": "'Comparable and observed trips by mode'" } } } } } ] },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Comparable and observed trips by mode'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
     "drillFilterOtherVisuals": true
   }
 }

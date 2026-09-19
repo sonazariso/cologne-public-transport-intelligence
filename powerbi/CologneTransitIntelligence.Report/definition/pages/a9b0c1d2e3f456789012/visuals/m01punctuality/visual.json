@@ -1,21 +1,125 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01punctuality",
-  "position": { "x": 812, "y": 462, "z": 41, "height": 286, "width": 436, "tabOrder": 41 },
-    "visual": {
+  "position": {
+    "x": 812,
+    "y": 462,
+    "z": 41,
+    "height": 286,
+    "width": 436,
+    "tabOrder": 41
+  },
+  "visual": {
     "visualType": "clusteredColumnChart",
     "query": {
       "queryState": {
-        "Category": { "projections": [ { "field": { "Column": { "Expression": { "SourceRef": { "Entity": "PunctualityStatus" } }, "Property": "Status" } }, "queryRef": "PunctualityStatus.Status", "nativeQueryRef": "Status", "active": true } ] },
-        "Y": { "projections": [ { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Punctuality Trips" } }, "queryRef": "_Measures.Punctuality Trips", "nativeQueryRef": "Punctuality Trips" } ] },
-        "Tooltips": { "projections": [ { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Punctuality %" } }, "queryRef": "_Measures.Punctuality %", "nativeQueryRef": "Punctuality %" } ] }
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "PunctualityStatus"
+                    }
+                  },
+                  "Property": "Status"
+                }
+              },
+              "queryRef": "PunctualityStatus.Status",
+              "nativeQueryRef": "Status",
+              "active": true
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Punctuality Trips"
+                }
+              },
+              "queryRef": "_Measures.Punctuality Trips",
+              "nativeQueryRef": "Punctuality Trips"
+            }
+          ]
+        },
+        "Tooltips": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Punctuality %"
+                }
+              },
+              "queryRef": "_Measures.Punctuality %",
+              "nativeQueryRef": "Punctuality %"
+            }
+          ]
+        }
       }
     },
     "objects": {
-      "labels": [ { "properties": { "show": { "expr": { "Literal": { "Value": "true" } } } } } ],
-      "legend": [ { "properties": { "show": { "expr": { "Literal": { "Value": "false" } } } } } ]
+      "labels": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "legend": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
     },
-    "visualContainerObjects": { "title": [ { "properties": { "show": { "expr": { "Literal": { "Value": "true" } } }, "text": { "expr": { "Literal": { "Value": "'Punctuality of observed matched trips'" } } } } } ] },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Punctuality of observed matched trips'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
     "drillFilterOtherVisuals": true
   }
 }

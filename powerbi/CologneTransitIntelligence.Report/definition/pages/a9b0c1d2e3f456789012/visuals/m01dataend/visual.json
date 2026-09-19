@@ -1,6 +1,60 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01dataend",
-  "position": { "x": 776, "y": 366, "z": 33, "height": 76, "width": 224, "tabOrder": 33 },
-  "visual": { "visualType": "cardVisual", "query": { "queryState": { "Data": { "projections": [ { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Realtime Data End Date" } }, "queryRef": "_Measures.Realtime Data End Date", "nativeQueryRef": "Realtime Data End Date" } ] } } }, "visualContainerObjects": { "title": [ { "properties": { "show": { "expr": { "Literal": { "Value": "true" } } }, "text": { "expr": { "Literal": { "Value": "'Realtime period ends'" } } } } } ] }, "drillFilterOtherVisuals": true }
+  "position": {
+    "x": 776,
+    "y": 366,
+    "z": 33,
+    "height": 76,
+    "width": 224,
+    "tabOrder": 33
+  },
+  "visual": {
+    "visualType": "cardVisual",
+    "query": {
+      "queryState": {
+        "Data": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Realtime Data End Date"
+                }
+              },
+              "queryRef": "_Measures.Realtime Data End Date",
+              "nativeQueryRef": "Realtime Data End Date"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Realtime period ends'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
 }

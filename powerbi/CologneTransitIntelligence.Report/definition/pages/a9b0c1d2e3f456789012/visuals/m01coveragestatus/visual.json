@@ -1,6 +1,60 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01coveragestatus",
-  "position": { "x": 944, "y": 868, "z": 56, "height": 86, "width": 304, "tabOrder": 56 },
-  "visual": { "visualType": "cardVisual", "query": { "queryState": { "Data": { "projections": [ { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Realtime Coverage Status" } }, "queryRef": "_Measures.Realtime Coverage Status", "nativeQueryRef": "Realtime Coverage Status" } ] } } }, "visualContainerObjects": { "title": [ { "properties": { "show": { "expr": { "Literal": { "Value": "true" } } }, "text": { "expr": { "Literal": { "Value": "'Coverage limitation'" } } } } } ] }, "drillFilterOtherVisuals": true }
+  "position": {
+    "x": 944,
+    "y": 868,
+    "z": 56,
+    "height": 86,
+    "width": 304,
+    "tabOrder": 56
+  },
+  "visual": {
+    "visualType": "cardVisual",
+    "query": {
+      "queryState": {
+        "Data": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Realtime Coverage Status"
+                }
+              },
+              "queryRef": "_Measures.Realtime Coverage Status",
+              "nativeQueryRef": "Realtime Coverage Status"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Coverage limitation'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
 }

@@ -1,6 +1,60 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01monitoredstations",
-  "position": { "x": 280, "y": 366, "z": 31, "height": 76, "width": 224, "tabOrder": 31 },
-  "visual": { "visualType": "cardVisual", "query": { "queryState": { "Data": { "projections": [ { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Realtime Monitored Stations" } }, "queryRef": "_Measures.Realtime Monitored Stations", "nativeQueryRef": "Realtime Monitored Stations" } ] } } }, "visualContainerObjects": { "title": [ { "properties": { "show": { "expr": { "Literal": { "Value": "true" } } }, "text": { "expr": { "Literal": { "Value": "'Realtime monitored stations'" } } } } } ] }, "drillFilterOtherVisuals": true }
+  "position": {
+    "x": 280,
+    "y": 366,
+    "z": 31,
+    "height": 76,
+    "width": 224,
+    "tabOrder": 31
+  },
+  "visual": {
+    "visualType": "cardVisual",
+    "query": {
+      "queryState": {
+        "Data": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Realtime Monitored Stations"
+                }
+              },
+              "queryRef": "_Measures.Realtime Monitored Stations",
+              "nativeQueryRef": "Realtime Monitored Stations"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Realtime monitored stations'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
 }

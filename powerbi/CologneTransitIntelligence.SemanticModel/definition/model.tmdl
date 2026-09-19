@@ -20,10 +20,6 @@ ref table LocalDateTable_8d3d726e-5bc7-4ade-90cc-004adab77097
 ref table Mode
 ref table NetworkKPI
 ref table ParentStation
-ref table ManagementComparableTrip
-ref table ManagementMonitoredStation
-ref table PunctualityStatus
-ref table 'Delay Threshold (Minutes)'
 ref table RT_CollectorRunHealth
 ref table LocalDateTable_1dae7e85-1d66-4b1a-844f-8526e900bbb2
 ref table LocalDateTable_fa31f15f-568e-4569-b590-22743dcadb6a
@@ -48,9 +44,13 @@ ref table LocalDateTable_e205e702-5f10-4b41-8cba-b6886ca61e22
 ref table LocalDateTable_a38b5805-9b72-4b16-b431-2d172a4531a5
 ref table LocalDateTable_cf101cbc-431c-4774-be2b-b13c423a200c
 ref table Route
-ref table ScheduledTripProfile
 ref table StopPosition
 ref table _Measures
+ref table ManagementComparableTrip
+ref table ManagementMonitoredStation
+ref table PunctualityStatus
+ref table 'Delay Threshold (Minutes)'
+ref table ScheduledTripProfile
 
 ref cultureInfo en-US
 

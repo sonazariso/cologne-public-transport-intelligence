@@ -15,7 +15,49 @@ cultureInfo en-US
 			      "State": "Generated",
 			      "Terms": [
 			        {
-			          "Transport Mode": {
+			          "Transport mode": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "managementmonitoredstation.monitoredstationname": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "ManagementMonitoredStation",
+			          "ConceptualProperty": "MonitoredStationName"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Monitored realtime station": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "managementmonitoredstation.staticparentstationname": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "ManagementMonitoredStation",
+			          "ConceptualProperty": "StaticParentStationName"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Static parent station": {
 			            "State": "Suggested",
 			            "Source": {
 			              "Type": "External",
