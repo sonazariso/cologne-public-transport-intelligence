@@ -95,8 +95,6 @@ The checked-in scripts reproduce the validated static baseline and the synchroni
 26. `04-warehouse/07-validate-operational-stop-outcome.sql`
 27. `05-analytics/03-create-realtime-analytics-views.sql`
 28. `05-analytics/04-validate-realtime-analytics-views.sql`
-29. `05-analytics/05-create-management-overview-views.sql`
-30. `05-analytics/06-validate-management-overview.sql`
 
 The realtime steps are listed after the static warehouse and analytics steps so every dependency of the realtime working views exists before those views are created. The folder numbering remains organized by schema/layer rather than by this global dependency order.
 
@@ -287,21 +285,13 @@ database objects.
 
 ### M01 management cohort
 
-`05-analytics/05-create-management-overview-views.sql` creates:
-
-- `analytics.vwManagementMonitoredStation`
-- `analytics.vwManagementComparableTrip`
-
-The comparable-trip view keeps the management comparison at `ServiceDate +
-TripKey` trip grain, limits scheduled trips to the realtime source date window
-and enabled monitored-station scope, and carries the consolidated estimated
-arrival difference used by the M01 threshold measures. It does not use the
-full static schedule as a realtime denominator. `06-validate-management-overview.sql`
-checks canonical-row uniqueness, trip-grain reconciliation, monitored-station
-scope, and the zero-minute punctuality buckets. Because collector run history
-does not prove run-by-run eligibility for every scheduled trip, the Power BI
-model leaves `Realtime Observation Coverage %` blank and exposes that
-limitation on M01.
+M01 does not require an M01-specific SQL deployment step. Its Power Query
+partitions use `Value.NativeQuery` against the already deployed
+`analytics.vwRealtimeReliabilityOutcome` and
+`analytics.vwRealtimeCollectorRunHealth` views. The first helper is one row per
+`ServiceDate + TripKey`; the station helper is one row per
+`ServiceDate + TripKey + StopKey`. Both are refreshed when the PBIP model is
+refreshed in Power BI Desktop.
 
 ### Realtime performance support
 

@@ -1,10 +1,21 @@
-table ManagementComparableTrip
-	lineageTag: 7c8e9f01-2345-4abc-8def-0123456789ab
+table ManagementTripStation
+	lineageTag: e0f1a2b3-c4d5-4e6f-8091-a2b3c4d5e6f7
+
+	column ManagementTripStationKey
+		dataType: string
+		isHidden
+		lineageTag: e0f1a2b3-c4d5-4e6f-8091-a2b3c4d5e6f8
+		summarizeBy: none
+		sourceColumn: ManagementTripStationKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
 
 	column ManagementTripKey
 		dataType: string
 		isHidden
-		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789ac
+		lineageTag: e0f1a2b3-c4d5-4e6f-8091-a2b3c4d5e6f9
 		summarizeBy: none
 		sourceColumn: ManagementTripKey
 
@@ -16,7 +27,7 @@ table ManagementComparableTrip
 		dataType: int64
 		isHidden
 		formatString: 0
-		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789ad
+		lineageTag: e0f1a2b3-c4d5-4e6f-8091-a2b3c4d5e6fa
 		summarizeBy: none
 		sourceColumn: DateKey
 
@@ -26,10 +37,13 @@ table ManagementComparableTrip
 
 	column ServiceDate
 		dataType: dateTime
+		isHidden
 		formatString: Long Date
-		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789ae
+		lineageTag: e0f1a2b3-c4d5-4e6f-8091-a2b3c4d5e6fb
 		summarizeBy: none
 		sourceColumn: ServiceDate
+
+		changedProperty = IsHidden
 
 		annotation UnderlyingDateTimeDataType = Date
 
@@ -37,7 +51,7 @@ table ManagementComparableTrip
 		dataType: int64
 		isHidden
 		formatString: 0
-		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789af
+		lineageTag: e0f1a2b3-c4d5-4e6f-8091-a2b3c4d5e6fc
 		summarizeBy: none
 		sourceColumn: TripKey
 
@@ -49,7 +63,7 @@ table ManagementComparableTrip
 		dataType: int64
 		isHidden
 		formatString: 0
-		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789b1
+		lineageTag: e0f1a2b3-c4d5-4e6f-8091-a2b3c4d5e6fd
 		summarizeBy: none
 		sourceColumn: RouteKey
 
@@ -57,19 +71,11 @@ table ManagementComparableTrip
 
 		annotation SummarizationSetBy = Automatic
 
-	column Route
-		dataType: string
-		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789b3
-		summarizeBy: none
-		sourceColumn: Route
-
-		annotation SummarizationSetBy = Automatic
-
 	column ModeKey
 		dataType: int64
 		isHidden
 		formatString: 0
-		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789b5
+		lineageTag: e0f1a2b3-c4d5-4e6f-8091-a2b3c4d5e6fe
 		summarizeBy: none
 		sourceColumn: ModeKey
 
@@ -77,17 +83,9 @@ table ManagementComparableTrip
 
 		annotation SummarizationSetBy = Automatic
 
-	column Mode
-		dataType: string
-		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789b6
-		summarizeBy: none
-		sourceColumn: Mode
-
-		annotation SummarizationSetBy = Automatic
-
 	column Station
 		dataType: string
-		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789bd
+		lineageTag: e0f1a2b3-c4d5-4e6f-8091-a2b3c4d5e6ff
 		summarizeBy: none
 		sourceColumn: Station
 
@@ -97,7 +95,7 @@ table ManagementComparableTrip
 		dataType: int64
 		isHidden
 		formatString: 0
-		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789be
+		lineageTag: e0f1a2b3-c4d5-4e6f-8091-a2b3c4d5e700
 		summarizeBy: none
 		sourceColumn: StopKey
 
@@ -109,7 +107,7 @@ table ManagementComparableTrip
 		dataType: dateTime
 		isHidden
 		formatString: General Date
-		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789c1
+		lineageTag: e0f1a2b3-c4d5-4e6f-8091-a2b3c4d5e701
 		summarizeBy: none
 		sourceColumn: ScheduledArrival
 
@@ -121,7 +119,7 @@ table ManagementComparableTrip
 		dataType: dateTime
 		isHidden
 		formatString: General Date
-		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789c4
+		lineageTag: e0f1a2b3-c4d5-4e6f-8091-a2b3c4d5e702
 		summarizeBy: none
 		sourceColumn: LatestObservedEstimatedArrivalLocal
 
@@ -132,7 +130,7 @@ table ManagementComparableTrip
 	column FinalObservedEstimatedDelayMinutes
 		dataType: double
 		formatString: #,0.0
-		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789c9
+		lineageTag: e0f1a2b3-c4d5-4e6f-8091-a2b3c4d5e703
 		summarizeBy: none
 		sourceColumn: FinalObservedEstimatedDelayMinutes
 
@@ -142,7 +140,7 @@ table ManagementComparableTrip
 		dataType: dateTime
 		isHidden
 		formatString: General Date
-		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789c6
+		lineageTag: e0f1a2b3-c4d5-4e6f-8091-a2b3c4d5e704
 		summarizeBy: none
 		sourceColumn: LastObservedAtUtc
 
@@ -154,7 +152,7 @@ table ManagementComparableTrip
 		dataType: int64
 		isHidden
 		formatString: 0
-		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789bf
+		lineageTag: e0f1a2b3-c4d5-4e6f-8091-a2b3c4d5e705
 		summarizeBy: none
 		sourceColumn: OperationalStopOutcomeKey
 
@@ -166,7 +164,7 @@ table ManagementComparableTrip
 		dataType: boolean
 		isHidden
 		formatString: """TRUE"";""TRUE"";""FALSE"""
-		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789cb
+		lineageTag: e0f1a2b3-c4d5-4e6f-8091-a2b3c4d5e706
 		summarizeBy: none
 		sourceColumn: HasValidRealtimeObservation
 
@@ -174,14 +172,14 @@ table ManagementComparableTrip
 
 		annotation SummarizationSetBy = Automatic
 
-	partition ManagementComparableTrip = m
+	partition ManagementTripStation = m
 		mode: import
 		source =
 				let
 				    Source = Sql.Database("localhost", "CologneTransitIntelligence"),
-				    ManagementTrip = Value.NativeQuery(Source, "WITH RankedOutcomes AS ( SELECT outcome.OperationalStopOutcomeKey, outcome.DateKey, outcome.ServiceDate, outcome.TripKey, outcome.RouteKey, outcome.Route, outcome.ModeKey, outcome.Mode, outcome.Station, outcome.StopKey, outcome.ScheduledArrival, outcome.LatestObservedEstimatedArrivalLocal, outcome.FinalObservedEstimatedDelayMinutes, outcome.LastObservedAtUtc, CAST(CASE WHEN outcome.FinalObservedEstimatedDelayMinutes IS NOT NULL THEN 1 ELSE 0 END AS bit) AS HasValidRealtimeObservation, ROW_NUMBER() OVER ( PARTITION BY outcome.ServiceDate, outcome.TripKey ORDER BY CASE WHEN outcome.FinalObservedEstimatedDelayMinutes IS NOT NULL THEN 0 ELSE 1 END, outcome.LastObservedAtUtc DESC, outcome.ScheduledArrival DESC, outcome.OperationalStopOutcomeKey DESC ) AS TripRank FROM analytics.vwRealtimeReliabilityOutcome AS outcome WHERE outcome.OperationalStopOutcomeKey IS NOT NULL ) SELECT CONVERT(NVARCHAR(8), ServiceDate, 112) + N'|' + CONVERT(NVARCHAR(30), TripKey) AS ManagementTripKey, DateKey, ServiceDate, TripKey, RouteKey, Route, ModeKey, Mode, Station, StopKey, ScheduledArrival, LatestObservedEstimatedArrivalLocal, FinalObservedEstimatedDelayMinutes, LastObservedAtUtc, OperationalStopOutcomeKey, HasValidRealtimeObservation FROM RankedOutcomes WHERE TripRank = 1", null, [EnableFolding = true])
+				    ManagementTripStations = Value.NativeQuery(Source, "WITH RankedStops AS ( SELECT outcome.DateKey, outcome.ServiceDate, outcome.TripKey, outcome.RouteKey, outcome.ModeKey, outcome.Station, outcome.StopKey, outcome.ScheduledArrival, outcome.LatestObservedEstimatedArrivalLocal, outcome.FinalObservedEstimatedDelayMinutes, outcome.LastObservedAtUtc, outcome.OperationalStopOutcomeKey, CAST(CASE WHEN outcome.FinalObservedEstimatedDelayMinutes IS NOT NULL THEN 1 ELSE 0 END AS bit) AS HasValidRealtimeObservation, ROW_NUMBER() OVER ( PARTITION BY outcome.ServiceDate, outcome.TripKey, outcome.StopKey ORDER BY CASE WHEN outcome.FinalObservedEstimatedDelayMinutes IS NOT NULL THEN 0 ELSE 1 END, outcome.LastObservedAtUtc DESC, outcome.ScheduledArrival DESC, outcome.OperationalStopOutcomeKey DESC ) AS StopRank FROM analytics.vwRealtimeReliabilityOutcome AS outcome WHERE outcome.OperationalStopOutcomeKey IS NOT NULL ) SELECT CONVERT(NVARCHAR(8), ServiceDate, 112) + N'|' + CONVERT(NVARCHAR(30), TripKey) AS ManagementTripKey, CONVERT(NVARCHAR(8), ServiceDate, 112) + N'|' + CONVERT(NVARCHAR(30), TripKey) + N'|' + CONVERT(NVARCHAR(30), StopKey) AS ManagementTripStationKey, DateKey, ServiceDate, TripKey, RouteKey, ModeKey, Station, StopKey, ScheduledArrival, LatestObservedEstimatedArrivalLocal, FinalObservedEstimatedDelayMinutes, LastObservedAtUtc, OperationalStopOutcomeKey, HasValidRealtimeObservation FROM RankedStops WHERE StopRank = 1", null, [EnableFolding = true])
 				in
-				    ManagementTrip
+				    ManagementTripStations
 
 	annotation PBI_ResultType = Table
 

@@ -1,11 +1,32 @@
 table ManagementMonitoredStation
 	lineageTag: 8d9e0f12-3456-4abc-8def-1234567890ab
 
-	column SamplingTargetId
+	column DateKey
 		dataType: int64
 		isHidden
 		formatString: 0
 		lineageTag: 8d9e0f12-3456-4abc-8def-1234567890ac
+		summarizeBy: none
+		sourceColumn: DateKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column CollectionDateLocal
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 8d9e0f12-3456-4abc-8def-1234567890ad
+		summarizeBy: none
+		sourceColumn: CollectionDateLocal
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column SamplingTargetId
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 8d9e0f12-3456-4abc-8def-1234567890ae
 		summarizeBy: none
 		sourceColumn: SamplingTargetId
 
@@ -13,10 +34,18 @@ table ManagementMonitoredStation
 
 		annotation SummarizationSetBy = Automatic
 
+	column SamplingTargetName
+		dataType: string
+		lineageTag: 8d9e0f12-3456-4abc-8def-1234567890af
+		summarizeBy: none
+		sourceColumn: SamplingTargetName
+
+		annotation SummarizationSetBy = Automatic
+
 	column StopPointRef
 		dataType: string
 		isHidden
-		lineageTag: 8d9e0f12-3456-4abc-8def-1234567890ad
+		lineageTag: 8d9e0f12-3456-4abc-8def-1234567890b0
 		summarizeBy: none
 		sourceColumn: StopPointRef
 
@@ -24,11 +53,15 @@ table ManagementMonitoredStation
 
 		annotation SummarizationSetBy = Automatic
 
-	column MonitoredStationName
-		dataType: string
-		lineageTag: 8d9e0f12-3456-4abc-8def-1234567890ae
+	column ParticipatedInSamplingPanel
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 8d9e0f12-3456-4abc-8def-1234567890b1
 		summarizeBy: none
-		sourceColumn: MonitoredStationName
+		sourceColumn: ParticipatedInSamplingPanel
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -36,7 +69,7 @@ table ManagementMonitoredStation
 		dataType: int64
 		isHidden
 		formatString: 0
-		lineageTag: 8d9e0f12-3456-4abc-8def-1234567890af
+		lineageTag: 8d9e0f12-3456-4abc-8def-1234567890b2
 		summarizeBy: none
 		sourceColumn: MonitoredStationKey
 
@@ -44,55 +77,20 @@ table ManagementMonitoredStation
 
 		annotation SummarizationSetBy = Automatic
 
-	column StaticParentStationId
+	column MonitoredStationName
 		dataType: string
-		isHidden
-		lineageTag: 8d9e0f12-3456-4abc-8def-1234567890b0
+		lineageTag: 8d9e0f12-3456-4abc-8def-1234567890b3
 		summarizeBy: none
-		sourceColumn: StaticParentStationId
-
-		changedProperty = IsHidden
+		sourceColumn: MonitoredStationName
 
 		annotation SummarizationSetBy = Automatic
 
 	column StaticParentStationName
 		dataType: string
-		lineageTag: 8d9e0f12-3456-4abc-8def-1234567890b1
-		summarizeBy: none
-		sourceColumn: StaticParentStationName
-
-		annotation SummarizationSetBy = Automatic
-
-	column NumberOfResults
-		dataType: int64
-		isHidden
-		formatString: 0
-		lineageTag: 8d9e0f12-3456-4abc-8def-1234567890b2
-		summarizeBy: none
-		sourceColumn: NumberOfResults
-
-		changedProperty = IsHidden
-
-		annotation SummarizationSetBy = Automatic
-
-	column IsEnabled
-		dataType: boolean
-		isHidden
-		formatString: """TRUE"";""TRUE"";""FALSE"""
-		lineageTag: 8d9e0f12-3456-4abc-8def-1234567890b3
-		summarizeBy: none
-		sourceColumn: IsEnabled
-
-		changedProperty = IsHidden
-
-		annotation SummarizationSetBy = Automatic
-
-	column Notes
-		dataType: string
 		isHidden
 		lineageTag: 8d9e0f12-3456-4abc-8def-1234567890b4
 		summarizeBy: none
-		sourceColumn: Notes
+		sourceColumn: StaticParentStationName
 
 		changedProperty = IsHidden
 
@@ -103,11 +101,9 @@ table ManagementMonitoredStation
 		source =
 				let
 				    Source = Sql.Database("localhost", "CologneTransitIntelligence"),
-				    analytics_vwManagementMonitoredStation = Source{[Schema="analytics",Item="vwManagementMonitoredStation"]}[Data]
+				    ManagementMonitoredStations = Value.NativeQuery(Source, "WITH PanelTargets AS ( SELECT CONVERT(INT, CONVERT(CHAR(8), CollectionDateLocal, 112)) AS DateKey, CollectionDateLocal, SamplingTargetId, NULLIF(LTRIM(RTRIM(SamplingTargetName)), N'') AS SamplingTargetName, StopPointRef, CAST(ParticipatedInSamplingPanel AS bit) AS ParticipatedInSamplingPanel FROM analytics.vwRealtimeCollectorRunHealth WHERE ParticipatedInSamplingPanel = 1 AND SamplingTargetId IS NOT NULL ) SELECT DISTINCT DateKey, CollectionDateLocal, SamplingTargetId, SamplingTargetName, StopPointRef, ParticipatedInSamplingPanel, SamplingTargetId AS MonitoredStationKey, SamplingTargetName AS MonitoredStationName, SamplingTargetName AS StaticParentStationName FROM PanelTargets WHERE SamplingTargetName IS NOT NULL", null, [EnableFolding = true])
 				in
-				    analytics_vwManagementMonitoredStation
-
-	annotation PBI_NavigationStepName = Navigation
+				    ManagementMonitoredStations
 
 	annotation PBI_ResultType = Table
 

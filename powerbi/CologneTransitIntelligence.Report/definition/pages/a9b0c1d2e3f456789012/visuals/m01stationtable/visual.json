@@ -3,11 +3,11 @@
   "name": "m01stationtable",
   "position": {
     "x": 32,
-    "y": 760,
-    "z": 50,
-    "height": 96,
-    "width": 440,
-    "tabOrder": 50
+    "y": 674,
+    "z": 51,
+    "height": 235,
+    "width": 300,
+    "tabOrder": 51
   },
   "visual": {
     "visualType": "tableEx",
@@ -28,22 +28,7 @@
               },
               "queryRef": "ManagementMonitoredStation.MonitoredStationName",
               "nativeQueryRef": "MonitoredStationName",
-              "displayName": "Monitored realtime station"
-            },
-            {
-              "field": {
-                "Column": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "ManagementMonitoredStation"
-                    }
-                  },
-                  "Property": "StaticParentStationName"
-                }
-              },
-              "queryRef": "ManagementMonitoredStation.StaticParentStationName",
-              "nativeQueryRef": "StaticParentStationName",
-              "displayName": "Static parent station"
+              "displayName": "Monitored station"
             }
           ],
           "showAll": true
@@ -64,7 +49,128 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Realtime monitored station names'"
+                  "Value": "'Realtime Monitored Station Names'"
+                }
+              }
+            },
+            "fontFamily": {
+              "expr": {
+                "Literal": {
+                  "Value": "'''Segoe UI Semibold'', wf_segoe-ui_semibold, helvetica, arial, sans-serif'"
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "9D"
+                }
+              }
+            },
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#102A43'"
+                    }
+                  }
+                }
+              }
+            },
+            "titleWrap": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "alignment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'left'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#FFFFFF'"
+                    }
+                  }
+                }
+              }
+            },
+            "transparency": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#CFDAE6'"
+                    }
+                  }
+                }
+              }
+            },
+            "width": {
+              "expr": {
+                "Literal": {
+                  "Value": "1D"
+                }
+              }
+            },
+            "radius": {
+              "expr": {
+                "Literal": {
+                  "Value": "6L"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
                 }
               }
             }

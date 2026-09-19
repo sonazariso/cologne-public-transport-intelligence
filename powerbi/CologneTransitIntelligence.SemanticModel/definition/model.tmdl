@@ -9,7 +9,7 @@ model Model
 
 annotation __PBI_TimeIntelligenceEnabled = 1
 
-annotation PBI_QueryOrder = ["ActiveDate","DailySchedule","Mode","NetworkKPI","ParentStation","ManagementComparableTrip","ManagementMonitoredStation","PunctualityStatus","Delay Threshold (Minutes)","RT_CollectorRunHealth","RT_DataQualityCoverage","RT_ConsolidationQuality","RT_ReliabilityByDimension","RT_ReliabilityOutcome","Route","ScheduledTripProfile","StopPosition","_Measures"]
+annotation PBI_QueryOrder = ["ActiveDate","DailySchedule","Mode","NetworkKPI","ParentStation","ManagementComparableTrip","ManagementTripStation","ManagementMonitoredStation","PunctualityStatus","Delay Threshold (Minutes)","RT_CollectorRunHealth","RT_DataQualityCoverage","RT_ConsolidationQuality","RT_ReliabilityByDimension","RT_ReliabilityOutcome","Route","ScheduledTripProfile","StopPosition","_Measures"]
 
 annotation PBI_ProTooling = ["DaxQueryView_Desktop","DevMode"]
 
@@ -47,6 +47,7 @@ ref table Route
 ref table StopPosition
 ref table _Measures
 ref table ManagementComparableTrip
+ref table ManagementTripStation
 ref table ManagementMonitoredStation
 ref table PunctualityStatus
 ref table 'Delay Threshold (Minutes)'

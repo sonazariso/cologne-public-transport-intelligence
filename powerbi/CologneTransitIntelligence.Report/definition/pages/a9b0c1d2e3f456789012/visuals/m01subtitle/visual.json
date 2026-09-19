@@ -3,9 +3,9 @@
   "name": "m01subtitle",
   "position": {
     "x": 32,
-    "y": 60,
+    "y": 44,
     "z": 1,
-    "height": 30,
+    "height": 23,
     "width": 1216,
     "tabOrder": 1
   },
@@ -19,12 +19,12 @@
               {
                 "textRuns": [
                   {
-                    "value": "Network scope, realtime period, comparable trips, and punctuality in one manager-readable view.",
+                    "value": "A clear view of the monitored network, service volume and punctuality.",
                     "textStyle": {
                       "fontWeight": "normal",
-                      "fontFamily": "Segoe UI",
+                      "fontFamily": "'''Segoe UI'', wf_segoe-ui_normal, helvetica, arial, sans-serif'",
                       "fontSize": "11pt",
-                      "color": "#5F6B6D"
+                      "color": "#DCEAF7"
                     }
                   }
                 ]
@@ -36,6 +36,88 @@
     },
     "visualContainerObjects": {
       "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#0B1F3A'"
+                    }
+                  }
+                }
+              }
+            },
+            "transparency": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#CFDAE6'"
+                    }
+                  }
+                }
+              }
+            },
+            "width": {
+              "expr": {
+                "Literal": {
+                  "Value": "1D"
+                }
+              }
+            },
+            "radius": {
+              "expr": {
+                "Literal": {
+                  "Value": "6L"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
         {
           "properties": {
             "show": {

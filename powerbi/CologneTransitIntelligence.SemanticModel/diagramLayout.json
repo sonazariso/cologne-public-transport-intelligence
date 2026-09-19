@@ -4,14 +4,14 @@
     {
       "ordinal": 0,
       "scrollPosition": {
-        "x": 596.66666666666674,
+        "x": 596.6666666666667,
         "y": 11.666666666666668
       },
       "nodes": [
         {
           "location": {
             "x": 1830.9338787296526,
-            "y": 63.213835418034918
+            "y": 63.21383541803492
           },
           "nodeIndex": "NetworkKPI",
           "nodeLineageTag": "3338104e-233f-48b6-b529-413152f93646",
@@ -23,7 +23,7 @@
         },
         {
           "location": {
-            "x": 4.5431297496796077,
+            "x": 4.543129749679608,
             "y": 25
           },
           "nodeIndex": "Mode",
@@ -36,7 +36,7 @@
         },
         {
           "location": {
-            "x": 387.34651597712019,
+            "x": 387.3465159771202,
             "y": 116.11111111111111
           },
           "nodeIndex": "Route",
@@ -50,7 +50,7 @@
         {
           "location": {
             "x": 1463.6005453963191,
-            "y": 934.96477630597872
+            "y": 934.9647763059787
           },
           "nodeIndex": "ParentStation",
           "nodeLineageTag": "6d3b396b-e4e4-4ced-8967-ea64b8fe1e26",
@@ -75,8 +75,8 @@
         },
         {
           "location": {
-            "x": 2134.2989580947319,
-            "y": 61.943994148193667
+            "x": 2134.298958094732,
+            "y": 61.94399414819367
           },
           "nodeIndex": "RT_CollectorRunHealth",
           "nodeLineageTag": "8e78ceb6-06c5-4f88-964c-d94c20ab2826",
@@ -89,7 +89,7 @@
         {
           "location": {
             "x": 2150.0449898407637,
-            "y": 430.19796240216192
+            "y": 430.1979624021619
           },
           "nodeIndex": "RT_DataQualityCoverage",
           "nodeLineageTag": "f085ecc2-88aa-4e52-8d0d-036230029d82",
@@ -102,7 +102,7 @@
         {
           "location": {
             "x": 1487.5705567731125,
-            "y": 509.75038269581307
+            "y": 509.7503826958131
           },
           "nodeIndex": "RT_ConsolidationQuality",
           "nodeLineageTag": "d49a016a-946d-4043-95a6-343099d40466",
@@ -114,8 +114,8 @@
         },
         {
           "location": {
-            "x": 859.39295100524157,
-            "y": 933.17370258210144
+            "x": 859.3929510052416,
+            "y": 933.1737025821014
           },
           "nodeIndex": "RT_ReliabilityOutcome",
           "nodeLineageTag": "29a9eeba-fefd-4586-b324-0f9f35753784",
@@ -140,7 +140,7 @@
         },
         {
           "location": {
-            "x": 767.26671154757014,
+            "x": 767.2667115475701,
             "y": 196.11111111111117
           },
           "nodeIndex": "DailySchedule",
@@ -154,7 +154,7 @@
         {
           "location": {
             "x": 1171.3999784391222,
-            "y": 927.86527343426837
+            "y": 927.8652734342684
           },
           "nodeIndex": "StopPosition",
           "size": {
@@ -179,7 +179,7 @@
         {
           "location": {
             "x": 3303.6253970080706,
-            "y": 517.98238815298942
+            "y": 517.9823881529894
           },
           "nodeIndex": "Delay Threshold (Minutes)",
           "nodeLineageTag": "af123456-7890-4abc-8def-3456789012ab",
@@ -192,7 +192,7 @@
         {
           "location": {
             "x": 3069.6253970080706,
-            "y": 417.98238815298942
+            "y": 417.9823881529894
           },
           "nodeIndex": "ManagementComparableTrip",
           "nodeLineageTag": "7c8e9f01-2345-4abc-8def-0123456789ab",
@@ -205,7 +205,7 @@
         {
           "location": {
             "x": 2785.6253970080706,
-            "y": 419.98238815298942
+            "y": 419.9823881529894
           },
           "nodeIndex": "ManagementMonitoredStation",
           "nodeLineageTag": "8d9e0f12-3456-4abc-8def-1234567890ab",
@@ -218,7 +218,7 @@
         {
           "location": {
             "x": 3587.6253970080706,
-            "y": 517.98238815298942
+            "y": 517.9823881529894
           },
           "nodeIndex": "PunctualityStatus",
           "nodeLineageTag": "9e0f1234-5678-4abc-8def-2345678901ab",
@@ -231,12 +231,25 @@
         {
           "location": {
             "x": 3871.6253970080706,
-            "y": 493.98238815298942
+            "y": 493.9823881529894
           },
           "nodeIndex": "ScheduledTripProfile",
           "nodeLineageTag": "1f5e7a3c-6b9d-4e21-8f43-a7c9d1e2b5f6",
           "size": {
             "height": 248,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 2530.6253970080706,
+            "y": 418
+          },
+          "nodeIndex": "ManagementTripStation",
+          "nodeLineageTag": "e0f1a2b3-c4d5-4e6f-8091-a2b3c4d5e6f7",
+          "size": {
+            "height": 300,
             "width": 234
           },
           "zIndex": 0

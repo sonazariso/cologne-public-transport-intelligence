@@ -2,28 +2,28 @@ table _Measures
 	lineageTag: b38aedee-f2b9-4691-bb66-c4c22e4cd53b
 
 	measure 'Scheduled Trips' =
-			
+
 			SUM ( DailySchedule[ScheduledTripCount] )
 		formatString: #,0
 		displayFolder: 01 Static Schedule
 		lineageTag: cbb19cc5-b59a-480f-a6e5-5c135a43be7d
 
 	measure 'Active Dates in Context' =
-			
+
 			DISTINCTCOUNT ( DailySchedule[DateKey] )
 		formatString: #,0
 		displayFolder: 01 Static Schedule
 		lineageTag: 39733a6c-f9ff-419a-9cfa-7c689d91c0ff
 
 	measure 'Routes in Context' =
-			
+
 			DISTINCTCOUNT ( DailySchedule[RouteKey] )
 		formatString: #,0
 		displayFolder: 01 Static Schedule
 		lineageTag: 534a6ab0-eb05-4d79-a0e4-92fa2ea6650e
 
 	measure 'Average Scheduled Trips per Active Day' =
-			
+
 			DIVIDE (
 			    [Scheduled Trips],
 			    [Active Dates in Context]
@@ -33,7 +33,7 @@ table _Measures
 		lineageTag: 308f3f01-34c9-4643-a963-cda8dc1737ff
 
 	measure 'Weekend Share' =
-			
+
 			DIVIDE (
 			    [Weekend Scheduled Trips],
 			    [Scheduled Trips]
@@ -43,7 +43,7 @@ table _Measures
 		lineageTag: 9021d09f-889c-418a-96cb-34f96664d05d
 
 	measure 'Mode Share of Scheduled Trips' =
-			
+
 			DIVIDE (
 			    [Scheduled Trips],
 			    CALCULATE (
@@ -56,7 +56,7 @@ table _Measures
 		lineageTag: d36fde52-aa38-4f20-a022-183d5d9e845e
 
 	measure 'Weekend Scheduled Trips' =
-			
+
 			CALCULATE (
 			    [Scheduled Trips],
 			    KEEPFILTERS ( ActiveDate[IsWeekend] = TRUE () )
@@ -68,7 +68,7 @@ table _Measures
 		annotation PBI_FormatHint = {"isDecimal":true}
 
 	measure 'Weekday Scheduled Trips' =
-			
+
 			CALCULATE (
 			    [Scheduled Trips],
 			    KEEPFILTERS ( ActiveDate[IsWeekend] = FALSE () )
@@ -78,77 +78,77 @@ table _Measures
 		lineageTag: 04dd82f8-1c8f-4ee7-9dda-31d768ee55f5
 
 	measure 'Baseline Agencies' =
-			
+
 			MAX ( NetworkKPI[AgencyCount] )
 		formatString: #,0
 		displayFolder: 02 Network Baseline
 		lineageTag: 27725019-7b68-46db-a1ab-6f40d4ef4f4a
 
 	measure 'Baseline Modes' =
-			
+
 			MAX ( NetworkKPI[ModeCount] )
 		formatString: #,0
 		displayFolder: 02 Network Baseline
 		lineageTag: 566f05e1-8b6b-42eb-9ba7-67751bc33259
 
 	measure 'Baseline Routes' =
-			
+
 			MAX ( NetworkKPI[RouteCount] )
 		formatString: #,0
 		displayFolder: 02 Network Baseline
 		lineageTag: 3dac2baa-ebec-44db-8dc9-41d88ea87155
 
 	measure 'Baseline Parent Stations' =
-			
+
 			MAX ( NetworkKPI[ParentStationCount] )
 		formatString: #,0
 		displayFolder: 02 Network Baseline
 		lineageTag: dafc932d-0eb0-47fb-97ef-5b210fdcdad9
 
 	measure 'Baseline Stop Positions' =
-			
+
 			MAX ( NetworkKPI[StopPositionCount] )
 		formatString: #,0
 		displayFolder: 02 Network Baseline
 		lineageTag: 0546d3eb-da9d-4e59-a147-b096bab39077
 
 	measure 'Baseline Used Stop Positions' =
-			
+
 			MAX ( NetworkKPI[UsedStopPositionCount] )
 		formatString: #,0
 		displayFolder: 02 Network Baseline
 		lineageTag: b322d958-1abd-4d8d-bbda-878bcce81d36
 
 	measure 'Baseline Active Service Dates' =
-			
+
 			MAX ( NetworkKPI[ActiveServiceDateCount] )
 		formatString: #,0
 		displayFolder: 02 Network Baseline
 		lineageTag: 1957e796-3f55-438a-a082-d2ba8b720193
 
 	measure 'Baseline Scheduled Trip Patterns' =
-			
+
 			MAX ( NetworkKPI[ScheduledTripPatternCount] )
 		formatString: #,0
 		displayFolder: 02 Network Baseline
 		lineageTag: 3842d4a6-015d-45f2-89c3-b20dc4c0a97f
 
 	measure 'Baseline Scheduled Trip Occurrences' =
-			
+
 			MAX ( NetworkKPI[ScheduledTripOccurrenceCount] )
 		formatString: #,0
 		displayFolder: 02 Network Baseline
 		lineageTag: 8ef9d683-0125-42f9-8ec3-93cf9decf961
 
 	measure 'Baseline Scheduled Stop-Event Patterns' =
-			
+
 			MAX ( NetworkKPI[ScheduledStopEventPatternCount] )
 		formatString: #,0
 		displayFolder: 02 Network Baseline
 		lineageTag: dae1f2ae-83d8-469d-b74b-4f1be7d123c2
 
 	measure 'Used Stop Positions' =
-			
+
 			CALCULATE (
 			    COUNTROWS ( StopPosition ),
 			    StopPosition[IsUsedInCurrentSchedule] = TRUE ()
@@ -158,7 +158,7 @@ table _Measures
 		lineageTag: 7494e2f8-5218-49ad-99f3-b9d63908c33e
 
 	measure 'Unused Stop Positions' =
-			
+
 			CALCULATE (
 			    COUNTROWS ( StopPosition ),
 			    StopPosition[IsUsedInCurrentSchedule] = FALSE ()
@@ -170,21 +170,21 @@ table _Measures
 	/// Count of matched operational stop outcomes available for validated
 	/// realtime reliability analysis.
 	measure 'Observed Matched Services' =
-			
+
 			COUNTROWS ( RT_ReliabilityOutcome )
 		formatString: #,0
 		displayFolder: 03 Realtime Reliability
 		lineageTag: d498b684-c8f5-4614-b36e-7fc42359e199
 
 	measure 'Delay Observations' =
-			
+
 			COUNT ( RT_ReliabilityOutcome[FinalObservedEstimatedDelayMinutes] )
 		formatString: #,0
 		displayFolder: 03 Realtime Reliability
 		lineageTag: 454edb5c-e930-49f8-8472-258f87fc5564
 
 	measure 'Average Observed Estimated Delay (min)' =
-			
+
 			AVERAGE (
 			    RT_ReliabilityOutcome[FinalObservedEstimatedDelayMinutes]
 			)
@@ -195,7 +195,7 @@ table _Measures
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
 	measure 'Median Observed Estimated Delay (min)' =
-			
+
 			MEDIANX (
 			    FILTER (
 			        RT_ReliabilityOutcome,
@@ -212,7 +212,7 @@ table _Measures
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
 	measure 'P95 Observed Estimated Delay (min)' =
-			
+
 			PERCENTILEX.INC (
 			    FILTER (
 			        RT_ReliabilityOutcome,
@@ -230,7 +230,7 @@ table _Measures
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
 	measure 'Minimum Observed Estimated Delay (min)' =
-			
+
 			MIN (
 			    RT_ReliabilityOutcome[FinalObservedEstimatedDelayMinutes]
 			)
@@ -241,7 +241,7 @@ table _Measures
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
 	measure 'Maximum Observed Estimated Delay (min)' =
-			
+
 			MAX (
 			    RT_ReliabilityOutcome[FinalObservedEstimatedDelayMinutes]
 			)
@@ -252,7 +252,7 @@ table _Measures
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
 	measure 'Average Observations per Outcome' =
-			
+
 			AVERAGE (
 			    RT_ReliabilityOutcome[ObservationCount]
 			)
@@ -263,7 +263,7 @@ table _Measures
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
 	measure 'Situation-Linked Outcomes' =
-			
+
 			CALCULATE (
 			    [Observed Matched Services],
 			    RT_ReliabilityOutcome[HasSituationEvidence] = TRUE ()
@@ -273,7 +273,7 @@ table _Measures
 		lineageTag: 3b63d469-9f0e-42b6-aec3-b2d985b929a9
 
 	measure 'Situation Evidence Share' =
-			
+
 			DIVIDE (
 			    [Situation-Linked Outcomes],
 			    [Observed Matched Services]
@@ -283,7 +283,7 @@ table _Measures
 		lineageTag: 7dff8496-b7e7-4ef5-8d38-131098cf850d
 
 	measure 'Platform Changed Evidence Outcomes' =
-			
+
 			CALCULATE (
 			    [Observed Matched Services],
 			    RT_ReliabilityOutcome[PlatformChangeEvidence] = "Changed"
@@ -293,7 +293,7 @@ table _Measures
 		lineageTag: 6914f4a6-133c-4cf6-98d0-07627f742cc2
 
 	measure 'Platform Changed Evidence Share' =
-			
+
 			DIVIDE (
 			    [Platform Changed Evidence Outcomes],
 			    [Observed Matched Services]
@@ -303,7 +303,7 @@ table _Measures
 		lineageTag: ba48ff5c-3164-406f-aba6-85c687dda0f3
 
 	measure 'Platform Unchanged Evidence Outcomes' =
-			
+
 			COALESCE (
 			    CALCULATE (
 			        [Observed Matched Services],
@@ -316,7 +316,7 @@ table _Measures
 		lineageTag: c1ab4256-9ddc-4af2-8f71-86bb41797615
 
 	measure 'Platform Unknown Evidence Outcomes' =
-			
+
 			CALCULATE (
 			    [Observed Matched Services],
 			    RT_ReliabilityOutcome[PlatformChangeEvidence] = "Unknown"
@@ -326,7 +326,7 @@ table _Measures
 		lineageTag: 8bf3e87a-6aaa-41d0-a824-efc3e7442a2a
 
 	measure 'Platform Unchanged Evidence Share' =
-			
+
 			DIVIDE (
 			    [Platform Unchanged Evidence Outcomes],
 			    [Observed Matched Services],
@@ -337,7 +337,7 @@ table _Measures
 		lineageTag: 170eab5a-9f99-49f7-95a8-ea5e1c9faeef
 
 	measure 'Platform Unknown Evidence Share' =
-			
+
 			DIVIDE (
 			    [Platform Unknown Evidence Outcomes],
 			    [Observed Matched Services]
@@ -347,7 +347,7 @@ table _Measures
 		lineageTag: 4d9eefdf-0c75-46e7-92d6-e1f013c4f0a2
 
 	measure 'Operational Outcomes' =
-			
+
 			SUM (
 			    RT_ConsolidationQuality[OperationalOutcomeCount]
 			)
@@ -356,7 +356,7 @@ table _Measures
 		lineageTag: 193d5a7a-385c-4357-985e-3f4a62f16897
 
 	measure 'Usable Realtime Observations' =
-			
+
 			SUM (
 			    RT_ConsolidationQuality[UsableObservationCount]
 			)
@@ -365,7 +365,7 @@ table _Measures
 		lineageTag: 090eb729-c24c-4bc1-b63d-b1adb98f9f84
 
 	measure 'Repeated Observations Consolidated' =
-			
+
 			SUM (
 			    RT_ConsolidationQuality[RepeatedObservationsConsolidated]
 			)
@@ -374,7 +374,7 @@ table _Measures
 		lineageTag: 83892f88-dcbe-42d1-be9b-a19481c6aebc
 
 	measure 'Consolidation Reduction Share' =
-			
+
 			DIVIDE (
 			    [Repeated Observations Consolidated],
 			    [Usable Realtime Observations],
@@ -385,7 +385,7 @@ table _Measures
 		lineageTag: fa684f8a-cd47-4fe3-846e-5674d4244a31
 
 	measure 'Observations per Operational Outcome' =
-			
+
 			DIVIDE (
 			    [Usable Realtime Observations],
 			    [Operational Outcomes]
@@ -395,7 +395,7 @@ table _Measures
 		lineageTag: 2033793b-04cd-4981-8543-b697df5b47fe
 
 	measure 'Realtime Source Observations' =
-			
+
 			SUM (
 			    RT_DataQualityCoverage[SourceObservationCount]
 			)
@@ -404,7 +404,7 @@ table _Measures
 		lineageTag: 1405091c-03fe-434a-88b9-287bb1a2e1cd
 
 	measure 'Matched View Observations' =
-			
+
 			SUM (
 			    RT_DataQualityCoverage[MatchedViewObservationCount]
 			)
@@ -413,7 +413,7 @@ table _Measures
 		lineageTag: f7b71172-e68e-4118-8436-4e86074e88c8
 
 	measure 'Exact Stop Matches' =
-			
+
 			SUM (
 			    RT_DataQualityCoverage[ExactStopMatchCount]
 			)
@@ -422,7 +422,7 @@ table _Measures
 		lineageTag: a8559c9b-a9b3-47ac-b2e5-cd9f111a98a2
 
 	measure 'Parent Station Fallback Matches' =
-			
+
 			SUM (
 			    RT_DataQualityCoverage[ParentStationFallbackCount]
 			)
@@ -431,7 +431,7 @@ table _Measures
 		lineageTag: fe8cca6f-66c0-4db0-9239-f1ba80f43376
 
 	measure 'Static Coverage Missing' =
-			
+
 			SUM (
 			    RT_DataQualityCoverage[StaticCoverageMissingCount]
 			)
@@ -440,7 +440,7 @@ table _Measures
 		lineageTag: 336f7df4-b865-4d43-b3a5-d60d4005780e
 
 	measure 'Unresolved Matches' =
-			
+
 			SUM (
 			    RT_DataQualityCoverage[UnresolvedCount]
 			)
@@ -449,7 +449,7 @@ table _Measures
 		lineageTag: 21754dfc-e7c4-4b2c-afbc-3091c322a78f
 
 	measure 'Usable Matches' =
-			
+
 			SUM (
 			    RT_DataQualityCoverage[UsableMatchCount]
 			)
@@ -458,7 +458,7 @@ table _Measures
 		lineageTag: b09e8a9f-7ba6-4268-9732-239a467a5773
 
 	measure 'Parent Station Fallback Rate' =
-			
+
 			DIVIDE (
 			    [Parent Station Fallback Matches],
 			    [Matched View Observations],
@@ -469,7 +469,7 @@ table _Measures
 		lineageTag: 129fc6bc-d136-4ec4-ad64-e50e0bd0b2b5
 
 	measure 'Static Coverage Missing Rate' =
-			
+
 			DIVIDE (
 			    [Static Coverage Missing],
 			    [Matched View Observations],
@@ -480,7 +480,7 @@ table _Measures
 		lineageTag: 64dbccea-4a84-4361-bbff-8619dc734350
 
 	measure 'Usable Match Rate' =
-			
+
 			DIVIDE (
 			    [Usable Matches],
 			    [Matched View Observations],
@@ -491,7 +491,7 @@ table _Measures
 		lineageTag: 11c623bc-a575-432d-83d2-72498658ccf5
 
 	measure 'Exact Stop Match Rate' =
-			
+
 			DIVIDE (
 			    [Exact Stop Matches],
 			    [Matched View Observations],
@@ -502,7 +502,7 @@ table _Measures
 		lineageTag: 0c959424-190f-47b6-b316-a44ca05c218a
 
 	measure 'Unresolved Match Rate' =
-			
+
 			DIVIDE (
 			    [Unresolved Matches],
 			    [Matched View Observations],
@@ -513,7 +513,7 @@ table _Measures
 		lineageTag: e482cf26-37cb-4175-b07a-68f637f4e595
 
 	measure 'Observations with Estimated Bay' =
-			
+
 			SUM (
 			    RT_DataQualityCoverage[ObservationsWithEstimatedBayCount]
 			)
@@ -522,7 +522,7 @@ table _Measures
 		lineageTag: 164c4529-f84b-431c-a3f1-9ef36748941b
 
 	measure 'Estimated Bay Availability Rate' =
-			
+
 			DIVIDE (
 			    [Observations with Estimated Bay],
 			    [Matched View Observations],
@@ -533,7 +533,7 @@ table _Measures
 		lineageTag: 21854a4e-f455-428b-acea-ec5d5f432df3
 
 	measure 'Observations with Situation Evidence' =
-			
+
 			SUM (
 			    RT_DataQualityCoverage[ObservationsWithSituationEvidenceCount]
 			)
@@ -542,7 +542,7 @@ table _Measures
 		lineageTag: 29ca4d9c-3cea-4c7e-8e53-241ce2201461
 
 	measure 'Situation Evidence Availability Rate' =
-			
+
 			DIVIDE (
 			    [Observations with Situation Evidence],
 			    [Matched View Observations],
@@ -553,7 +553,7 @@ table _Measures
 		lineageTag: cc80bdf2-86a4-429f-93b0-573ce354fe63
 
 	measure 'Situation Links' =
-			
+
 			SUM (
 			    RT_DataQualityCoverage[SituationLinkCount]
 			)
@@ -562,14 +562,14 @@ table _Measures
 		lineageTag: 4f8adf49-3c26-4029-b093-56b59f793c36
 
 	measure 'Collector Runs' =
-			
+
 			COUNTROWS ( RT_CollectorRunHealth )
 		formatString: #,0
 		displayFolder: 07 Collector Health
 		lineageTag: 3270dbcc-4ac4-482f-9177-544b2c83623b
 
 	measure 'Successful Collector Runs' =
-			
+
 			CALCULATE (
 			    [Collector Runs],
 			    RT_CollectorRunHealth[IsSuccessfulRun] = TRUE ()
@@ -579,7 +579,7 @@ table _Measures
 		lineageTag: e8f5b604-8d01-48f1-a1df-8d53e4b29368
 
 	measure 'Failed Collector Runs' =
-			
+
 			CALCULATE (
 			    [Collector Runs],
 			    RT_CollectorRunHealth[IsFailedRun] = TRUE ()
@@ -589,7 +589,7 @@ table _Measures
 		lineageTag: 88beac19-c78c-4037-b317-36c8321f07d8
 
 	measure 'Incomplete Collector Runs' =
-			
+
 			CALCULATE (
 			    [Collector Runs],
 			    RT_CollectorRunHealth[IsIncompleteStartedRun] = TRUE ()
@@ -599,7 +599,7 @@ table _Measures
 		lineageTag: 2609ab0f-7046-46d4-afe7-b5460422bdd0
 
 	measure 'Successful Automatic Runs' =
-			
+
 			CALCULATE (
 			    [Collector Runs],
 			    RT_CollectorRunHealth[IsSuccessfulAutomaticRun] = TRUE ()
@@ -609,7 +609,7 @@ table _Measures
 		lineageTag: be58d68a-d826-45f8-85ef-a386abf40ac3
 
 	measure 'Completed Collector Runs' =
-			
+
 			[Successful Collector Runs]
 			    + [Failed Collector Runs]
 		formatString: #,0
@@ -617,7 +617,7 @@ table _Measures
 		lineageTag: c04312d7-4ef0-438c-81d3-fd1b013b8a50
 
 	measure 'Collector Success Rate' =
-			
+
 			DIVIDE (
 			    [Successful Collector Runs],
 			    [Completed Collector Runs],
@@ -628,7 +628,7 @@ table _Measures
 		lineageTag: 6e31910f-98a6-4839-90bb-8b5a35dc480e
 
 	measure 'Sampling Panel Targets Observed' =
-			
+
 			CALCULATE (
 			    DISTINCTCOUNT ( RT_CollectorRunHealth[SamplingTargetId] ),
 			    RT_CollectorRunHealth[ParticipatedInSamplingPanel] = TRUE ()
@@ -638,7 +638,7 @@ table _Measures
 		lineageTag: c11e7411-1d59-442c-8e1a-af30a1778e71
 
 	measure 'Average Successful Run Duration (sec)' =
-			
+
 			DIVIDE (
 			    CALCULATE (
 			        AVERAGE ( RT_CollectorRunHealth[DurationMs] ),
@@ -651,7 +651,7 @@ table _Measures
 		lineageTag: 8637b6b8-4db8-4204-b8f6-a126e07f0f79
 
 	measure 'Agencies in Context' =
-			
+
 			DISTINCTCOUNT ( DailySchedule[AgencyId] )
 		formatString: #,0
 		displayFolder: 01 Static Schedule
@@ -661,7 +661,7 @@ table _Measures
 	/// DailySchedule is route-grain and has no station key; [Scheduled Trips]
 	/// cannot be sliced by ParentStation without changing the approved model.
 	measure 'Parent Station Scheduled Trip Patterns' =
-			
+
 			SUM ( ParentStation[ScheduledTripPatternCount] )
 		formatString: #,0
 		displayFolder: 01 Static Schedule
@@ -670,7 +670,7 @@ table _Measures
 	/// Observed matched services represented by each transport mode as a
 	/// share of the current Sampling Panel outcome total.
 	measure 'Mode Share of Observed Services' =
-			
+
 			DIVIDE (
 			    [Observed Matched Services],
 			    CALCULATE (
@@ -684,42 +684,42 @@ table _Measures
 		lineageTag: 4c8f6a1d-3c2a-4d1e-a879-1b2c3d4e5f60
 
 	measure Routes =
-			
+
 			[Routes in Context]
 		formatString: #,0
 		displayFolder: 08 Management Overview
 		lineageTag: 5d9a7b2e-4d3b-4e2f-b980-2c3d4e5f6071
 
 	measure '% of Scheduled Trips' =
-			
+
 			[Mode Share of Scheduled Trips]
 		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		displayFolder: 08 Management Overview
 		lineageTag: 6eab8c3f-5e4c-4f30-ca91-3d4e5f607182
 
 	measure '% of Observed Services' =
-			
+
 			[Mode Share of Observed Services]
 		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		displayFolder: 08 Management Overview
 		lineageTag: 7fbc9d40-6f5d-4031-dba2-4e5f60718293
 
 	measure 'Median Delay' =
-			
+
 			[Median Observed Estimated Delay (min)]
 		formatString: #,0.0
 		displayFolder: 08 Management Overview
 		lineageTag: 80cdae51-706e-4142-ecb3-5f607182934a
 
 	measure 'P95 Delay' =
-			
+
 			[P95 Observed Estimated Delay (min)]
 		formatString: #,0.0
 		displayFolder: 08 Management Overview
 		lineageTag: 91debf62-817f-4253-fdc4-607182934a5b
 
 	measure 'Insight Largest Planned Mode' =
-			
+
 			VAR ModeRows =
 			    ADDCOLUMNS (
 			        ALLSELECTED ( Mode[ModeDetail] ),
@@ -746,7 +746,7 @@ table _Measures
 		lineageTag: a2efc073-9280-4364-aed5-7182934a5b6c
 
 	measure 'Insight Highest Typical Delay' =
-			
+
 			VAR ModeRows =
 			    ADDCOLUMNS (
 			        ALLSELECTED ( Mode[ModeDetail] ),
@@ -777,7 +777,7 @@ table _Measures
 		lineageTag: b3f0d184-a391-4475-bfe6-8293a5b6c7d8
 
 	measure 'Insight Highest Severe Delay' =
-			
+
 			VAR ModeRows =
 			    ADDCOLUMNS (
 			        ALLSELECTED ( Mode[ModeDetail] ),
@@ -808,7 +808,7 @@ table _Measures
 		lineageTag: c401e295-b4a2-4586-c0f7-93a4b6c7d8e9
 
 	measure 'Insight Observed Sample Composition' =
-			
+
 			VAR ModeRows =
 			    ADDCOLUMNS (
 			        ALLSELECTED ( Mode[ModeDetail] ),
@@ -835,7 +835,7 @@ table _Measures
 		lineageTag: d512f3a6-c5b3-4697-d108-a4b5c7d8e9f0
 
 	measure 'Typical Scheduled Duration' =
-			
+
 			VAR TripRows =
 			    CALCULATETABLE (
 			        ScheduledTripProfile,
@@ -854,7 +854,7 @@ table _Measures
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
 	measure 'Typical Route Length' =
-			
+
 			VAR TripRows =
 			    CALCULATETABLE (
 			        ScheduledTripProfile,
@@ -876,7 +876,7 @@ table _Measures
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
 	measure 'Parent Station KPI Support' =
-			
+
 			IF (
 			    ISBLANK ( [Baseline Stop Positions] ),
 			    "Stop positions unavailable",
@@ -886,195 +886,199 @@ table _Measures
 		lineageTag: 7f1b3d5c-6e8a-9f0b-2c4d-36e7f8091a2b
 
 	measure 'Delay Threshold (Minutes)' =
-			
+
 			SELECTEDVALUE ( 'Delay Threshold (Minutes)'[Value], 0 )
 		formatString: 0
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678ab
+		lineageTag: a0000000-0000-0000-0000-000000000001
 
 	measure 'Comparable Scheduled Trips' =
-			
-			CALCULATE (
-			    DISTINCTCOUNT ( ManagementComparableTrip[ManagementTripKey] ),
-			    ManagementComparableTrip[IsTripLevelRecord] = TRUE ()
-			)
+
+			COUNTROWS ( ManagementComparableTrip )
 		formatString: #,0
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678ac
+		lineageTag: a0000000-0000-0000-0000-000000000002
 
-	measure 'Observed Matched Trips' =
-			
+	measure 'Scheduled Trips in Monitored Scope' =
+
+			[Comparable Scheduled Trips]
+		formatString: #,0
+		displayFolder: 09 M01 System Overview
+		lineageTag: a0000000-0000-0000-0000-000000000003
+
+	measure 'Observed Realtime Trips' =
+
 			CALCULATE (
-			    DISTINCTCOUNT ( ManagementComparableTrip[ManagementTripKey] ),
-			    ManagementComparableTrip[IsTripLevelRecord] = TRUE (),
+			    COUNTROWS ( ManagementComparableTrip ),
 			    ManagementComparableTrip[HasValidRealtimeObservation] = TRUE ()
 			)
 		formatString: #,0
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678ad
+		lineageTag: a0000000-0000-0000-0000-000000000004
 
-	measure 'Realtime Observation Coverage %' =
-			
-			IF (
-			    CALCULATE (
-			        COUNTROWS ( ManagementComparableTrip ),
-			        ManagementComparableTrip[CoverageDenominatorDefensible] = TRUE ()
-			    ) > 0,
-			    DIVIDE ( [Observed Matched Trips], [Comparable Scheduled Trips] )
-			)
-		formatString: 0.0\ %;-0.0\ %;0.0\ %
+	measure 'Observed Matched Trips' =
+
+			[Observed Realtime Trips]
+		formatString: #,0
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678ae
+		lineageTag: a0000000-0000-0000-0000-000000000005
 
 	measure 'On-Time Trips' =
-			
+
 			CALCULATE (
-			    DISTINCTCOUNT ( ManagementComparableTrip[ManagementTripKey] ),
+			    COUNTROWS ( ManagementComparableTrip ),
 			    FILTER (
 			        ManagementComparableTrip,
-			        ManagementComparableTrip[IsTripLevelRecord] = TRUE ()
-			            && ManagementComparableTrip[HasValidRealtimeObservation] = TRUE ()
-			            && ABS ( ManagementComparableTrip[ScheduleDifferenceMinutes] )
+			        ManagementComparableTrip[HasValidRealtimeObservation] = TRUE ()
+			            && ABS ( ManagementComparableTrip[FinalObservedEstimatedDelayMinutes] )
 			                <= [Delay Threshold (Minutes)]
 			    )
 			)
 		formatString: #,0
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678af
+		lineageTag: a0000000-0000-0000-0000-000000000006
 
 	measure 'Delayed Trips' =
-			
+
 			CALCULATE (
-			    DISTINCTCOUNT ( ManagementComparableTrip[ManagementTripKey] ),
+			    COUNTROWS ( ManagementComparableTrip ),
 			    FILTER (
 			        ManagementComparableTrip,
-			        ManagementComparableTrip[IsTripLevelRecord] = TRUE ()
-			            && ManagementComparableTrip[HasValidRealtimeObservation] = TRUE ()
-			            && ManagementComparableTrip[ScheduleDifferenceMinutes]
+			        ManagementComparableTrip[HasValidRealtimeObservation] = TRUE ()
+			            && ManagementComparableTrip[FinalObservedEstimatedDelayMinutes]
 			                > [Delay Threshold (Minutes)]
 			    )
 			)
 		formatString: #,0
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678b0
+		lineageTag: a0000000-0000-0000-0000-000000000007
 
 	measure 'Early Trips' =
-			
+
 			CALCULATE (
-			    DISTINCTCOUNT ( ManagementComparableTrip[ManagementTripKey] ),
+			    COUNTROWS ( ManagementComparableTrip ),
 			    FILTER (
 			        ManagementComparableTrip,
-			        ManagementComparableTrip[IsTripLevelRecord] = TRUE ()
-			            && ManagementComparableTrip[HasValidRealtimeObservation] = TRUE ()
-			            && ManagementComparableTrip[ScheduleDifferenceMinutes]
+			        ManagementComparableTrip[HasValidRealtimeObservation] = TRUE ()
+			            && ManagementComparableTrip[FinalObservedEstimatedDelayMinutes]
 			                < ( 0 - [Delay Threshold (Minutes)] )
 			    )
 			)
 		formatString: #,0
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678b1
+		lineageTag: a0000000-0000-0000-0000-000000000008
 
 	measure 'On-Time %' =
-			
-			DIVIDE ( [On-Time Trips], [Observed Matched Trips] )
+
+			DIVIDE ( [On-Time Trips], [Observed Realtime Trips] )
 		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678b2
+		lineageTag: a0000000-0000-0000-0000-000000000009
 
 	measure 'Delayed %' =
-			
-			DIVIDE ( [Delayed Trips], [Observed Matched Trips] )
+
+			DIVIDE ( [Delayed Trips], [Observed Realtime Trips] )
 		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678b3
+		lineageTag: a0000000-0000-0000-0000-000000000010
 
 	measure 'Early %' =
-			
-			DIVIDE ( [Early Trips], [Observed Matched Trips] )
+
+			DIVIDE ( [Early Trips], [Observed Realtime Trips] )
 		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678b4
+		lineageTag: a0000000-0000-0000-0000-000000000011
 
 	measure 'Average Schedule Difference Minutes' =
-			
+
 			AVERAGEX (
 			    FILTER (
 			        ManagementComparableTrip,
-			        ManagementComparableTrip[IsTripLevelRecord] = TRUE ()
-			            && ManagementComparableTrip[HasValidRealtimeObservation] = TRUE ()
+			        ManagementComparableTrip[HasValidRealtimeObservation] = TRUE ()
 			    ),
-			    ManagementComparableTrip[ScheduleDifferenceMinutes]
+			    ManagementComparableTrip[FinalObservedEstimatedDelayMinutes]
 			)
 		formatString: #,0.0
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678b5
+		lineageTag: a0000000-0000-0000-0000-000000000012
 
 	measure 'Average Absolute Schedule Gap Minutes' =
-			
+
 			AVERAGEX (
 			    FILTER (
 			        ManagementComparableTrip,
-			        ManagementComparableTrip[IsTripLevelRecord] = TRUE ()
-			            && ManagementComparableTrip[HasValidRealtimeObservation] = TRUE ()
+			        ManagementComparableTrip[HasValidRealtimeObservation] = TRUE ()
 			    ),
-			    ABS ( ManagementComparableTrip[ScheduleDifferenceMinutes] )
+			    ABS ( ManagementComparableTrip[FinalObservedEstimatedDelayMinutes] )
 			)
 		formatString: #,0.0
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678b6
+		lineageTag: a0000000-0000-0000-0000-000000000013
 
 	measure 'Mode Route Count' =
-			
-			MAX ( Mode[RouteCount] )
+
+			SUM ( Mode[RouteCount] )
 		formatString: #,0
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678b7
+		lineageTag: a0000000-0000-0000-0000-000000000014
+
+	measure 'Network Parent Stations' =
+
+			DISTINCTCOUNT ( ParentStation[ParentStationKey] )
+		formatString: #,0
+		displayFolder: 09 M01 System Overview
+		lineageTag: a0000000-0000-0000-0000-000000000015
 
 	measure 'Realtime Monitored Stations' =
-			
+
 			CALCULATE (
-			    DISTINCTCOUNT ( ManagementMonitoredStation[MonitoredStationKey] ),
-			    ManagementMonitoredStation[IsEnabled] = TRUE ()
+			    DISTINCTCOUNT ( ManagementMonitoredStation[SamplingTargetId] ),
+			    ManagementMonitoredStation[ParticipatedInSamplingPanel] = TRUE ()
 			)
 		formatString: #,0
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678b8
+		lineageTag: a0000000-0000-0000-0000-000000000016
 
 	measure 'Realtime Data Start Date' =
-			
-			MINX (
-			    ALL ( ManagementComparableTrip ),
-			    ManagementComparableTrip[RealtimeDataStartDate]
-			)
+
+			MIN ( ManagementMonitoredStation[CollectionDateLocal] )
 		formatString: Short Date
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678b9
+		lineageTag: a0000000-0000-0000-0000-000000000017
 
 	measure 'Realtime Data End Date' =
-			
-			MAXX (
-			    ALL ( ManagementComparableTrip ),
-			    ManagementComparableTrip[RealtimeDataEndDate]
-			)
+
+			MAX ( ManagementMonitoredStation[CollectionDateLocal] )
 		formatString: Short Date
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678ba
+		lineageTag: a0000000-0000-0000-0000-000000000018
 
-	measure 'Realtime Covered Days' =
-			
-			VAR StartDate = [Realtime Data Start Date]
-			VAR EndDate = [Realtime Data End Date]
-			RETURN
-			    IF (
-			        NOT ISBLANK ( StartDate ) && NOT ISBLANK ( EndDate ),
-			        DATEDIFF ( StartDate, EndDate, DAY ) + 1
-			    )
+	measure 'Realtime Observed Days' =
+
+			DISTINCTCOUNT ( ManagementMonitoredStation[DateKey] )
 		formatString: #,0
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678bb
+		lineageTag: a0000000-0000-0000-0000-000000000019
+
+	measure 'Realtime Covered Days' =
+
+			[Realtime Observed Days]
+		formatString: #,0
+		displayFolder: 09 M01 System Overview
+		lineageTag: a0000000-0000-0000-0000-000000000020
+
+	measure 'Observed Stop Positions' =
+
+			CALCULATE (
+			    DISTINCTCOUNT ( ManagementTripStation[StopKey] ),
+			    ManagementTripStation[HasValidRealtimeObservation] = TRUE ()
+			)
+		formatString: #,0
+		displayFolder: 09 M01 System Overview
+		lineageTag: a0000000-0000-0000-0000-000000000021
 
 	measure 'Punctuality Trips' =
-			
+
 			VAR SelectedStatus = SELECTEDVALUE ( PunctualityStatus[Status] )
 			RETURN
 			    SWITCH (
@@ -1085,10 +1089,10 @@ table _Measures
 			    )
 		formatString: #,0
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678bc
+		lineageTag: a0000000-0000-0000-0000-000000000022
 
 	measure 'Punctuality %' =
-			
+
 			VAR SelectedStatus = SELECTEDVALUE ( PunctualityStatus[Status] )
 			RETURN
 			    SWITCH (
@@ -1099,308 +1103,362 @@ table _Measures
 			    )
 		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678bd
+		lineageTag: a0000000-0000-0000-0000-000000000023
 
 	measure 'Station Comparable Trips' =
-			
-			DISTINCTCOUNT ( ManagementComparableTrip[ManagementTripKey] )
+
+			DISTINCTCOUNT ( ManagementTripStation[ManagementTripKey] )
 		formatString: #,0
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678be
+		lineageTag: a0000000-0000-0000-0000-000000000024
 
-	measure 'Station Observed Matched Trips' =
-			
+	measure 'Station Observed Realtime Trips' =
+
 			CALCULATE (
-			    DISTINCTCOUNT ( ManagementComparableTrip[ManagementTripKey] ),
-			    ManagementComparableTrip[HasValidRealtimeObservationAtStation] = TRUE ()
+			    DISTINCTCOUNT ( ManagementTripStation[ManagementTripKey] ),
+			    ManagementTripStation[HasValidRealtimeObservation] = TRUE ()
 			)
 		formatString: #,0
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678bf
+		lineageTag: a0000000-0000-0000-0000-000000000025
+
+	measure 'Station Observed Matched Trips' =
+
+			[Station Observed Realtime Trips]
+		formatString: #,0
+		displayFolder: 09 M01 System Overview
+		lineageTag: a0000000-0000-0000-0000-000000000026
 
 	measure 'Station On-Time Trips' =
-			
+
 			CALCULATE (
-			    DISTINCTCOUNT ( ManagementComparableTrip[ManagementTripKey] ),
+			    DISTINCTCOUNT ( ManagementTripStation[ManagementTripKey] ),
 			    FILTER (
-			        ManagementComparableTrip,
-			        ManagementComparableTrip[HasValidRealtimeObservationAtStation] = TRUE ()
-			            && ABS ( ManagementComparableTrip[ScheduleDifferenceMinutes] )
+			        ManagementTripStation,
+			        ManagementTripStation[HasValidRealtimeObservation] = TRUE ()
+			            && ABS ( ManagementTripStation[FinalObservedEstimatedDelayMinutes] )
 			                <= [Delay Threshold (Minutes)]
 			    )
 			)
 		formatString: #,0
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678c0
+		lineageTag: a0000000-0000-0000-0000-000000000027
 
 	measure 'Station On-Time %' =
-			
-			DIVIDE ( [Station On-Time Trips], [Station Observed Matched Trips] )
+
+			DIVIDE ( [Station On-Time Trips], [Station Observed Realtime Trips] )
 		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678c1
+		lineageTag: a0000000-0000-0000-0000-000000000028
 
 	measure 'Station Average Absolute Schedule Gap Minutes' =
-			
+
 			AVERAGEX (
 			    FILTER (
-			        ManagementComparableTrip,
-			        ManagementComparableTrip[HasValidRealtimeObservationAtStation] = TRUE ()
+			        ManagementTripStation,
+			        ManagementTripStation[HasValidRealtimeObservation] = TRUE ()
 			    ),
-			    ABS ( ManagementComparableTrip[ScheduleDifferenceMinutes] )
+			    ABS ( ManagementTripStation[FinalObservedEstimatedDelayMinutes] )
 			)
 		formatString: #,0.0
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678c2
+		lineageTag: a0000000-0000-0000-0000-000000000029
 
 	measure 'Best Performing Mode Name' =
-			
+
 			VAR ModeRows =
 			    ADDCOLUMNS (
 			        ALLSELECTED ( Mode[ModeDetail] ),
 			        "__OnTime", CALCULATE ( [On-Time %] ),
 			        "__Gap", CALCULATE ( [Average Absolute Schedule Gap Minutes] ),
-			        "__Comparable", CALCULATE ( [Comparable Scheduled Trips] )
+			        "__Observed", CALCULATE ( [Observed Realtime Trips] )
 			    )
 			VAR TopMode =
 			    TOPN (
 			        1,
-			        FILTER ( ModeRows, [__Comparable] > 0 && NOT ISBLANK ( [__OnTime] ) ),
+			        FILTER ( ModeRows, [__Observed] > 0 && NOT ISBLANK ( [__OnTime] ) ),
 			        [__OnTime], DESC,
 			        [__Gap], ASC,
-			        [__Comparable], DESC,
+			        [__Observed], DESC,
 			        Mode[ModeDetail], ASC
 			    )
-			RETURN MAXX ( TopMode, Mode[ModeDetail] )
+			RETURN
+			    MAXX ( TopMode, Mode[ModeDetail] )
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678c3
+		lineageTag: a0000000-0000-0000-0000-000000000030
 
 	measure 'Worst Performing Mode Name' =
-			
+
 			VAR ModeRows =
 			    ADDCOLUMNS (
 			        ALLSELECTED ( Mode[ModeDetail] ),
 			        "__OnTime", CALCULATE ( [On-Time %] ),
 			        "__Gap", CALCULATE ( [Average Absolute Schedule Gap Minutes] ),
-			        "__Comparable", CALCULATE ( [Comparable Scheduled Trips] )
+			        "__Observed", CALCULATE ( [Observed Realtime Trips] )
 			    )
 			VAR BottomMode =
 			    TOPN (
 			        1,
-			        FILTER ( ModeRows, [__Comparable] > 0 && NOT ISBLANK ( [__OnTime] ) ),
+			        FILTER ( ModeRows, [__Observed] > 0 && NOT ISBLANK ( [__OnTime] ) ),
 			        [__OnTime], ASC,
 			        [__Gap], ASC,
-			        [__Comparable], DESC,
+			        [__Observed], DESC,
 			        Mode[ModeDetail], ASC
 			    )
-			RETURN MAXX ( BottomMode, Mode[ModeDetail] )
+			RETURN
+			    MAXX ( BottomMode, Mode[ModeDetail] )
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678c4
+		lineageTag: a0000000-0000-0000-0000-000000000031
 
 	measure 'Best Performing Mode' =
-			
+
 			VAR ModeRows =
 			    ADDCOLUMNS (
 			        ALLSELECTED ( Mode[ModeDetail] ),
 			        "__OnTime", CALCULATE ( [On-Time %] ),
 			        "__Gap", CALCULATE ( [Average Absolute Schedule Gap Minutes] ),
-			        "__Comparable", CALCULATE ( [Comparable Scheduled Trips] )
+			        "__Observed", CALCULATE ( [Observed Realtime Trips] )
 			    )
 			VAR TopMode =
 			    TOPN (
 			        1,
-			        FILTER ( ModeRows, [__Comparable] > 0 && NOT ISBLANK ( [__OnTime] ) ),
+			        FILTER ( ModeRows, [__Observed] > 0 && NOT ISBLANK ( [__OnTime] ) ),
 			        [__OnTime], DESC,
 			        [__Gap], ASC,
-			        [__Comparable], DESC,
+			        [__Observed], DESC,
 			        Mode[ModeDetail], ASC
 			    )
 			VAR ModeName = MAXX ( TopMode, Mode[ModeDetail] )
 			VAR ModePct = MAXX ( TopMode, [__OnTime] )
-			VAR ComparableTrips = MAXX ( TopMode, [__Comparable] )
+			VAR ObservedTrips = MAXX ( TopMode, [__Observed] )
 			RETURN
 			    IF (
 			        ISBLANK ( ModeName ),
-			        "No observed matched trips are available for the current selection.",
+			        "No observed realtime trips are available for the current selection.",
 			        ModeName & " — " & FORMAT ( ModePct, "0.0%" )
-			            & " on time (" & FORMAT ( ComparableTrips, "#,0" ) & " comparable trips)"
+			            & " on time (" & FORMAT ( ObservedTrips, "#,0" ) & " observed trips)"
 			    )
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678c5
+		lineageTag: a0000000-0000-0000-0000-000000000032
 
 	measure 'Worst Performing Mode' =
-			
+
 			VAR ModeRows =
 			    ADDCOLUMNS (
 			        ALLSELECTED ( Mode[ModeDetail] ),
 			        "__OnTime", CALCULATE ( [On-Time %] ),
 			        "__Gap", CALCULATE ( [Average Absolute Schedule Gap Minutes] ),
-			        "__Comparable", CALCULATE ( [Comparable Scheduled Trips] )
+			        "__Observed", CALCULATE ( [Observed Realtime Trips] )
 			    )
 			VAR BottomMode =
 			    TOPN (
 			        1,
-			        FILTER ( ModeRows, [__Comparable] > 0 && NOT ISBLANK ( [__OnTime] ) ),
+			        FILTER ( ModeRows, [__Observed] > 0 && NOT ISBLANK ( [__OnTime] ) ),
 			        [__OnTime], ASC,
 			        [__Gap], ASC,
-			        [__Comparable], DESC,
+			        [__Observed], DESC,
 			        Mode[ModeDetail], ASC
 			    )
 			VAR ModeName = MAXX ( BottomMode, Mode[ModeDetail] )
 			VAR ModePct = MAXX ( BottomMode, [__OnTime] )
-			VAR ComparableTrips = MAXX ( BottomMode, [__Comparable] )
+			VAR ObservedTrips = MAXX ( BottomMode, [__Observed] )
 			RETURN
 			    IF (
 			        ISBLANK ( ModeName ),
-			        "No observed matched trips are available for the current selection.",
+			        "No observed realtime trips are available for the current selection.",
 			        ModeName & " — " & FORMAT ( ModePct, "0.0%" )
-			            & " on time (" & FORMAT ( ComparableTrips, "#,0" ) & " comparable trips)"
+			            & " on time (" & FORMAT ( ObservedTrips, "#,0" ) & " observed trips)"
 			    )
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678c6
+		lineageTag: a0000000-0000-0000-0000-000000000033
 
 	measure 'Best Performing Monitored Station Name' =
-			
+
 			VAR StationRows =
 			    ADDCOLUMNS (
-			        ALLSELECTED ( ManagementComparableTrip[MonitoredStationName] ),
+			        ALLSELECTED ( ManagementTripStation[Station] ),
 			        "__OnTime", CALCULATE ( [Station On-Time %] ),
 			        "__Gap", CALCULATE ( [Station Average Absolute Schedule Gap Minutes] ),
-			        "__Comparable", CALCULATE ( [Station Comparable Trips] )
+			        "__Observed", CALCULATE ( [Station Observed Realtime Trips] )
 			    )
 			VAR TopStation =
 			    TOPN (
 			        1,
-			        FILTER ( StationRows, [__Comparable] > 0 && NOT ISBLANK ( [__OnTime] ) ),
+			        FILTER ( StationRows, [__Observed] > 0 && NOT ISBLANK ( [__OnTime] ) ),
 			        [__OnTime], DESC,
 			        [__Gap], ASC,
-			        [__Comparable], DESC,
-			        ManagementComparableTrip[MonitoredStationName], ASC
+			        [__Observed], DESC,
+			        ManagementTripStation[Station], ASC
 			    )
-			RETURN MAXX ( TopStation, ManagementComparableTrip[MonitoredStationName] )
+			RETURN
+			    MAXX ( TopStation, ManagementTripStation[Station] )
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678c7
+		lineageTag: a0000000-0000-0000-0000-000000000034
 
 	measure 'Worst Performing Monitored Station Name' =
-			
+
 			VAR StationRows =
 			    ADDCOLUMNS (
-			        ALLSELECTED ( ManagementComparableTrip[MonitoredStationName] ),
+			        ALLSELECTED ( ManagementTripStation[Station] ),
 			        "__OnTime", CALCULATE ( [Station On-Time %] ),
 			        "__Gap", CALCULATE ( [Station Average Absolute Schedule Gap Minutes] ),
-			        "__Comparable", CALCULATE ( [Station Comparable Trips] )
+			        "__Observed", CALCULATE ( [Station Observed Realtime Trips] )
 			    )
 			VAR BottomStation =
 			    TOPN (
 			        1,
-			        FILTER ( StationRows, [__Comparable] > 0 && NOT ISBLANK ( [__OnTime] ) ),
+			        FILTER ( StationRows, [__Observed] > 0 && NOT ISBLANK ( [__OnTime] ) ),
 			        [__OnTime], ASC,
 			        [__Gap], ASC,
-			        [__Comparable], DESC,
-			        ManagementComparableTrip[MonitoredStationName], ASC
+			        [__Observed], DESC,
+			        ManagementTripStation[Station], ASC
 			    )
-			RETURN MAXX ( BottomStation, ManagementComparableTrip[MonitoredStationName] )
+			RETURN
+			    MAXX ( BottomStation, ManagementTripStation[Station] )
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678c8
+		lineageTag: a0000000-0000-0000-0000-000000000035
 
 	measure 'Best Performing Monitored Station' =
-			
+
 			VAR StationRows =
 			    ADDCOLUMNS (
-			        ALLSELECTED ( ManagementComparableTrip[MonitoredStationName] ),
+			        ALLSELECTED ( ManagementTripStation[Station] ),
 			        "__OnTime", CALCULATE ( [Station On-Time %] ),
 			        "__Gap", CALCULATE ( [Station Average Absolute Schedule Gap Minutes] ),
-			        "__Comparable", CALCULATE ( [Station Comparable Trips] )
+			        "__Observed", CALCULATE ( [Station Observed Realtime Trips] )
 			    )
 			VAR TopStation =
 			    TOPN (
 			        1,
-			        FILTER ( StationRows, [__Comparable] > 0 && NOT ISBLANK ( [__OnTime] ) ),
+			        FILTER ( StationRows, [__Observed] > 0 && NOT ISBLANK ( [__OnTime] ) ),
 			        [__OnTime], DESC,
 			        [__Gap], ASC,
-			        [__Comparable], DESC,
-			        ManagementComparableTrip[MonitoredStationName], ASC
+			        [__Observed], DESC,
+			        ManagementTripStation[Station], ASC
 			    )
-			VAR StationName = MAXX ( TopStation, ManagementComparableTrip[MonitoredStationName] )
+			VAR StationName = MAXX ( TopStation, ManagementTripStation[Station] )
 			VAR StationPct = MAXX ( TopStation, [__OnTime] )
-			VAR ComparableTrips = MAXX ( TopStation, [__Comparable] )
+			VAR ObservedTrips = MAXX ( TopStation, [__Observed] )
 			RETURN
 			    IF (
 			        ISBLANK ( StationName ),
-			        "No observed matched station trips are available for the current selection.",
+			        "No observed realtime station trips are available for the current selection.",
 			        StationName & " — " & FORMAT ( StationPct, "0.0%" )
-			            & " on time (" & FORMAT ( ComparableTrips, "#,0" ) & " comparable trips)"
+			            & " on time (" & FORMAT ( ObservedTrips, "#,0" ) & " observed trips)"
 			    )
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678c9
+		lineageTag: a0000000-0000-0000-0000-000000000036
 
 	measure 'Worst Performing Monitored Station' =
-			
+
 			VAR StationRows =
 			    ADDCOLUMNS (
-			        ALLSELECTED ( ManagementComparableTrip[MonitoredStationName] ),
+			        ALLSELECTED ( ManagementTripStation[Station] ),
 			        "__OnTime", CALCULATE ( [Station On-Time %] ),
 			        "__Gap", CALCULATE ( [Station Average Absolute Schedule Gap Minutes] ),
-			        "__Comparable", CALCULATE ( [Station Comparable Trips] )
+			        "__Observed", CALCULATE ( [Station Observed Realtime Trips] )
 			    )
 			VAR BottomStation =
 			    TOPN (
 			        1,
-			        FILTER ( StationRows, [__Comparable] > 0 && NOT ISBLANK ( [__OnTime] ) ),
+			        FILTER ( StationRows, [__Observed] > 0 && NOT ISBLANK ( [__OnTime] ) ),
 			        [__OnTime], ASC,
 			        [__Gap], ASC,
-			        [__Comparable], DESC,
-			        ManagementComparableTrip[MonitoredStationName], ASC
+			        [__Observed], DESC,
+			        ManagementTripStation[Station], ASC
 			    )
-			VAR StationName = MAXX ( BottomStation, ManagementComparableTrip[MonitoredStationName] )
+			VAR StationName = MAXX ( BottomStation, ManagementTripStation[Station] )
 			VAR StationPct = MAXX ( BottomStation, [__OnTime] )
-			VAR ComparableTrips = MAXX ( BottomStation, [__Comparable] )
+			VAR ObservedTrips = MAXX ( BottomStation, [__Observed] )
 			RETURN
 			    IF (
 			        ISBLANK ( StationName ),
-			        "No observed matched station trips are available for the current selection.",
+			        "No observed realtime station trips are available for the current selection.",
 			        StationName & " — " & FORMAT ( StationPct, "0.0%" )
-			            & " on time (" & FORMAT ( ComparableTrips, "#,0" ) & " comparable trips)"
+			            & " on time (" & FORMAT ( ObservedTrips, "#,0" ) & " observed trips)"
 			    )
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678ca
+		lineageTag: a0000000-0000-0000-0000-000000000037
 
-	measure 'Realtime Coverage Status' =
-			
-			"Coverage percentage not reported: collector run history does not establish run-by-run eligibility for every scheduled trip."
+	measure 'On-Time Summary' =
+
+			IF (
+			    ISBLANK ( [Observed Realtime Trips] ) || [Observed Realtime Trips] = 0,
+			    "No observations",
+			    FORMAT ( [On-Time Trips], "#,0" ) & "  |  " & FORMAT ( [On-Time %], "0.0%" )
+			)
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678cb
+		lineageTag: a0000000-0000-0000-0000-000000000038
+
+	measure 'Delayed Summary' =
+
+			IF (
+			    ISBLANK ( [Observed Realtime Trips] ) || [Observed Realtime Trips] = 0,
+			    "No observations",
+			    FORMAT ( [Delayed Trips], "#,0" ) & "  |  " & FORMAT ( [Delayed %], "0.0%" )
+			)
+		displayFolder: 09 M01 System Overview
+		lineageTag: a0000000-0000-0000-0000-000000000039
+
+	measure 'Early Summary' =
+
+			IF (
+			    ISBLANK ( [Observed Realtime Trips] ) || [Observed Realtime Trips] = 0,
+			    "No observations",
+			    FORMAT ( [Early Trips], "#,0" ) & "  |  " & FORMAT ( [Early %], "0.0%" )
+			)
+		displayFolder: 09 M01 System Overview
+		lineageTag: a0000000-0000-0000-0000-000000000040
 
 	measure 'Realtime Monitoring Scope Note' =
-			
-			"Realtime values use " & FORMAT ( [Realtime Monitored Stations], "#,0" )
-			    & " monitored stations, not all Cologne stations. Punctuality uses estimated arrivals; missing observations are not classified as cancellations."
+
+			"Realtime results represent the monitored sampling panel, not the full Cologne network. Realtime arrival values are estimates; missing observations are not cancellations."
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678cc
+		lineageTag: a0000000-0000-0000-0000-000000000041
 
 	measure 'System Status Summary' =
-			
-			VAR StartDate = MIN ( ManagementComparableTrip[ServiceDate] )
-			VAR EndDate = MAX ( ManagementComparableTrip[ServiceDate] )
-			VAR ObservedTrips = [Observed Matched Trips]
-			VAR ModeCount = DISTINCTCOUNT ( ManagementComparableTrip[ModeKey] )
-			VAR StationCount = DISTINCTCOUNT ( ManagementComparableTrip[MonitoredStationKey] )
+
+			VAR ObservedTrips = [Observed Realtime Trips]
+			VAR StartDate =
+			    CALCULATE (
+			        MIN ( ManagementComparableTrip[ServiceDate] ),
+			        ManagementComparableTrip[HasValidRealtimeObservation] = TRUE ()
+			    )
+			VAR EndDate =
+			    CALCULATE (
+			        MAX ( ManagementComparableTrip[ServiceDate] ),
+			        ManagementComparableTrip[HasValidRealtimeObservation] = TRUE ()
+			    )
+			VAR ModeCount =
+			    COUNTROWS (
+			        FILTER (
+			            VALUES ( Mode[ModeDetail] ),
+			            CALCULATE ( [Observed Realtime Trips] ) > 0
+			        )
+			    )
+			VAR StationCount =
+			    COUNTROWS (
+			        FILTER (
+			            VALUES ( ManagementTripStation[Station] ),
+			            CALCULATE ( [Station Observed Realtime Trips] ) > 0
+			        )
+			    )
 			VAR BestMode = [Best Performing Mode Name]
 			VAR WorstMode = [Worst Performing Mode Name]
 			RETURN
 			    IF (
-			        ISBLANK ( ObservedTrips ),
-			        "No valid realtime matched trips are available for the selected monitoring period.",
+			        ISBLANK ( ObservedTrips ) || ObservedTrips = 0,
+			        "No realtime trips with a usable estimated timing are available for the selected period.",
 			        "From " & FORMAT ( StartDate, "d MMM yyyy" ) & " to "
-			            & FORMAT ( EndDate, "d MMM yyyy" ) & ", the system observed "
-			            & FORMAT ( ObservedTrips, "#,0" ) & " matched trips across "
-			            & FORMAT ( ModeCount, "#,0" ) & " modes and "
+			            & FORMAT ( EndDate, "d MMM yyyy" ) & ", "
+			            & FORMAT ( ObservedTrips, "#,0" ) & " realtime trips were observed across "
+			            & FORMAT ( ModeCount, "#,0" ) & " transport modes and "
 			            & FORMAT ( StationCount, "#,0" ) & " monitored stations. "
-			            & BestMode & " has the highest on-time rate; "
+			            & BestMode & " has the highest on-time rate, while "
 			            & WorstMode & " has the lowest."
 			    )
 		displayFolder: 09 M01 System Overview
-		lineageTag: c01d2e3f-4a5b-4c6d-8e7f-9012345678cd
+		lineageTag: a0000000-0000-0000-0000-000000000042
 
 	column _Placeholder
 		dataType: int64
