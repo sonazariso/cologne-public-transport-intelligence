@@ -5,7 +5,7 @@
     "x": 32,
     "y": 258,
     "z": 3000,
-    "height": 246,
+    "height": 274,
     "width": 296,
     "tabOrder": 3000
   },
@@ -132,7 +132,7 @@
             "position": {
               "expr": {
                 "Literal": {
-                  "Value": "'BottomCenter'"
+                  "Value": "'RightCenter'"
                 }
               }
             },

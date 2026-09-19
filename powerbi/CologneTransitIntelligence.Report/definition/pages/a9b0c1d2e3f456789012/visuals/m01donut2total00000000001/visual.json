@@ -2,10 +2,10 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01donut2total00000000001",
   "position": {
-    "x": 402,
-    "y": 354,
+    "x": 346,
+    "y": 388,
     "z": 3501,
-    "height": 28,
+    "height": 30,
     "width": 160,
     "tabOrder": 3501
   },
