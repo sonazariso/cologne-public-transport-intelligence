@@ -101,7 +101,7 @@ table ManagementMonitoredStation
 		source =
 				let
 				    Source = Sql.Database("localhost", "CologneTransitIntelligence"),
-				    ManagementMonitoredStations = Value.NativeQuery(Source, "WITH PanelTargets AS ( SELECT CONVERT(INT, CONVERT(CHAR(8), CollectionDateLocal, 112)) AS DateKey, CollectionDateLocal, SamplingTargetId, NULLIF(LTRIM(RTRIM(SamplingTargetName)), N'') AS SamplingTargetName, StopPointRef, CAST(ParticipatedInSamplingPanel AS bit) AS ParticipatedInSamplingPanel FROM analytics.vwRealtimeCollectorRunHealth WHERE ParticipatedInSamplingPanel = 1 AND SamplingTargetId IS NOT NULL ) SELECT DISTINCT DateKey, CollectionDateLocal, SamplingTargetId, SamplingTargetName, StopPointRef, ParticipatedInSamplingPanel, SamplingTargetId AS MonitoredStationKey, SamplingTargetName AS MonitoredStationName, SamplingTargetName AS StaticParentStationName FROM PanelTargets WHERE SamplingTargetName IS NOT NULL", null, [EnableFolding = true])
+				    ManagementMonitoredStations = Source{[Schema="analytics", Item="vwManagementMonitoredStation"]}[Data]
 				in
 				    ManagementMonitoredStations
 

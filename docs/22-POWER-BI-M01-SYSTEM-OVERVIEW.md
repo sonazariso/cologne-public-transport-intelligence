@@ -15,14 +15,17 @@ operational outcome in the trusted realtime reliability dataset.
 
 ## Refresh-safe data design
 
-M01-specific SQL views are not required. The two M01 helper partitions use
-Power Query `Value.NativeQuery` against database objects already used by the
-working semantic model:
+The M01 management layer uses the deployed views created by
+`sql/05-analytics/05-create-m01-management-views.sql`:
 
-- `analytics.vwRealtimeReliabilityOutcome` supplies the canonical trip and
-  station/stop helpers.
-- `analytics.vwRealtimeCollectorRunHealth` supplies successful sampling-panel
+- `analytics.vwManagementComparableTrip` supplies the canonical trip helper.
+- `analytics.vwManagementTripStation` supplies the canonical station/stop
+  helper.
+- `analytics.vwManagementMonitoredStation` supplies deduplicated sampling-panel
   target activity and collection dates.
+
+The Power BI partitions navigate to these views directly through
+`Sql.Database`; they do not embed `Value.NativeQuery` or CTE text.
 
 `ManagementComparableTrip` is one row per `ServiceDate + TripKey`. The
 canonical row prefers a nonblank final estimated delay, then the latest
@@ -95,8 +98,9 @@ The intended user workflow is:
 2. Select **Apply external changes**.
 3. Select **Refresh now**.
 
-No M01-specific SQL deployment or validation script is required before the
-refresh.
+Deploy `sql/05-analytics/05-create-m01-management-views.sql` and run its
+read-only checks in `sql/05-analytics/06-validate-m01-management-views.sql`
+before the refresh.
 
 Power BI Desktop remains required for Import Refresh, page rendering,
 slicer cross-filtering, accessibility checks, and final visual reconciliation.

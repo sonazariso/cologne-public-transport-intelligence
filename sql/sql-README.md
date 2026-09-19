@@ -95,6 +95,8 @@ The checked-in scripts reproduce the validated static baseline and the synchroni
 26. `04-warehouse/07-validate-operational-stop-outcome.sql`
 27. `05-analytics/03-create-realtime-analytics-views.sql`
 28. `05-analytics/04-validate-realtime-analytics-views.sql`
+29. `05-analytics/05-create-m01-management-views.sql`
+30. `05-analytics/06-validate-m01-management-views.sql`
 
 The realtime steps are listed after the static warehouse and analytics steps so every dependency of the realtime working views exists before those views are created. The folder numbering remains organized by schema/layer rather than by this global dependency order.
 
@@ -285,13 +287,18 @@ database objects.
 
 ### M01 management cohort
 
-M01 does not require an M01-specific SQL deployment step. Its Power Query
-partitions use `Value.NativeQuery` against the already deployed
-`analytics.vwRealtimeReliabilityOutcome` and
-`analytics.vwRealtimeCollectorRunHealth` views. The first helper is one row per
-`ServiceDate + TripKey`; the station helper is one row per
-`ServiceDate + TripKey + StopKey`. Both are refreshed when the PBIP model is
-refreshed in Power BI Desktop.
+M01 uses the deployed management views from
+`05-analytics/05-create-m01-management-views.sql`:
+
+- `analytics.vwManagementComparableTrip` is one row per `ServiceDate + TripKey`.
+- `analytics.vwManagementTripStation` is one row per
+  `ServiceDate + TripKey + StopKey`.
+- `analytics.vwManagementMonitoredStation` is one row per local date and
+  sampling-panel target.
+
+The matching read-only checks are in
+`05-analytics/06-validate-m01-management-views.sql`. Power BI navigates to
+these views directly without `Value.NativeQuery`.
 
 ### Realtime performance support
 

@@ -177,7 +177,7 @@ table ManagementTripStation
 		source =
 				let
 				    Source = Sql.Database("localhost", "CologneTransitIntelligence"),
-				    ManagementTripStations = Value.NativeQuery(Source, "WITH RankedStops AS ( SELECT outcome.DateKey, outcome.ServiceDate, outcome.TripKey, outcome.RouteKey, outcome.ModeKey, outcome.Station, outcome.StopKey, outcome.ScheduledArrival, outcome.LatestObservedEstimatedArrivalLocal, outcome.FinalObservedEstimatedDelayMinutes, outcome.LastObservedAtUtc, outcome.OperationalStopOutcomeKey, CAST(CASE WHEN outcome.FinalObservedEstimatedDelayMinutes IS NOT NULL THEN 1 ELSE 0 END AS bit) AS HasValidRealtimeObservation, ROW_NUMBER() OVER ( PARTITION BY outcome.ServiceDate, outcome.TripKey, outcome.StopKey ORDER BY CASE WHEN outcome.FinalObservedEstimatedDelayMinutes IS NOT NULL THEN 0 ELSE 1 END, outcome.LastObservedAtUtc DESC, outcome.ScheduledArrival DESC, outcome.OperationalStopOutcomeKey DESC ) AS StopRank FROM analytics.vwRealtimeReliabilityOutcome AS outcome WHERE outcome.OperationalStopOutcomeKey IS NOT NULL ) SELECT CONVERT(NVARCHAR(8), ServiceDate, 112) + N'|' + CONVERT(NVARCHAR(30), TripKey) AS ManagementTripKey, CONVERT(NVARCHAR(8), ServiceDate, 112) + N'|' + CONVERT(NVARCHAR(30), TripKey) + N'|' + CONVERT(NVARCHAR(30), StopKey) AS ManagementTripStationKey, DateKey, ServiceDate, TripKey, RouteKey, ModeKey, Station, StopKey, ScheduledArrival, LatestObservedEstimatedArrivalLocal, FinalObservedEstimatedDelayMinutes, LastObservedAtUtc, OperationalStopOutcomeKey, HasValidRealtimeObservation FROM RankedStops WHERE StopRank = 1", null, [EnableFolding = true])
+				    ManagementTripStations = Source{[Schema="analytics", Item="vwManagementTripStation"]}[Data]
 				in
 				    ManagementTripStations
 

@@ -179,7 +179,7 @@ table ManagementComparableTrip
 		source =
 				let
 				    Source = Sql.Database("localhost", "CologneTransitIntelligence"),
-				    ManagementTrip = Value.NativeQuery(Source, "WITH RankedOutcomes AS ( SELECT outcome.OperationalStopOutcomeKey, outcome.DateKey, outcome.ServiceDate, outcome.TripKey, outcome.RouteKey, outcome.Route, outcome.ModeKey, outcome.Mode, outcome.Station, outcome.StopKey, outcome.ScheduledArrival, outcome.LatestObservedEstimatedArrivalLocal, outcome.FinalObservedEstimatedDelayMinutes, outcome.LastObservedAtUtc, CAST(CASE WHEN outcome.FinalObservedEstimatedDelayMinutes IS NOT NULL THEN 1 ELSE 0 END AS bit) AS HasValidRealtimeObservation, ROW_NUMBER() OVER ( PARTITION BY outcome.ServiceDate, outcome.TripKey ORDER BY CASE WHEN outcome.FinalObservedEstimatedDelayMinutes IS NOT NULL THEN 0 ELSE 1 END, outcome.LastObservedAtUtc DESC, outcome.ScheduledArrival DESC, outcome.OperationalStopOutcomeKey DESC ) AS TripRank FROM analytics.vwRealtimeReliabilityOutcome AS outcome WHERE outcome.OperationalStopOutcomeKey IS NOT NULL ) SELECT CONVERT(NVARCHAR(8), ServiceDate, 112) + N'|' + CONVERT(NVARCHAR(30), TripKey) AS ManagementTripKey, DateKey, ServiceDate, TripKey, RouteKey, Route, ModeKey, Mode, Station, StopKey, ScheduledArrival, LatestObservedEstimatedArrivalLocal, FinalObservedEstimatedDelayMinutes, LastObservedAtUtc, OperationalStopOutcomeKey, HasValidRealtimeObservation FROM RankedOutcomes WHERE TripRank = 1", null, [EnableFolding = true])
+				    ManagementTrip = Source{[Schema="analytics", Item="vwManagementComparableTrip"]}[Data]
 				in
 				    ManagementTrip
 
