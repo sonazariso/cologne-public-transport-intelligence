@@ -3,11 +3,11 @@
   "name": "m01donut2label00000000001",
   "position": {
     "x": 346,
-    "y": 370,
-    "z": 3499,
-    "height": 16,
+    "y": 368,
+    "z": 3503,
+    "height": 20,
     "width": 160,
-    "tabOrder": 3499
+    "tabOrder": 3503
   },
   "visual": {
     "visualType": "textbox",
@@ -21,10 +21,10 @@
                   {
                     "value": "Observed Services",
                     "textStyle": {
-                      "fontWeight": "normal",
+                      "fontWeight": "bold",
                       "fontFamily": "Segoe UI",
-                    "fontSize": "8pt",
-                      "color": "#5F6B6D"
+                    "fontSize": "9pt",
+                    "color": "#1F2933"
                     }
                   }
                 ],
