@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "m01dateslicer",
+  "position": { "x": 332, "y": 174, "z": 11, "height": 72, "width": 280, "tabOrder": 11 },
+  "visual": {
+    "visualType": "slicer",
+    "query": { "queryState": { "Values": { "projections": [ { "field": { "Column": { "Expression": { "SourceRef": { "Entity": "ManagementComparableTrip" } }, "Property": "ServiceDate" } }, "queryRef": "ManagementComparableTrip.ServiceDate", "nativeQueryRef": "ServiceDate", "active": true } ] } } },
+    "objects": { "data": [ { "properties": { "mode": { "expr": { "Literal": { "Value": "'Between'" } } } } } ] },
+    "visualContainerObjects": { "title": [ { "properties": { "show": { "expr": { "Literal": { "Value": "true" } } }, "text": { "expr": { "Literal": { "Value": "'Service date'" } } } } } ] },
+    "drillFilterOtherVisuals": true
+  }
+}

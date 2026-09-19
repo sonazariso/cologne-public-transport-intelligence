@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "m01modeslicer",
+  "position": { "x": 32, "y": 174, "z": 10, "height": 72, "width": 280, "tabOrder": 10 },
+  "visual": {
+    "visualType": "slicer",
+    "query": { "queryState": { "Values": { "projections": [ { "field": { "Column": { "Expression": { "SourceRef": { "Entity": "Mode" } }, "Property": "ModeDetail" } }, "queryRef": "Mode.ModeDetail", "nativeQueryRef": "ModeDetail", "active": true } ] } } },
+    "objects": { "data": [ { "properties": { "mode": { "expr": { "Literal": { "Value": "'Basic'" } } } } } ] },
+    "visualContainerObjects": { "title": [ { "properties": { "show": { "expr": { "Literal": { "Value": "true" } } }, "text": { "expr": { "Literal": { "Value": "'Transport mode'" } } } } } ] },
+    "drillFilterOtherVisuals": true
+  }
+}

@@ -9,7 +9,7 @@ model Model
 
 annotation __PBI_TimeIntelligenceEnabled = 1
 
-annotation PBI_QueryOrder = ["ActiveDate","DailySchedule","Mode","NetworkKPI","ParentStation","RT_CollectorRunHealth","RT_DataQualityCoverage","RT_ConsolidationQuality","RT_ReliabilityByDimension","RT_ReliabilityOutcome","Route","ScheduledTripProfile","StopPosition","_Measures"]
+annotation PBI_QueryOrder = ["ActiveDate","DailySchedule","Mode","NetworkKPI","ParentStation","ManagementComparableTrip","ManagementMonitoredStation","PunctualityStatus","Delay Threshold (Minutes)","RT_CollectorRunHealth","RT_DataQualityCoverage","RT_ConsolidationQuality","RT_ReliabilityByDimension","RT_ReliabilityOutcome","Route","ScheduledTripProfile","StopPosition","_Measures"]
 
 annotation PBI_ProTooling = ["DaxQueryView_Desktop","DevMode"]
 
@@ -20,6 +20,10 @@ ref table LocalDateTable_8d3d726e-5bc7-4ade-90cc-004adab77097
 ref table Mode
 ref table NetworkKPI
 ref table ParentStation
+ref table ManagementComparableTrip
+ref table ManagementMonitoredStation
+ref table PunctualityStatus
+ref table 'Delay Threshold (Minutes)'
 ref table RT_CollectorRunHealth
 ref table LocalDateTable_1dae7e85-1d66-4b1a-844f-8526e900bbb2
 ref table LocalDateTable_fa31f15f-568e-4569-b590-22743dcadb6a

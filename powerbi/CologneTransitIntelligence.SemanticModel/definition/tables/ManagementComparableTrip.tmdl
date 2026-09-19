@@ -1,0 +1,488 @@
+table ManagementComparableTrip
+	lineageTag: 7c8e9f01-2345-4abc-8def-0123456789ab
+
+	column ManagementTripKey
+		dataType: string
+		isHidden
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789ac
+		summarizeBy: none
+		sourceColumn: ManagementTripKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column DateKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789ad
+		summarizeBy: none
+		sourceColumn: DateKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ServiceDate
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789ae
+		summarizeBy: none
+		sourceColumn: ServiceDate
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column TripKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789af
+		summarizeBy: none
+		sourceColumn: TripKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column TripId
+		dataType: string
+		isHidden
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789b0
+		summarizeBy: none
+		sourceColumn: TripId
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column RouteKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789b1
+		summarizeBy: none
+		sourceColumn: RouteKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column RouteId
+		dataType: string
+		isHidden
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789b2
+		summarizeBy: none
+		sourceColumn: RouteId
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column Route
+		dataType: string
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789b3
+		summarizeBy: none
+		sourceColumn: Route
+
+		annotation SummarizationSetBy = Automatic
+
+	column RouteLongName
+		dataType: string
+		isHidden
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789b4
+		summarizeBy: none
+		sourceColumn: RouteLongName
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ModeKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789b5
+		summarizeBy: none
+		sourceColumn: ModeKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ModeGroup
+		dataType: string
+		isHidden
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789b6
+		summarizeBy: none
+		sourceColumn: ModeGroup
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ModeDetail
+		dataType: string
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789b7
+		summarizeBy: none
+		sourceColumn: ModeDetail
+
+		annotation SummarizationSetBy = Automatic
+
+	column ServiceKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789b8
+		summarizeBy: none
+		sourceColumn: ServiceKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column TripHeadsign
+		dataType: string
+		isHidden
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789b9
+		summarizeBy: none
+		sourceColumn: TripHeadsign
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column SamplingTargetId
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789ba
+		summarizeBy: none
+		sourceColumn: SamplingTargetId
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column StopPointRef
+		dataType: string
+		isHidden
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789bb
+		summarizeBy: none
+		sourceColumn: StopPointRef
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column MonitoredStationKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789bc
+		summarizeBy: none
+		sourceColumn: MonitoredStationKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column MonitoredStationName
+		dataType: string
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789bd
+		summarizeBy: none
+		sourceColumn: MonitoredStationName
+
+		annotation SummarizationSetBy = Automatic
+
+	column StaticParentStationName
+		dataType: string
+		isHidden
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789be
+		summarizeBy: none
+		sourceColumn: StaticParentStationName
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ScheduledStopEventKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789bf
+		summarizeBy: none
+		sourceColumn: ScheduledStopEventKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ScheduledStop
+		dataType: string
+		isHidden
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789c0
+		summarizeBy: none
+		sourceColumn: ScheduledStop
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ScheduledArrival
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789c1
+		summarizeBy: none
+		sourceColumn: ScheduledArrival
+
+		changedProperty = IsHidden
+
+		annotation UnderlyingDateTimeDataType = DateTime
+
+	column ScheduledDeparture
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789c2
+		summarizeBy: none
+		sourceColumn: ScheduledDeparture
+
+		changedProperty = IsHidden
+
+		annotation UnderlyingDateTimeDataType = DateTime
+
+	column FirstObservedEstimatedArrival
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789c3
+		summarizeBy: none
+		sourceColumn: FirstObservedEstimatedArrival
+
+		changedProperty = IsHidden
+
+		annotation UnderlyingDateTimeDataType = DateTime
+
+	column ObservedEstimatedArrival
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789c4
+		summarizeBy: none
+		sourceColumn: ObservedEstimatedArrival
+
+		changedProperty = IsHidden
+
+		annotation UnderlyingDateTimeDataType = DateTime
+
+	column FirstObservedAtUtc
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789c5
+		summarizeBy: none
+		sourceColumn: FirstObservedAtUtc
+
+		changedProperty = IsHidden
+
+		annotation UnderlyingDateTimeDataType = DateTime
+
+	column LastObservedAtUtc
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789c6
+		summarizeBy: none
+		sourceColumn: LastObservedAtUtc
+
+		changedProperty = IsHidden
+
+		annotation UnderlyingDateTimeDataType = DateTime
+
+	column ObservationCount
+		dataType: int64
+		isHidden
+		formatString: #,0
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789c7
+		summarizeBy: none
+		sourceColumn: ObservationCount
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column MatchStatus
+		dataType: string
+		isHidden
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789c8
+		summarizeBy: none
+		sourceColumn: MatchStatus
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ScheduleDifferenceMinutes
+		dataType: double
+		formatString: #,0.0
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789c9
+		summarizeBy: none
+		sourceColumn: ScheduleDifferenceMinutes
+
+		annotation SummarizationSetBy = Automatic
+
+	column HasMatchedRealtimeOutcome
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789ca
+		summarizeBy: none
+		sourceColumn: HasMatchedRealtimeOutcome
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column HasValidRealtimeObservation
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789cb
+		summarizeBy: none
+		sourceColumn: HasValidRealtimeObservation
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column HasMatchedRealtimeOutcomeAtStation
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789cc
+		summarizeBy: none
+		sourceColumn: HasMatchedRealtimeOutcomeAtStation
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column HasValidRealtimeObservationAtStation
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789cd
+		summarizeBy: none
+		sourceColumn: HasValidRealtimeObservationAtStation
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column IsTripLevelRecord
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789ce
+		summarizeBy: none
+		sourceColumn: IsTripLevelRecord
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column RealtimeDataStartDate
+		dataType: dateTime
+		isHidden
+		formatString: Short Date
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789cf
+		summarizeBy: none
+		sourceColumn: RealtimeDataStartDate
+
+		changedProperty = IsHidden
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column RealtimeDataEndDate
+		dataType: dateTime
+		isHidden
+		formatString: Short Date
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789d0
+		summarizeBy: none
+		sourceColumn: RealtimeDataEndDate
+
+		changedProperty = IsHidden
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column RealtimeCoveredDays
+		dataType: int64
+		isHidden
+		formatString: #,0
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789d1
+		summarizeBy: none
+		sourceColumn: RealtimeCoveredDays
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column CoverageDenominatorDefensible
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789d2
+		summarizeBy: none
+		sourceColumn: CoverageDenominatorDefensible
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column CohortDefinition
+		dataType: string
+		isHidden
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789d3
+		summarizeBy: none
+		sourceColumn: CohortDefinition
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ObservedMatchDefinition
+		dataType: string
+		isHidden
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789d4
+		summarizeBy: none
+		sourceColumn: ObservedMatchDefinition
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column CoverageLimitation
+		dataType: string
+		isHidden
+		lineageTag: 7c8e9f01-2345-4abc-8def-0123456789d5
+		summarizeBy: none
+		sourceColumn: CoverageLimitation
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition ManagementComparableTrip = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("localhost", "CologneTransitIntelligence"),
+				    analytics_vwManagementComparableTrip = Source{[Schema="analytics",Item="vwManagementComparableTrip"]}[Data]
+				in
+				    analytics_vwManagementComparableTrip
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table

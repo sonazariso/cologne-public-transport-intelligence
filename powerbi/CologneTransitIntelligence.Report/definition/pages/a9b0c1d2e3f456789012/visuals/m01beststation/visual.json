@@ -1,0 +1,6 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "m01beststation",
+  "position": { "x": 32, "y": 868, "z": 53, "height": 86, "width": 440, "tabOrder": 53 },
+  "visual": { "visualType": "cardVisual", "query": { "queryState": { "Data": { "projections": [ { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Best Performing Monitored Station" } }, "queryRef": "_Measures.Best Performing Monitored Station", "nativeQueryRef": "Best Performing Monitored Station" } ] } } }, "visualContainerObjects": { "title": [ { "properties": { "show": { "expr": { "Literal": { "Value": "true" } } }, "text": { "expr": { "Literal": { "Value": "'Best-performing monitored station'" } } } } } ] }, "drillFilterOtherVisuals": true }
+}

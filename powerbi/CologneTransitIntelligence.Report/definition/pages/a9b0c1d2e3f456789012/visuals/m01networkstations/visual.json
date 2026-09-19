@@ -1,0 +1,6 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "m01networkstations",
+  "position": { "x": 32, "y": 366, "z": 30, "height": 76, "width": 224, "tabOrder": 30 },
+  "visual": { "visualType": "cardVisual", "query": { "queryState": { "Data": { "projections": [ { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Baseline Parent Stations" } }, "queryRef": "_Measures.Baseline Parent Stations", "nativeQueryRef": "Baseline Parent Stations" } ] } } }, "visualContainerObjects": { "title": [ { "properties": { "show": { "expr": { "Literal": { "Value": "true" } } }, "text": { "expr": { "Literal": { "Value": "'Network parent stations'" } } } } } ] }, "drillFilterOtherVisuals": true }
+}

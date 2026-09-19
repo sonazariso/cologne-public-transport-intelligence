@@ -1,0 +1,15 @@
+table PunctualityStatus
+	lineageTag: 9e0f1234-5678-4abc-8def-2345678901ab
+
+	column Status
+		dataType: string
+		isKey
+		lineageTag: 9e0f1234-5678-4abc-8def-2345678901ac
+		summarizeBy: none
+		sourceColumn: Status
+
+		annotation SummarizationSetBy = Automatic
+
+	partition PunctualityStatus = calculated
+		mode: import
+		source = DATATABLE ( "Status", STRING, { { "On Time" }, { "Delayed" }, { "Early" } } )

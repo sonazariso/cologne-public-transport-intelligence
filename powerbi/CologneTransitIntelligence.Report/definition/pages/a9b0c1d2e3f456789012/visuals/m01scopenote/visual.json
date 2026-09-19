@@ -1,0 +1,6 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "m01scopenote",
+  "position": { "x": 944, "y": 760, "z": 55, "height": 96, "width": 304, "tabOrder": 55 },
+  "visual": { "visualType": "cardVisual", "query": { "queryState": { "Data": { "projections": [ { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Realtime Monitoring Scope Note" } }, "queryRef": "_Measures.Realtime Monitoring Scope Note", "nativeQueryRef": "Realtime Monitoring Scope Note" } ] } } }, "visualContainerObjects": { "title": [ { "properties": { "show": { "expr": { "Literal": { "Value": "true" } } }, "text": { "expr": { "Literal": { "Value": "'Scope note'" } } } } } ] }, "drillFilterOtherVisuals": true }
+}

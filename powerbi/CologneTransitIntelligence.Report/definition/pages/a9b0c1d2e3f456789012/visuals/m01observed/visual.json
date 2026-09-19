@@ -1,0 +1,6 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "m01observed",
+  "position": { "x": 280, "y": 270, "z": 21, "height": 76, "width": 224, "tabOrder": 21 },
+  "visual": { "visualType": "cardVisual", "query": { "queryState": { "Data": { "projections": [ { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Observed Matched Trips" } }, "queryRef": "_Measures.Observed Matched Trips", "nativeQueryRef": "Observed Matched Trips" } ] } } }, "visualContainerObjects": { "title": [ { "properties": { "show": { "expr": { "Literal": { "Value": "true" } } }, "text": { "expr": { "Literal": { "Value": "'Observed matched trips'" } } } } } ] }, "drillFilterOtherVisuals": true }
+}

@@ -125,3 +125,15 @@ relationship 8e2c1feb-05a0-79ff-5808-ab31543c0089
 	fromColumn: RT_ConsolidationQuality.DateKey
 	toColumn: ActiveDate.DateKey
 
+relationship 9f3d2a1c-7b6e-4d5a-8c9b-0e1f2a3b4c5d
+	fromColumn: ManagementComparableTrip.DateKey
+	toColumn: ActiveDate.DateKey
+
+relationship a04e3b2c-8d7f-4e6a-9b0c-1f2a3b4c5d6e
+	fromColumn: ManagementComparableTrip.RouteKey
+	toColumn: Route.RouteKey
+
+relationship b15f4c3d-9e8a-4f7b-0c1d-2a3b4c5d6e7f
+	fromColumn: ManagementComparableTrip.MonitoredStationKey
+	toColumn: ManagementMonitoredStation.MonitoredStationKey
+

@@ -1,0 +1,6 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "m01early",
+  "position": { "x": 1024, "y": 270, "z": 24, "height": 76, "width": 224, "tabOrder": 24 },
+  "visual": { "visualType": "cardVisual", "query": { "queryState": { "Data": { "projections": [ { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Early Trips" } }, "queryRef": "_Measures.Early Trips", "nativeQueryRef": "Early Trips" } ] } } }, "visualContainerObjects": { "title": [ { "properties": { "show": { "expr": { "Literal": { "Value": "true" } } }, "text": { "expr": { "Literal": { "Value": "'Early trips'" } } } } } ] }, "drillFilterOtherVisuals": true }
+}

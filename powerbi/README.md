@@ -17,10 +17,10 @@ rendering, interaction QA, and final validation.
 
 ## Current report state
 
-- Chat 07 report architecture is complete, and Chat 44 adds the management overview page.
+- Chat 07 report architecture is complete, and M01 adds the management-facing system overview page.
 - `00 - Template` is the approved Design System / Component Library reference.
-- Pages `01` through `08` remain the approved analytical pages; `M01 - Network & Delay Overview` is the new management-facing page.
-- The current semantic model contains Static, Realtime Reliability, and Management Overview measures.
+- `M01 - System Overview` is inserted first; pages `01` through `08` and the legacy QA pages remain unchanged.
+- The current semantic model contains Static, Realtime Reliability, and M01 System Overview measures.
 - The active custom report theme source is `theme/cologne-transit-intelligence-theme.json`.
 - Validation assets are maintained under `validation/`.
 - Power BI Desktop is still required for refresh, rendering, and final interaction QA.

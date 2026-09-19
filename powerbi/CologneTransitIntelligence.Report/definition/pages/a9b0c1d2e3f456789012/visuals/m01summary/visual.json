@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "m01summary",
+  "position": { "x": 32, "y": 100, "z": 2, "height": 58, "width": 1216, "tabOrder": 2 },
+  "visual": {
+    "visualType": "cardVisual",
+    "query": { "queryState": { "Data": { "projections": [ { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "System Status Summary" } }, "queryRef": "_Measures.System Status Summary", "nativeQueryRef": "System Status Summary" } ] } } },
+    "visualContainerObjects": { "title": [ { "properties": { "show": { "expr": { "Literal": { "Value": "true" } } }, "text": { "expr": { "Literal": { "Value": "'Current status'" } } } } } ] },
+    "drillFilterOtherVisuals": true
+  }
+}

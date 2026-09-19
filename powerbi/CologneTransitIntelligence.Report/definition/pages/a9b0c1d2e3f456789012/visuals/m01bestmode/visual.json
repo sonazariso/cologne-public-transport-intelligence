@@ -1,0 +1,6 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "m01bestmode",
+  "position": { "x": 492, "y": 760, "z": 51, "height": 96, "width": 360, "tabOrder": 51 },
+  "visual": { "visualType": "cardVisual", "query": { "queryState": { "Data": { "projections": [ { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Best Performing Mode" } }, "queryRef": "_Measures.Best Performing Mode", "nativeQueryRef": "Best Performing Mode" } ] } } }, "visualContainerObjects": { "title": [ { "properties": { "show": { "expr": { "Literal": { "Value": "true" } } }, "text": { "expr": { "Literal": { "Value": "'Best-performing mode'" } } } } } ] }, "drillFilterOtherVisuals": true }
+}

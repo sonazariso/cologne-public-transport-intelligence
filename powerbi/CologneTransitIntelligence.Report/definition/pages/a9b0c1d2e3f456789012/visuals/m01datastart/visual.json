@@ -1,0 +1,6 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "m01datastart",
+  "position": { "x": 528, "y": 366, "z": 32, "height": 76, "width": 224, "tabOrder": 32 },
+  "visual": { "visualType": "cardVisual", "query": { "queryState": { "Data": { "projections": [ { "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Measures" } }, "Property": "Realtime Data Start Date" } }, "queryRef": "_Measures.Realtime Data Start Date", "nativeQueryRef": "Realtime Data Start Date" } ] } } }, "visualContainerObjects": { "title": [ { "properties": { "show": { "expr": { "Literal": { "Value": "true" } } }, "text": { "expr": { "Literal": { "Value": "'Realtime period starts'" } } } } } ] }, "drillFilterOtherVisuals": true }
+}

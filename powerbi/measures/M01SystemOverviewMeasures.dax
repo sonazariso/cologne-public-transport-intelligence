@@ -1,0 +1,395 @@
+-- Power BI M01 - System Overview measures.
+--
+-- The management cohort is trip-grain: ServiceDate + TripKey.  Repeated
+-- realtime observations are consolidated upstream in the management view.
+-- Punctuality uses estimated-arrival difference, not confirmed physical
+-- arrival.  The default delay threshold is 0 minutes.
+
+Delay Threshold (Minutes) =
+SELECTEDVALUE ( 'Delay Threshold (Minutes)'[Value], 0 )
+
+Comparable Scheduled Trips =
+CALCULATE (
+    DISTINCTCOUNT ( ManagementComparableTrip[ManagementTripKey] ),
+    ManagementComparableTrip[IsTripLevelRecord] = TRUE ()
+)
+
+Observed Matched Trips =
+CALCULATE (
+    DISTINCTCOUNT ( ManagementComparableTrip[ManagementTripKey] ),
+    ManagementComparableTrip[IsTripLevelRecord] = TRUE (),
+    ManagementComparableTrip[HasValidRealtimeObservation] = TRUE ()
+)
+
+Realtime Observation Coverage % =
+IF (
+    CALCULATE (
+        COUNTROWS ( ManagementComparableTrip ),
+        ManagementComparableTrip[CoverageDenominatorDefensible] = TRUE ()
+    ) > 0,
+    DIVIDE ( [Observed Matched Trips], [Comparable Scheduled Trips] )
+)
+
+On-Time Trips =
+CALCULATE (
+    DISTINCTCOUNT ( ManagementComparableTrip[ManagementTripKey] ),
+    FILTER (
+        ManagementComparableTrip,
+        ManagementComparableTrip[IsTripLevelRecord] = TRUE ()
+            && ManagementComparableTrip[HasValidRealtimeObservation] = TRUE ()
+            && ABS ( ManagementComparableTrip[ScheduleDifferenceMinutes] )
+                <= [Delay Threshold (Minutes)]
+    )
+)
+
+Delayed Trips =
+CALCULATE (
+    DISTINCTCOUNT ( ManagementComparableTrip[ManagementTripKey] ),
+    FILTER (
+        ManagementComparableTrip,
+        ManagementComparableTrip[IsTripLevelRecord] = TRUE ()
+            && ManagementComparableTrip[HasValidRealtimeObservation] = TRUE ()
+            && ManagementComparableTrip[ScheduleDifferenceMinutes]
+                > [Delay Threshold (Minutes)]
+    )
+)
+
+Early Trips =
+CALCULATE (
+    DISTINCTCOUNT ( ManagementComparableTrip[ManagementTripKey] ),
+    FILTER (
+        ManagementComparableTrip,
+        ManagementComparableTrip[IsTripLevelRecord] = TRUE ()
+            && ManagementComparableTrip[HasValidRealtimeObservation] = TRUE ()
+            && ManagementComparableTrip[ScheduleDifferenceMinutes]
+                < ( 0 - [Delay Threshold (Minutes)] )
+    )
+)
+
+On-Time % =
+DIVIDE ( [On-Time Trips], [Observed Matched Trips] )
+
+Delayed % =
+DIVIDE ( [Delayed Trips], [Observed Matched Trips] )
+
+Early % =
+DIVIDE ( [Early Trips], [Observed Matched Trips] )
+
+Average Schedule Difference Minutes =
+AVERAGEX (
+    FILTER (
+        ManagementComparableTrip,
+        ManagementComparableTrip[IsTripLevelRecord] = TRUE ()
+            && ManagementComparableTrip[HasValidRealtimeObservation] = TRUE ()
+    ),
+    ManagementComparableTrip[ScheduleDifferenceMinutes]
+)
+
+Average Absolute Schedule Gap Minutes =
+AVERAGEX (
+    FILTER (
+        ManagementComparableTrip,
+        ManagementComparableTrip[IsTripLevelRecord] = TRUE ()
+            && ManagementComparableTrip[HasValidRealtimeObservation] = TRUE ()
+    ),
+    ABS ( ManagementComparableTrip[ScheduleDifferenceMinutes] )
+)
+
+Mode Route Count =
+MAX ( Mode[RouteCount] )
+
+Realtime Monitored Stations =
+CALCULATE (
+    DISTINCTCOUNT ( ManagementMonitoredStation[MonitoredStationKey] ),
+    ManagementMonitoredStation[IsEnabled] = TRUE ()
+)
+
+Realtime Data Start Date =
+MINX (
+    ALL ( ManagementComparableTrip ),
+    ManagementComparableTrip[RealtimeDataStartDate]
+)
+
+Realtime Data End Date =
+MAXX (
+    ALL ( ManagementComparableTrip ),
+    ManagementComparableTrip[RealtimeDataEndDate]
+)
+
+Realtime Covered Days =
+VAR StartDate = [Realtime Data Start Date]
+VAR EndDate = [Realtime Data End Date]
+RETURN
+    IF ( NOT ISBLANK ( StartDate ) && NOT ISBLANK ( EndDate ), DATEDIFF ( StartDate, EndDate, DAY ) + 1 )
+
+Punctuality Trips =
+VAR SelectedStatus = SELECTEDVALUE ( PunctualityStatus[Status] )
+RETURN
+    SWITCH (
+        SelectedStatus,
+        "On Time", [On-Time Trips],
+        "Delayed", [Delayed Trips],
+        "Early", [Early Trips]
+    )
+
+Punctuality % =
+VAR SelectedStatus = SELECTEDVALUE ( PunctualityStatus[Status] )
+RETURN
+    SWITCH (
+        SelectedStatus,
+        "On Time", [On-Time %],
+        "Delayed", [Delayed %],
+        "Early", [Early %]
+    )
+
+Station Comparable Trips =
+DISTINCTCOUNT ( ManagementComparableTrip[ManagementTripKey] )
+
+Station Observed Matched Trips =
+CALCULATE (
+    DISTINCTCOUNT ( ManagementComparableTrip[ManagementTripKey] ),
+    ManagementComparableTrip[HasValidRealtimeObservationAtStation] = TRUE ()
+)
+
+Station On-Time Trips =
+CALCULATE (
+    DISTINCTCOUNT ( ManagementComparableTrip[ManagementTripKey] ),
+    FILTER (
+        ManagementComparableTrip,
+        ManagementComparableTrip[HasValidRealtimeObservationAtStation] = TRUE ()
+            && ABS ( ManagementComparableTrip[ScheduleDifferenceMinutes] )
+                <= [Delay Threshold (Minutes)]
+    )
+)
+
+Station On-Time % =
+DIVIDE ( [Station On-Time Trips], [Station Observed Matched Trips] )
+
+Station Average Absolute Schedule Gap Minutes =
+AVERAGEX (
+    FILTER (
+        ManagementComparableTrip,
+        ManagementComparableTrip[HasValidRealtimeObservationAtStation] = TRUE ()
+    ),
+    ABS ( ManagementComparableTrip[ScheduleDifferenceMinutes] )
+)
+
+Best Performing Mode Name =
+VAR ModeRows =
+    ADDCOLUMNS (
+        ALLSELECTED ( Mode[ModeDetail] ),
+        "__OnTime", CALCULATE ( [On-Time %] ),
+        "__Gap", CALCULATE ( [Average Absolute Schedule Gap Minutes] ),
+        "__Comparable", CALCULATE ( [Comparable Scheduled Trips] )
+    )
+VAR TopMode =
+    TOPN (
+        1,
+        FILTER ( ModeRows, [__Comparable] > 0 && NOT ISBLANK ( [__OnTime] ) ),
+        [__OnTime], DESC,
+        [__Gap], ASC,
+        [__Comparable], DESC,
+        Mode[ModeDetail], ASC
+    )
+RETURN
+    MAXX ( TopMode, Mode[ModeDetail] )
+
+Worst Performing Mode Name =
+VAR ModeRows =
+    ADDCOLUMNS (
+        ALLSELECTED ( Mode[ModeDetail] ),
+        "__OnTime", CALCULATE ( [On-Time %] ),
+        "__Gap", CALCULATE ( [Average Absolute Schedule Gap Minutes] ),
+        "__Comparable", CALCULATE ( [Comparable Scheduled Trips] )
+    )
+VAR BottomMode =
+    TOPN (
+        1,
+        FILTER ( ModeRows, [__Comparable] > 0 && NOT ISBLANK ( [__OnTime] ) ),
+        [__OnTime], ASC,
+        [__Gap], ASC,
+        [__Comparable], DESC,
+        Mode[ModeDetail], ASC
+    )
+RETURN
+    MAXX ( BottomMode, Mode[ModeDetail] )
+
+Best Performing Mode =
+VAR ModeRows =
+    ADDCOLUMNS (
+        ALLSELECTED ( Mode[ModeDetail] ),
+        "__OnTime", CALCULATE ( [On-Time %] ),
+        "__Gap", CALCULATE ( [Average Absolute Schedule Gap Minutes] ),
+        "__Comparable", CALCULATE ( [Comparable Scheduled Trips] )
+    )
+VAR TopMode =
+    TOPN (
+        1,
+        FILTER ( ModeRows, [__Comparable] > 0 && NOT ISBLANK ( [__OnTime] ) ),
+        [__OnTime], DESC,
+        [__Gap], ASC,
+        [__Comparable], DESC,
+        Mode[ModeDetail], ASC
+    )
+VAR ModeName = MAXX ( TopMode, Mode[ModeDetail] )
+VAR ModePct = MAXX ( TopMode, [__OnTime] )
+VAR ComparableTrips = MAXX ( TopMode, [__Comparable] )
+RETURN
+    IF (
+        ISBLANK ( ModeName ),
+        "No observed matched trips are available for the current selection.",
+        ModeName & " — " & FORMAT ( ModePct, "0.0%" )
+            & " on time (" & FORMAT ( ComparableTrips, "#,0" ) & " comparable trips)"
+    )
+
+Worst Performing Mode =
+VAR ModeRows =
+    ADDCOLUMNS (
+        ALLSELECTED ( Mode[ModeDetail] ),
+        "__OnTime", CALCULATE ( [On-Time %] ),
+        "__Gap", CALCULATE ( [Average Absolute Schedule Gap Minutes] ),
+        "__Comparable", CALCULATE ( [Comparable Scheduled Trips] )
+    )
+VAR BottomMode =
+    TOPN (
+        1,
+        FILTER ( ModeRows, [__Comparable] > 0 && NOT ISBLANK ( [__OnTime] ) ),
+        [__OnTime], ASC,
+        [__Gap], ASC,
+        [__Comparable], DESC,
+        Mode[ModeDetail], ASC
+    )
+VAR ModeName = MAXX ( BottomMode, Mode[ModeDetail] )
+VAR ModePct = MAXX ( BottomMode, [__OnTime] )
+VAR ComparableTrips = MAXX ( BottomMode, [__Comparable] )
+RETURN
+    IF (
+        ISBLANK ( ModeName ),
+        "No observed matched trips are available for the current selection.",
+        ModeName & " — " & FORMAT ( ModePct, "0.0%" )
+            & " on time (" & FORMAT ( ComparableTrips, "#,0" ) & " comparable trips)"
+    )
+
+Best Performing Monitored Station Name =
+VAR StationRows =
+    ADDCOLUMNS (
+        ALLSELECTED ( ManagementComparableTrip[MonitoredStationName] ),
+        "__OnTime", CALCULATE ( [Station On-Time %] ),
+        "__Gap", CALCULATE ( [Station Average Absolute Schedule Gap Minutes] ),
+        "__Comparable", CALCULATE ( [Station Comparable Trips] )
+    )
+VAR TopStation =
+    TOPN (
+        1,
+        FILTER ( StationRows, [__Comparable] > 0 && NOT ISBLANK ( [__OnTime] ) ),
+        [__OnTime], DESC,
+        [__Gap], ASC,
+        [__Comparable], DESC,
+        ManagementComparableTrip[MonitoredStationName], ASC
+    )
+RETURN
+    MAXX ( TopStation, ManagementComparableTrip[MonitoredStationName] )
+
+Worst Performing Monitored Station Name =
+VAR StationRows =
+    ADDCOLUMNS (
+        ALLSELECTED ( ManagementComparableTrip[MonitoredStationName] ),
+        "__OnTime", CALCULATE ( [Station On-Time %] ),
+        "__Gap", CALCULATE ( [Station Average Absolute Schedule Gap Minutes] ),
+        "__Comparable", CALCULATE ( [Station Comparable Trips] )
+    )
+VAR BottomStation =
+    TOPN (
+        1,
+        FILTER ( StationRows, [__Comparable] > 0 && NOT ISBLANK ( [__OnTime] ) ),
+        [__OnTime], ASC,
+        [__Gap], ASC,
+        [__Comparable], DESC,
+        ManagementComparableTrip[MonitoredStationName], ASC
+    )
+RETURN
+    MAXX ( BottomStation, ManagementComparableTrip[MonitoredStationName] )
+
+Best Performing Monitored Station =
+VAR StationRows =
+    ADDCOLUMNS (
+        ALLSELECTED ( ManagementComparableTrip[MonitoredStationName] ),
+        "__OnTime", CALCULATE ( [Station On-Time %] ),
+        "__Gap", CALCULATE ( [Station Average Absolute Schedule Gap Minutes] ),
+        "__Comparable", CALCULATE ( [Station Comparable Trips] )
+    )
+VAR TopStation =
+    TOPN (
+        1,
+        FILTER ( StationRows, [__Comparable] > 0 && NOT ISBLANK ( [__OnTime] ) ),
+        [__OnTime], DESC,
+        [__Gap], ASC,
+        [__Comparable], DESC,
+        ManagementComparableTrip[MonitoredStationName], ASC
+    )
+VAR StationName = MAXX ( TopStation, ManagementComparableTrip[MonitoredStationName] )
+VAR StationPct = MAXX ( TopStation, [__OnTime] )
+VAR ComparableTrips = MAXX ( TopStation, [__Comparable] )
+RETURN
+    IF (
+        ISBLANK ( StationName ),
+        "No observed matched station trips are available for the current selection.",
+        StationName & " — " & FORMAT ( StationPct, "0.0%" )
+            & " on time (" & FORMAT ( ComparableTrips, "#,0" ) & " comparable trips)"
+    )
+
+Worst Performing Monitored Station =
+VAR StationRows =
+    ADDCOLUMNS (
+        ALLSELECTED ( ManagementComparableTrip[MonitoredStationName] ),
+        "__OnTime", CALCULATE ( [Station On-Time %] ),
+        "__Gap", CALCULATE ( [Station Average Absolute Schedule Gap Minutes] ),
+        "__Comparable", CALCULATE ( [Station Comparable Trips] )
+    )
+VAR BottomStation =
+    TOPN (
+        1,
+        FILTER ( StationRows, [__Comparable] > 0 && NOT ISBLANK ( [__OnTime] ) ),
+        [__OnTime], ASC,
+        [__Gap], ASC,
+        [__Comparable], DESC,
+        ManagementComparableTrip[MonitoredStationName], ASC
+    )
+VAR StationName = MAXX ( BottomStation, ManagementComparableTrip[MonitoredStationName] )
+VAR StationPct = MAXX ( BottomStation, [__OnTime] )
+VAR ComparableTrips = MAXX ( BottomStation, [__Comparable] )
+RETURN
+    IF (
+        ISBLANK ( StationName ),
+        "No observed matched station trips are available for the current selection.",
+        StationName & " — " & FORMAT ( StationPct, "0.0%" )
+            & " on time (" & FORMAT ( ComparableTrips, "#,0" ) & " comparable trips)"
+    )
+
+Realtime Coverage Status =
+"Coverage percentage not reported: collector run history does not establish run-by-run eligibility for every scheduled trip."
+
+Realtime Monitoring Scope Note =
+"Realtime values use " & FORMAT ( [Realtime Monitored Stations], "#,0" )
+    & " monitored stations, not all Cologne stations. Punctuality uses estimated arrivals; missing observations are not classified as cancellations."
+
+System Status Summary =
+VAR StartDate = MIN ( ManagementComparableTrip[ServiceDate] )
+VAR EndDate = MAX ( ManagementComparableTrip[ServiceDate] )
+VAR ObservedTrips = [Observed Matched Trips]
+VAR ModeCount = DISTINCTCOUNT ( ManagementComparableTrip[ModeKey] )
+VAR StationCount = DISTINCTCOUNT ( ManagementComparableTrip[MonitoredStationKey] )
+VAR BestMode = [Best Performing Mode Name]
+VAR WorstMode = [Worst Performing Mode Name]
+RETURN
+    IF (
+        ISBLANK ( ObservedTrips ),
+        "No valid realtime matched trips are available for the selected monitoring period.",
+        "From " & FORMAT ( StartDate, "d MMM yyyy" ) & " to "
+            & FORMAT ( EndDate, "d MMM yyyy" ) & ", the system observed "
+            & FORMAT ( ObservedTrips, "#,0" ) & " matched trips across "
+            & FORMAT ( ModeCount, "#,0" ) & " modes and "
+            & FORMAT ( StationCount, "#,0" ) & " monitored stations. "
+            & BestMode & " has the highest on-time rate; "
+            & WorstMode & " has the lowest."
+    )

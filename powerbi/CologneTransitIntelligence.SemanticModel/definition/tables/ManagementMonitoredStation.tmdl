@@ -1,0 +1,112 @@
+table ManagementMonitoredStation
+	lineageTag: 8d9e0f12-3456-4abc-8def-1234567890ab
+
+	column SamplingTargetId
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 8d9e0f12-3456-4abc-8def-1234567890ac
+		summarizeBy: none
+		sourceColumn: SamplingTargetId
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column StopPointRef
+		dataType: string
+		isHidden
+		lineageTag: 8d9e0f12-3456-4abc-8def-1234567890ad
+		summarizeBy: none
+		sourceColumn: StopPointRef
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column MonitoredStationName
+		dataType: string
+		lineageTag: 8d9e0f12-3456-4abc-8def-1234567890ae
+		summarizeBy: none
+		sourceColumn: MonitoredStationName
+
+		annotation SummarizationSetBy = Automatic
+
+	column MonitoredStationKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 8d9e0f12-3456-4abc-8def-1234567890af
+		summarizeBy: none
+		sourceColumn: MonitoredStationKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column StaticParentStationId
+		dataType: string
+		isHidden
+		lineageTag: 8d9e0f12-3456-4abc-8def-1234567890b0
+		summarizeBy: none
+		sourceColumn: StaticParentStationId
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column StaticParentStationName
+		dataType: string
+		lineageTag: 8d9e0f12-3456-4abc-8def-1234567890b1
+		summarizeBy: none
+		sourceColumn: StaticParentStationName
+
+		annotation SummarizationSetBy = Automatic
+
+	column NumberOfResults
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 8d9e0f12-3456-4abc-8def-1234567890b2
+		summarizeBy: none
+		sourceColumn: NumberOfResults
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column IsEnabled
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 8d9e0f12-3456-4abc-8def-1234567890b3
+		summarizeBy: none
+		sourceColumn: IsEnabled
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column Notes
+		dataType: string
+		isHidden
+		lineageTag: 8d9e0f12-3456-4abc-8def-1234567890b4
+		summarizeBy: none
+		sourceColumn: Notes
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition ManagementMonitoredStation = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("localhost", "CologneTransitIntelligence"),
+				    analytics_vwManagementMonitoredStation = Source{[Schema="analytics",Item="vwManagementMonitoredStation"]}[Data]
+				in
+				    analytics_vwManagementMonitoredStation
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
