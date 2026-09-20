@@ -508,13 +508,14 @@ RETURN
     )
 
 System Status Summary Line 2 =
-VAR BestMode = [Best Performing Mode Name]
-VAR WorstMode = [Worst Performing Mode Name]
+VAR BestMode = [Best Performing Mode]
+VAR WorstMode = [Worst Performing Mode]
 RETURN
     IF (
         ISBLANK ( BestMode ) || ISBLANK ( WorstMode ),
         "No mode-level on-time comparison is available for the selected period.",
-        "Best on-time: " & BestMode & "  |  Lowest: " & WorstMode
+        "Best: " & BestMode
+            & "    |    Worst: " & WorstMode
     )
 
 System Status Summary =
