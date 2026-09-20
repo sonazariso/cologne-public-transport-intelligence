@@ -4,14 +4,14 @@
     {
       "ordinal": 0,
       "scrollPosition": {
-        "x": 596.66666666666674,
-        "y": 11.666666666666668
+        "x": 0,
+        "y": 0
       },
       "nodes": [
         {
           "location": {
-            "x": 1830.9338787296526,
-            "y": 63.213835418034918
+            "x": 3317.6005453963189,
+            "y": 39.88050208470159
           },
           "nodeIndex": "NetworkKPI",
           "nodeLineageTag": "3338104e-233f-48b6-b529-413152f93646",
@@ -36,8 +36,8 @@
         },
         {
           "location": {
-            "x": 387.34651597712019,
-            "y": 116.11111111111111
+            "x": 304.01318264378682,
+            "y": 0
           },
           "nodeIndex": "Route",
           "nodeLineageTag": "1dc5bc22-f756-4e03-99ee-9d73e869e1f9",
@@ -49,8 +49,8 @@
         },
         {
           "location": {
-            "x": 1463.6005453963191,
-            "y": 934.96477630597872
+            "x": 1096.9338787296526,
+            "y": 954.96477630597872
           },
           "nodeIndex": "ParentStation",
           "nodeLineageTag": "6d3b396b-e4e4-4ced-8967-ea64b8fe1e26",
@@ -62,8 +62,8 @@
         },
         {
           "location": {
-            "x": 1114.0776990364786,
-            "y": 461.14085533533586
+            "x": 1124.0776990364786,
+            "y": 0
           },
           "nodeIndex": "ActiveDate",
           "nodeLineageTag": "d2f2c2cb-60f2-44b3-a601-4f1eb97e23d8",
@@ -75,8 +75,8 @@
         },
         {
           "location": {
-            "x": 2134.2989580947319,
-            "y": 61.943994148193667
+            "x": 2984.2989580947319,
+            "y": 38.610660814860339
           },
           "nodeIndex": "RT_CollectorRunHealth",
           "nodeLineageTag": "8e78ceb6-06c5-4f88-964c-d94c20ab2826",
@@ -88,8 +88,8 @@
         },
         {
           "location": {
-            "x": 2150.0449898407637,
-            "y": 430.19796240216192
+            "x": 2426.7116565074302,
+            "y": 923.53129573549518
           },
           "nodeIndex": "RT_DataQualityCoverage",
           "nodeLineageTag": "f085ecc2-88aa-4e52-8d0d-036230029d82",
@@ -114,8 +114,8 @@
         },
         {
           "location": {
-            "x": 859.39295100524157,
-            "y": 933.17370258210144
+            "x": 306.05961767190831,
+            "y": 723.17370258210144
           },
           "nodeIndex": "RT_ReliabilityOutcome",
           "nodeLineageTag": "29a9eeba-fefd-4586-b324-0f9f35753784",
@@ -127,8 +127,8 @@
         },
         {
           "location": {
-            "x": 1818.8888888888891,
-            "y": 418.06466666588705
+            "x": 3018.8888888888891,
+            "y": 674.73133333255373
           },
           "nodeIndex": "RT_ReliabilityByDimension",
           "nodeLineageTag": "387b7671-b596-4ddb-b0cb-bed2bc3ff244",
@@ -140,8 +140,8 @@
         },
         {
           "location": {
-            "x": 767.26671154757014,
-            "y": 196.11111111111117
+            "x": 650.60004488090351,
+            "y": 0
           },
           "nodeIndex": "DailySchedule",
           "nodeLineageTag": "89a3fe31-eec5-476e-ab20-aa549a516b86",
@@ -153,10 +153,11 @@
         },
         {
           "location": {
-            "x": 1171.3999784391222,
-            "y": 927.86527343426837
+            "x": 658.06664510578878,
+            "y": 954.53194010093512
           },
           "nodeIndex": "StopPosition",
+          "nodeLineageTag": "c9b02c68-ceb5-43f4-8a0c-e5a108d51401",
           "size": {
             "height": 300,
             "width": 234
@@ -165,8 +166,8 @@
         },
         {
           "location": {
-            "x": 2456.1685267577504,
-            "y": 74.6490548196561
+            "x": 2682.8351934244174,
+            "y": 51.315721486322673
           },
           "nodeIndex": "_Measures",
           "nodeLineageTag": "b38aedee-f2b9-4691-bb66-c4c22e4cd53b",
@@ -178,8 +179,8 @@
         },
         {
           "location": {
-            "x": 3303.6253970080706,
-            "y": 517.98238815298942
+            "x": 2990.2920636747372,
+            "y": 411.31572148632279
           },
           "nodeIndex": "Delay Threshold (Minutes)",
           "nodeLineageTag": "af123456-7890-4abc-8def-3456789012ab",
@@ -191,8 +192,8 @@
         },
         {
           "location": {
-            "x": 3069.6253970080706,
-            "y": 417.98238815298942
+            "x": 1962.9587303414037,
+            "y": 434.6490548196561
           },
           "nodeIndex": "ManagementComparableTrip",
           "nodeLineageTag": "7c8e9f01-2345-4abc-8def-0123456789ab",
@@ -204,8 +205,8 @@
         },
         {
           "location": {
-            "x": 2785.6253970080706,
-            "y": 419.98238815298942
+            "x": 1635.6253970080709,
+            "y": 0
           },
           "nodeIndex": "ManagementMonitoredStation",
           "nodeLineageTag": "8d9e0f12-3456-4abc-8def-1234567890ab",
@@ -217,8 +218,8 @@
         },
         {
           "location": {
-            "x": 3587.6253970080706,
-            "y": 517.98238815298942
+            "x": 3317.6253970080706,
+            "y": 384.64905481965604
           },
           "nodeIndex": "PunctualityStatus",
           "nodeLineageTag": "9e0f1234-5678-4abc-8def-2345678901ab",
@@ -230,8 +231,8 @@
         },
         {
           "location": {
-            "x": 3871.6253970080706,
-            "y": 493.98238815298942
+            "x": 3344.9587303414041,
+            "y": 767.31572148632279
           },
           "nodeIndex": "ScheduledTripProfile",
           "nodeLineageTag": "1f5e7a3c-6b9d-4e21-8f43-a7c9d1e2b5f6",
@@ -243,8 +244,8 @@
         },
         {
           "location": {
-            "x": 2530.6253970080706,
-            "y": 418
+            "x": 753.95873034140413,
+            "y": 454.66666666666663
           },
           "nodeIndex": "ManagementTripStation",
           "nodeLineageTag": "e0f1a2b3-c4d5-4e6f-8091-a2b3c4d5e6f7",
