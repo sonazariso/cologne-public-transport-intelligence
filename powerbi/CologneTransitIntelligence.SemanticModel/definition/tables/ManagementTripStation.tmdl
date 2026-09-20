@@ -172,6 +172,22 @@ table ManagementTripStation
 
 		annotation SummarizationSetBy = Automatic
 
+	column Route
+		dataType: string
+		lineageTag: 3bbb1933-9b3a-49b7-ba70-e3decaf4c07f
+		summarizeBy: none
+		sourceColumn: Route
+
+		annotation SummarizationSetBy = Automatic
+
+	column Mode
+		dataType: string
+		lineageTag: 93cf4601-cf27-4b80-9145-6e5d1f30102e
+		summarizeBy: none
+		sourceColumn: Mode
+
+		annotation SummarizationSetBy = Automatic
+
 	partition ManagementTripStation = m
 		mode: import
 		source =
