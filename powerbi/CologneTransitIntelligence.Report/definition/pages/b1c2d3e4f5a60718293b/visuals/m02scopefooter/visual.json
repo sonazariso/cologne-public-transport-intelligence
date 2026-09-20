@@ -5,7 +5,7 @@
     "x": 32,
     "y": 896,
     "z": 21000,
-    "height": 28,
+    "height": 40,
     "width": 1216,
     "tabOrder": 21000
   },
@@ -19,7 +19,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "Realtime results represent the monitored sampling panel, not the full Cologne network. Realtime arrival values are estimates; missing timing is not a cancellation.",
+                    "value": "Same trip may be observed at more than one monitored station. Station-level trip counts are deduplicated within each station, so they are not additive to the overall unique observed-trip count. Realtime results represent the monitored sampling panel, not the full Cologne network; realtime arrival values are estimates and missing timing is not a cancellation.",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "'''Segoe UI'', wf_segoe-ui_normal, helvetica, arial, sans-serif'",

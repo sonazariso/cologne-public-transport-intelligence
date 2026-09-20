@@ -5,7 +5,7 @@
     "x": 344,
     "y": 726,
     "z": 18000,
-    "height": 160,
+    "height": 80,
     "width": 300,
     "tabOrder": 16000
   },
@@ -65,7 +65,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Network Station'"
+                  "Value": "'Network Station Search'"
                 }
               }
             },

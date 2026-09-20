@@ -77,9 +77,11 @@ The three buckets are mutually exclusive and collectively reconcile to
 `Observed Realtime Trips` in every Mode/Date context. Missing realtime timing
 is not classified as a cancellation.
 
-Best and worst comparisons use the same primary metric, `On-Time %`. Ties are
-resolved by lower average absolute schedule difference, higher observed trip
-count, and alphabetical name.
+Best and worst mode comparisons use the same primary metric, `On-Time %`.
+Mode ties are resolved by lower average absolute schedule difference, higher
+observed trip count, and alphabetical name. M02 monitored-station callouts use
+`On-Time %` only, with alphabetical station name order solely to make an equal
+percentage tie deterministic.
 
 `Realtime Observed Days` is a distinct count of actual collection dates; it is
 not a calendar-span calculation. No citywide observation-coverage percentage

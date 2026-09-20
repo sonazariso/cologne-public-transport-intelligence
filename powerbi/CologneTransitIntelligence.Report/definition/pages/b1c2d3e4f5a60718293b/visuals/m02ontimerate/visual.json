@@ -34,6 +34,25 @@
           ],
           "showAll": true
         },
+        "Tooltips": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Station Observed Realtime Trips"
+                }
+              },
+              "queryRef": "_Measures.Station Observed Realtime Trips",
+              "nativeQueryRef": "Station Observed Realtime Trips",
+              "displayName": "Observed Realtime Trips"
+            }
+          ]
+        },
         "Y": {
           "projections": [
             {

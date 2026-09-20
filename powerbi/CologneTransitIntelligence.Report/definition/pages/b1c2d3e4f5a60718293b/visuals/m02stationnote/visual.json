@@ -19,7 +19,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "Station = a monitored station/location, for example Köln Hbf.\nStop position = an individual boarding/platform/stop position inside the monitored station scope. This is why 7 monitored stations can correspond to 48 observed stop positions.",
+                    "value": "Station = the monitored station/location used for management reporting.\nStop Position = the physical boarding location, platform, bay, or stop position inside or associated with the station. A station can contain multiple stop positions, so Observed Stop Positions may be greater than Realtime Monitored Stations.",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "'''Segoe UI'', wf_segoe-ui_normal, helvetica, arial, sans-serif'",

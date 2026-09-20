@@ -25,6 +25,14 @@ System / Component Library reference page. Pages `01` through `08` are the
 final portfolio report architecture. Pages `90` through `92` preserve earlier
 validation/prototype evidence and are not final analytical report pages.
 
+## Management-page status
+
+- `M01 - System Overview` is finalized and frozen.
+- `M02 - Station Coverage & Performance` is implemented in the dedicated
+  `feature/powerbi-m02-station-performance` branch. Its implementation details,
+  station grain, filter behavior, and remaining Power BI Desktop validation are
+  documented in [the M02 implementation note](23-POWER-BI-M02-STATION-COVERAGE-AND-PERFORMANCE.md).
+
 ## Common page convention
 
 ```text

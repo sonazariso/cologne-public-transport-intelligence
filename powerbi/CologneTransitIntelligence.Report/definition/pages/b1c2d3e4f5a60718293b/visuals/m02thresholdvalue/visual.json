@@ -23,12 +23,12 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Delay Threshold (Minutes)"
+                  "Property": "M01 Effective Threshold Display"
                 }
               },
-              "queryRef": "_Measures.Delay Threshold (Minutes)",
-              "nativeQueryRef": "Delay Threshold (Minutes)",
-              "displayName": "Selected threshold"
+              "queryRef": "_Measures.M01 Effective Threshold Display",
+              "nativeQueryRef": "M01 Effective Threshold Display",
+              "displayName": "Effective threshold"
             }
           ]
         }
@@ -245,7 +245,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Selected threshold (minutes)'"
+                  "Value": "'Effective threshold'"
                 }
               }
             },

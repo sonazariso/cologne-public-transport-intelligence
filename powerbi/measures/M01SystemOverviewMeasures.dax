@@ -15,6 +15,46 @@ FORMAT (
     "en-US"
 ) & " min"
 
+M02 Network Station Coverage Status =
+VAR HasSingleNetworkStation =
+    HASONEVALUE ( ParentStation[ParentStationName] )
+VAR SelectedStation =
+    SELECTEDVALUE ( ParentStation[ParentStationName] )
+VAR MonitoredDates =
+    CALCULATE (
+        DISTINCTCOUNT ( ManagementMonitoredStation[DateKey] ),
+        REMOVEFILTERS ( ManagementMonitoredStation[MonitoredStationName] ),
+        TREATAS (
+            { SelectedStation },
+            ManagementMonitoredStation[MonitoredStationName]
+        )
+    )
+VAR ObservedTrips =
+    CALCULATE (
+        [Station Observed Realtime Trips],
+        REMOVEFILTERS ( ManagementTripStation[Station] ),
+        TREATAS (
+            { SelectedStation },
+            ManagementTripStation[Station]
+        )
+    )
+RETURN
+    IF (
+        NOT HasSingleNetworkStation,
+        "Select one Network Station to check realtime coverage.",
+        IF (
+            COALESCE ( MonitoredDates, 0 ) = 0,
+            "No realtime monitoring data available for this station in the selected period.",
+            IF (
+                COALESCE ( ObservedTrips, 0 ) = 0,
+                "Monitoring target found, but no observed realtime trips match the selected filters.",
+                SelectedStation & " | "
+                    & FORMAT ( ObservedTrips, "#,##0", "en-US" )
+                    & " observed realtime trips."
+            )
+        )
+    )
+
 Comparable Scheduled Trips =
 COUNTROWS ( ManagementComparableTrip )
 
@@ -99,6 +139,12 @@ SUM ( Mode[RouteCount] )
 
 Network Parent Stations =
 DISTINCTCOUNT ( ParentStation[ParentStationKey] )
+
+M02 Network Stations =
+CALCULATE (
+    [Network Parent Stations],
+    REMOVEFILTERS ( ParentStation )
+)
 
 Realtime Monitored Stations =
 CALCULATE (
@@ -356,7 +402,6 @@ VAR StationRows =
     ADDCOLUMNS (
         ALLSELECTED ( ManagementTripStation[Station] ),
         "__OnTime", CALCULATE ( [Station On-Time %] ),
-        "__Gap", CALCULATE ( [Station Average Absolute Schedule Gap Minutes] ),
         "__Observed", CALCULATE ( [Station Observed Realtime Trips] )
     )
 VAR TopStation =
@@ -364,8 +409,6 @@ VAR TopStation =
         1,
         FILTER ( StationRows, [__Observed] > 0 && NOT ISBLANK ( [__OnTime] ) ),
         [__OnTime], DESC,
-        [__Gap], ASC,
-        [__Observed], DESC,
         ManagementTripStation[Station], ASC
     )
 RETURN
@@ -376,7 +419,6 @@ VAR StationRows =
     ADDCOLUMNS (
         ALLSELECTED ( ManagementTripStation[Station] ),
         "__OnTime", CALCULATE ( [Station On-Time %] ),
-        "__Gap", CALCULATE ( [Station Average Absolute Schedule Gap Minutes] ),
         "__Observed", CALCULATE ( [Station Observed Realtime Trips] )
     )
 VAR BottomStation =
@@ -384,8 +426,6 @@ VAR BottomStation =
         1,
         FILTER ( StationRows, [__Observed] > 0 && NOT ISBLANK ( [__OnTime] ) ),
         [__OnTime], ASC,
-        [__Gap], ASC,
-        [__Observed], DESC,
         ManagementTripStation[Station], ASC
     )
 RETURN
@@ -396,7 +436,6 @@ VAR StationRows =
     ADDCOLUMNS (
         ALLSELECTED ( ManagementTripStation[Station] ),
         "__OnTime", CALCULATE ( [Station On-Time %] ),
-        "__Gap", CALCULATE ( [Station Average Absolute Schedule Gap Minutes] ),
         "__Observed", CALCULATE ( [Station Observed Realtime Trips] )
     )
 VAR TopStation =
@@ -404,8 +443,6 @@ VAR TopStation =
         1,
         FILTER ( StationRows, [__Observed] > 0 && NOT ISBLANK ( [__OnTime] ) ),
         [__OnTime], DESC,
-        [__Gap], ASC,
-        [__Observed], DESC,
         ManagementTripStation[Station], ASC
     )
 VAR StationName = MAXX ( TopStation, ManagementTripStation[Station] )
@@ -425,7 +462,6 @@ VAR StationRows =
     ADDCOLUMNS (
         ALLSELECTED ( ManagementTripStation[Station] ),
         "__OnTime", CALCULATE ( [Station On-Time %] ),
-        "__Gap", CALCULATE ( [Station Average Absolute Schedule Gap Minutes] ),
         "__Observed", CALCULATE ( [Station Observed Realtime Trips] )
     )
 VAR BottomStation =
@@ -433,8 +469,6 @@ VAR BottomStation =
         1,
         FILTER ( StationRows, [__Observed] > 0 && NOT ISBLANK ( [__OnTime] ) ),
         [__OnTime], ASC,
-        [__Gap], ASC,
-        [__Observed], DESC,
         ManagementTripStation[Station], ASC
     )
 VAR StationName = MAXX ( BottomStation, ManagementTripStation[Station] )

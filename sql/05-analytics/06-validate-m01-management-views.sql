@@ -75,6 +75,37 @@ FROM
     HAVING COUNT_BIG(*) > 1
 ) AS duplicate_grain;
 
+/* Informational station-grain checks for M02.  Multiple stop positions for
+   one dated trip within a station are allowed because the source view is at
+   ServiceDate + TripKey + StopKey grain.  A dated trip appearing at more than
+   one station is also expected and must not be collapsed system-wide. */
+
+SELECT
+    N'TripStation rows with multiple stop positions in one station' AS CheckName,
+    COUNT_BIG(*) AS GroupCount,
+    N'INFO - expected at stop-position grain; station measures distinct-count the trip'
+        AS CheckStatus
+FROM
+(
+    SELECT ServiceDate, TripKey, Station
+    FROM analytics.vwManagementTripStation
+    GROUP BY ServiceDate, TripKey, Station
+    HAVING COUNT_BIG(DISTINCT StopKey) > 1
+) AS station_stop_grain;
+
+SELECT
+    N'Dated trips observed at multiple stations' AS CheckName,
+    COUNT_BIG(*) AS GroupCount,
+    N'INFO - expected; do not use as a system-wide duplicate defect'
+        AS CheckStatus
+FROM
+(
+    SELECT ServiceDate, TripKey
+    FROM analytics.vwManagementTripStation
+    GROUP BY ServiceDate, TripKey
+    HAVING COUNT_BIG(DISTINCT Station) > 1
+) AS cross_station_trip;
+
 DECLARE @ExpectedColumns TABLE
 (
     ViewName SYSNAME NOT NULL,

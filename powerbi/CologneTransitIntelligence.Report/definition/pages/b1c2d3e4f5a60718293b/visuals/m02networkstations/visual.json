@@ -23,11 +23,11 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Network Parent Stations"
+                  "Property": "M02 Network Stations"
                 }
               },
-              "queryRef": "_Measures.Network Parent Stations",
-              "nativeQueryRef": "Network Parent Stations",
+              "queryRef": "_Measures.M02 Network Stations",
+              "nativeQueryRef": "M02 Network Stations",
               "displayName": "Network Stations"
             }
           ]

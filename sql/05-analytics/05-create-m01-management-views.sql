@@ -19,6 +19,13 @@ GO
       - vwManagementTripStation: one row per ServiceDate + TripKey + StopKey
       - vwManagementMonitoredStation: one row per local date + panel target
 
+    The Station value is the parent-station label for the trusted stop outcome.
+    M02 station measures distinct-count ManagementTripKey within each Station
+    context, so a trip is counted once per station even when it has multiple
+    stop positions there.  The same dated trip may legitimately occur at more
+    than one monitored station and is intentionally counted once in each such
+    station context.
+
     Missing estimated timing remains a valid comparable row and is not treated
     as a cancellation.  When repeated source rows exist, the row with usable
     final estimated delay wins, followed by the latest observation, latest

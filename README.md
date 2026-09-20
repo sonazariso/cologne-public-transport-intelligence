@@ -14,7 +14,7 @@
 
 An end-to-end analytics project for understanding the reliability and performance of multimodal public transport in Cologne, Germany.
 
-The project combines a validated **VRS/go.Rheinland static GTFS baseline** with **MDD NRW / DELFI / TRIAS 1.2 realtime observations**. SQL Server is used for staging, transformation, service-day normalization, schedule matching, warehouse modeling, and analytics. SQL and realtime analytics are complete, and Power BI development is actively underway through the established PBIP + TMDL + PBIR workflow with VS Code/Codex and Power BI Desktop. Chat 07 completed the report architecture; Chat 08 — Executive Overview is next.
+The project combines a validated **VRS/go.Rheinland static GTFS baseline** with **MDD NRW / DELFI / TRIAS 1.2 realtime observations**. SQL Server is used for staging, transformation, service-day normalization, schedule matching, warehouse modeling, and analytics. SQL and realtime analytics are complete, and Power BI development continues through the established PBIP + TMDL + PBIR workflow with VS Code/Codex and Power BI Desktop. The manager-facing M01 System Overview is frozen; M02 Station Coverage & Performance is implemented in the dedicated M02 branch.
 
 This repository is the narrowed Cologne successor to an earlier NRW-wide
 public-transport project. Some runtime names still carry that historical scope.
@@ -46,7 +46,8 @@ Validated static scope:
 
 The static baseline remains the preserved scheduled-service foundation. The
 active Power BI project now also contains Static and Realtime Reliability
-measures and the validated report architecture.
+measures, the validated report architecture, frozen M01 management reporting,
+and the M02 station-coverage implementation.
 
 ### Historical realtime collection phase
 

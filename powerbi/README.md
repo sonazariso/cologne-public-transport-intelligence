@@ -17,10 +17,11 @@ rendering, interaction QA, and final validation.
 
 ## Current report state
 
-- Chat 07 report architecture is complete, and M01 adds the management-facing system overview page.
+- Chat 07 report architecture is complete. M01 is the frozen management-facing system overview page, and M02 adds the station-level coverage and performance page on `feature/powerbi-m02-station-performance`.
 - `00 - Template` is the approved Design System / Component Library reference.
-- `M01 - System Overview` is inserted first; pages `01` through `08` and the legacy QA pages remain unchanged.
-- The current semantic model contains Static, Realtime Reliability, and M01 System Overview measures.
+- `M01 - System Overview` is inserted first and remains unchanged by the M02 work; pages `01` through `08` and the legacy QA pages remain unchanged.
+- `M02 - Station Coverage & Performance` uses the shared management facts, date dimension, threshold parameter, and station-grain measures described in [the M02 implementation note](../docs/23-POWER-BI-M02-STATION-COVERAGE-AND-PERFORMANCE.md).
+- The current semantic model contains Static, Realtime Reliability, M01 System Overview, and M02 station-coverage measures.
 - The active custom report theme source is `theme/cologne-transit-intelligence-theme.json`.
 - Validation assets are maintained under `validation/`.
 - Power BI Desktop is still required for refresh, rendering, and final interaction QA.

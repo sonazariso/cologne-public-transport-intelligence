@@ -1029,6 +1029,16 @@ table _Measures
 		displayFolder: 09 M01 System Overview
 		lineageTag: a0000000-0000-0000-0000-000000000015
 
+	measure 'M02 Network Stations' =
+
+			CALCULATE (
+			    [Network Parent Stations],
+			    REMOVEFILTERS ( ParentStation )
+			)
+		formatString: #,0
+		displayFolder: 10 M02 Station Coverage
+		lineageTag: a0000000-0000-0000-0000-000000000053
+
 	measure 'Realtime Monitored Stations' =
 			
 			CALCULATE (
@@ -1280,7 +1290,6 @@ table _Measures
 			    ADDCOLUMNS (
 			        ALLSELECTED ( ManagementTripStation[Station] ),
 			        "__OnTime", CALCULATE ( [Station On-Time %] ),
-			        "__Gap", CALCULATE ( [Station Average Absolute Schedule Gap Minutes] ),
 			        "__Observed", CALCULATE ( [Station Observed Realtime Trips] )
 			    )
 			VAR TopStation =
@@ -1288,8 +1297,6 @@ table _Measures
 			        1,
 			        FILTER ( StationRows, [__Observed] > 0 && NOT ISBLANK ( [__OnTime] ) ),
 			        [__OnTime], DESC,
-			        [__Gap], ASC,
-			        [__Observed], DESC,
 			        ManagementTripStation[Station], ASC
 			    )
 			RETURN
@@ -1303,7 +1310,6 @@ table _Measures
 			    ADDCOLUMNS (
 			        ALLSELECTED ( ManagementTripStation[Station] ),
 			        "__OnTime", CALCULATE ( [Station On-Time %] ),
-			        "__Gap", CALCULATE ( [Station Average Absolute Schedule Gap Minutes] ),
 			        "__Observed", CALCULATE ( [Station Observed Realtime Trips] )
 			    )
 			VAR BottomStation =
@@ -1311,8 +1317,6 @@ table _Measures
 			        1,
 			        FILTER ( StationRows, [__Observed] > 0 && NOT ISBLANK ( [__OnTime] ) ),
 			        [__OnTime], ASC,
-			        [__Gap], ASC,
-			        [__Observed], DESC,
 			        ManagementTripStation[Station], ASC
 			    )
 			RETURN
@@ -1326,7 +1330,6 @@ table _Measures
 			    ADDCOLUMNS (
 			        ALLSELECTED ( ManagementTripStation[Station] ),
 			        "__OnTime", CALCULATE ( [Station On-Time %] ),
-			        "__Gap", CALCULATE ( [Station Average Absolute Schedule Gap Minutes] ),
 			        "__Observed", CALCULATE ( [Station Observed Realtime Trips] )
 			    )
 			VAR TopStation =
@@ -1334,8 +1337,6 @@ table _Measures
 			        1,
 			        FILTER ( StationRows, [__Observed] > 0 && NOT ISBLANK ( [__OnTime] ) ),
 			        [__OnTime], DESC,
-			        [__Gap], ASC,
-			        [__Observed], DESC,
 			        ManagementTripStation[Station], ASC
 			    )
 			VAR StationName = MAXX ( TopStation, ManagementTripStation[Station] )
@@ -1358,7 +1359,6 @@ table _Measures
 			    ADDCOLUMNS (
 			        ALLSELECTED ( ManagementTripStation[Station] ),
 			        "__OnTime", CALCULATE ( [Station On-Time %] ),
-			        "__Gap", CALCULATE ( [Station Average Absolute Schedule Gap Minutes] ),
 			        "__Observed", CALCULATE ( [Station Observed Realtime Trips] )
 			    )
 			VAR BottomStation =
@@ -1366,8 +1366,6 @@ table _Measures
 			        1,
 			        FILTER ( StationRows, [__Observed] > 0 && NOT ISBLANK ( [__OnTime] ) ),
 			        [__OnTime], ASC,
-			        [__Gap], ASC,
-			        [__Observed], DESC,
 			        ManagementTripStation[Station], ASC
 			    )
 			VAR StationName = MAXX ( BottomStation, ManagementTripStation[Station] )
@@ -1644,6 +1642,49 @@ table _Measures
 			) & " min"
 		displayFolder: 09 M01 System Overview
 		lineageTag: a0000000-0000-0000-0000-000000000052
+
+	measure 'M02 Network Station Coverage Status' =
+
+			VAR HasSingleNetworkStation =
+			    HASONEVALUE ( ParentStation[ParentStationName] )
+			VAR SelectedStation =
+			    SELECTEDVALUE ( ParentStation[ParentStationName] )
+			VAR MonitoredDates =
+			    CALCULATE (
+			        DISTINCTCOUNT ( ManagementMonitoredStation[DateKey] ),
+			        REMOVEFILTERS ( ManagementMonitoredStation[MonitoredStationName] ),
+			        TREATAS (
+			            { SelectedStation },
+			            ManagementMonitoredStation[MonitoredStationName]
+			        )
+			    )
+			VAR ObservedTrips =
+			    CALCULATE (
+			        [Station Observed Realtime Trips],
+			        REMOVEFILTERS ( ManagementTripStation[Station] ),
+			        TREATAS (
+			            { SelectedStation },
+			            ManagementTripStation[Station]
+			        )
+			    )
+			RETURN
+			    IF (
+			        NOT HasSingleNetworkStation,
+			        "Select one Network Station to check realtime coverage.",
+			        IF (
+			            COALESCE ( MonitoredDates, 0 ) = 0,
+			            "No realtime monitoring data available for this station in the selected period.",
+			            IF (
+			                COALESCE ( ObservedTrips, 0 ) = 0,
+			                "Monitoring target found, but no observed realtime trips match the selected filters.",
+			                SelectedStation & " | "
+			                    & FORMAT ( ObservedTrips, "#,##0", "en-US" )
+			                    & " observed realtime trips."
+			            )
+			        )
+			    )
+		displayFolder: 10 M02 Station Coverage
+		lineageTag: a0000000-0000-0000-0000-000000000054
 
 	column _Placeholder
 		dataType: int64
