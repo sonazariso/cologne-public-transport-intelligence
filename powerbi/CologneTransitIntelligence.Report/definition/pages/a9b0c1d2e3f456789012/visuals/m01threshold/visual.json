@@ -28,7 +28,7 @@
               },
               "queryRef": "Delay Threshold (Minutes).Value",
               "nativeQueryRef": "Value",
-              "displayName": "Delay Threshold (Minutes)",
+              "displayName": "Choose minutes",
               "active": true
             }
           ],

@@ -187,6 +187,19 @@
           }
         }
       ],
+      "zoom": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
       "legend": [
         {
           "properties": {

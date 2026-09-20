@@ -317,9 +317,9 @@ RETURN
     IF (
         ISBLANK ( ModeName ),
         "No observed realtime trips are available for the current selection.",
-        ModeName & UNICHAR ( 10 ) & FORMAT ( ModePct, "0.0%", "en-US" )
-            & " On Time" & UNICHAR ( 10 )
-            & FORMAT ( ObservedTrips, "#,##0", "en-US" ) & " observed trips"
+        ModeName & " | "
+            & FORMAT ( ModePct, "0.0%", "en-US" ) & " | "
+            & FORMAT ( ObservedTrips, "#,##0", "en-US" ) & " trips"
     )
 
 Worst Performing Mode =
@@ -346,9 +346,9 @@ RETURN
     IF (
         ISBLANK ( ModeName ),
         "No observed realtime trips are available for the current selection.",
-        ModeName & UNICHAR ( 10 ) & FORMAT ( ModePct, "0.0%", "en-US" )
-            & " On Time" & UNICHAR ( 10 )
-            & FORMAT ( ObservedTrips, "#,##0", "en-US" ) & " observed trips"
+        ModeName & " | "
+            & FORMAT ( ModePct, "0.0%", "en-US" ) & " | "
+            & FORMAT ( ObservedTrips, "#,##0", "en-US" ) & " trips"
     )
 
 Best Performing Monitored Station Name =
@@ -497,11 +497,11 @@ VAR DateRange =
 RETURN
     IF (
         ISBLANK ( StartDate ) || ISBLANK ( EndDate ) || ScheduledTrips = 0,
-        "No matched trips are available for the selected period.",
-        "Selected period: " & DateRange
-            & "  |  Matched trips: "
+        "Current status  |  No matched trips are available for the selected period.",
+        "Current status  |  " & DateRange
+            & "  |  Matched: "
             & FORMAT ( ScheduledTrips, "#,##0", "en-US" )
-            & "  |  Usable realtime timing: "
+            & "  |  Usable timing: "
             & FORMAT ( ObservedTrips, "#,##0", "en-US" )
             & "  |  Timing unavailable: "
             & FORMAT ( TimingUnavailable, "#,##0", "en-US" )
@@ -514,7 +514,7 @@ RETURN
     IF (
         ISBLANK ( BestMode ) || ISBLANK ( WorstMode ),
         "No mode-level on-time comparison is available for the selected period.",
-        "Best on-time performance: " & BestMode & "  |  Lowest: " & WorstMode
+        "Best on-time: " & BestMode & "  |  Lowest: " & WorstMode
     )
 
 System Status Summary =

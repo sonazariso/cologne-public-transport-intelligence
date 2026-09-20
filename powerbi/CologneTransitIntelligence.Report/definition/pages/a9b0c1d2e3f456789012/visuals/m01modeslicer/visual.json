@@ -28,7 +28,7 @@
               },
               "queryRef": "Mode.ModeDetail",
               "nativeQueryRef": "ModeDetail",
-              "displayName": "Transport Mode",
+              "displayName": "All modes",
               "active": true
             }
           ],
