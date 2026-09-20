@@ -1,13 +1,13 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
-  "name": "m01worstmode",
+  "name": "m02observed",
   "position": {
-    "x": 960,
-    "y": 920,
-    "z": 54,
-    "height": 108,
-    "width": 288,
-    "tabOrder": 54
+    "x": 617,
+    "y": 154,
+    "z": 31,
+    "height": 82,
+    "width": 185,
+    "tabOrder": 31
   },
   "visual": {
     "visualType": "cardVisual",
@@ -23,11 +23,12 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Worst Performing Mode"
+                  "Property": "Observed Realtime Trips"
                 }
               },
-              "queryRef": "_Measures.Worst Performing Mode",
-              "nativeQueryRef": "Worst Performing Mode"
+              "queryRef": "_Measures.Observed Realtime Trips",
+              "nativeQueryRef": "Observed Realtime Trips",
+              "displayName": "Observed Trips"
             }
           ]
         }
@@ -47,7 +48,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "12D"
+                  "Value": "18D"
                 }
               }
             },
@@ -56,7 +57,7 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#D95D39'"
+                      "Value": "'#102A43'"
                     }
                   }
                 }
@@ -88,7 +89,7 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "false"
+                  "Value": "true"
                 }
               }
             },
@@ -244,7 +245,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Worst Performing Mode'"
+                  "Value": "'Observed Realtime Trips'"
                 }
               }
             },

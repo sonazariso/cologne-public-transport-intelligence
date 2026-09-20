@@ -1,16 +1,16 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
-  "name": "m01stationtable",
+  "name": "m02networksearch",
   "position": {
-    "x": 32,
-    "y": 958,
+    "x": 344,
+    "y": 726,
     "z": 51,
-    "height": 210,
+    "height": 160,
     "width": 300,
-    "tabOrder": 51
+    "tabOrder": 52
   },
   "visual": {
-    "visualType": "tableEx",
+    "visualType": "slicer",
     "query": {
       "queryState": {
         "Values": {
@@ -20,20 +20,36 @@
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "ManagementMonitoredStation"
+                      "Entity": "ParentStation"
                     }
                   },
-                  "Property": "MonitoredStationName"
+                  "Property": "ParentStationName"
                 }
               },
-              "queryRef": "ManagementMonitoredStation.MonitoredStationName",
-              "nativeQueryRef": "MonitoredStationName",
-              "displayName": "Monitored station"
+              "queryRef": "ParentStation.ParentStationName",
+              "nativeQueryRef": "ParentStationName",
+              "displayName": "Station Name",
+              "active": true
             }
           ],
           "showAll": true
         }
       }
+    },
+    "objects": {
+      "data": [
+        {
+          "properties": {
+            "mode": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Dropdown'"
+                }
+              }
+            }
+          }
+        }
+      ]
     },
     "visualContainerObjects": {
       "title": [
@@ -49,7 +65,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Realtime Monitored Station Names'"
+                  "Value": "'Network Station'"
                 }
               }
             },

@@ -1,13 +1,13 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
-  "name": "m01scopeheader",
+  "name": "m02modeguide",
   "position": {
     "x": 32,
-    "y": 920,
-    "z": 50,
-    "height": 25,
+    "y": 274,
+    "z": 21,
+    "height": 30,
     "width": 1216,
-    "tabOrder": 50
+    "tabOrder": 60
   },
   "visual": {
     "visualType": "textbox",
@@ -19,12 +19,12 @@
               {
                 "textRuns": [
                   {
-                    "value": "STATION COVERAGE & PERFORMANCE",
+                    "value": "Transport Mode Guide: Stadtbahn / Tram = urban light rail; S-Bahn = suburban rail; Regional Express (RE) = faster regional rail; Regional Bahn (RB) = regional stopping rail; Urban Bus (KVB) = city bus; Regional / Other Bus = regional or non-KVB bus; Rail Replacement Bus (SEV) = rail replacement service.",
                     "textStyle": {
-                      "fontWeight": "bold",
-                      "fontFamily": "'''Segoe UI Semibold'', wf_segoe-ui_semibold, helvetica, arial, sans-serif'",
-                      "fontSize": "12pt",
-                      "color": "#0B1F3A"
+                      "fontWeight": "normal",
+                      "fontFamily": "'''Segoe UI'', wf_segoe-ui_normal, helvetica, arial, sans-serif'",
+                      "fontSize": "7.5pt",
+                      "color": "#52667A"
                     }
                   }
                 ]

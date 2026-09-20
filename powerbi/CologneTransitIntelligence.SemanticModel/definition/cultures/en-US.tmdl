@@ -371,6 +371,27 @@ cultureInfo en-US
 			        }
 			      ]
 			    },
+			    "managementdate.datevalue": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "ManagementDate",
+			          "ConceptualProperty": "DateValue"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Service Date": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
 			    "delay_threshold_minutes.value": {
 			      "Definition": {
 			        "Binding": {
@@ -382,6 +403,48 @@ cultureInfo en-US
 			      "Terms": [
 			        {
 			          "Delay Threshold (Minutes)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "table_measures.delay_threshold_minutes": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_Measures",
+			          "ConceptualProperty": "Delay Threshold (Minutes)"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Selected threshold": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "parentstation.parentstationname": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "ParentStation",
+			          "ConceptualProperty": "ParentStationName"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Station Name": {
 			            "State": "Suggested",
 			            "Source": {
 			              "Type": "External",

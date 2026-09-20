@@ -159,6 +159,20 @@ CALCULATE (
 Station On-Time % =
 DIVIDE ( [Station On-Time Trips], [Station Observed Realtime Trips] )
 
+Station Delayed Trips =
+CALCULATE (
+    DISTINCTCOUNT ( ManagementTripStation[ManagementTripKey] ),
+    FILTER (
+        ManagementTripStation,
+        ManagementTripStation[HasValidRealtimeObservation] = TRUE ()
+            && ManagementTripStation[FinalObservedEstimatedDelayMinutes]
+                > [Delay Threshold (Minutes)]
+    )
+)
+
+Station Delayed % =
+DIVIDE ( [Station Delayed Trips], [Station Observed Realtime Trips] )
+
 Station Average Absolute Schedule Gap Minutes =
 AVERAGEX (
     FILTER (

@@ -1,13 +1,13 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
-  "name": "m01subtitle",
+  "name": "m02stationnote",
   "position": {
     "x": 32,
-    "y": 44,
-    "z": 1,
-    "height": 23,
+    "y": 238,
+    "z": 20,
+    "height": 36,
     "width": 1216,
-    "tabOrder": 1
+    "tabOrder": 60
   },
   "visual": {
     "visualType": "textbox",
@@ -19,12 +19,12 @@
               {
                 "textRuns": [
                   {
-                    "value": "A clear view of network coverage, service volume and punctuality",
+                    "value": "Station = a monitored station/location, for example Köln Hbf.\nStop position = an individual boarding/platform/stop position inside the monitored station scope. This is why 7 monitored stations can correspond to 48 observed stop positions.",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "'''Segoe UI'', wf_segoe-ui_normal, helvetica, arial, sans-serif'",
-                      "fontSize": "11pt",
-                      "color": "#DCEAF7"
+                      "fontSize": "8pt",
+                      "color": "#52667A"
                     }
                   }
                 ]
@@ -63,7 +63,7 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#0B1F3A'"
+                      "Value": "'#F3F6FA'"
                     }
                   }
                 }

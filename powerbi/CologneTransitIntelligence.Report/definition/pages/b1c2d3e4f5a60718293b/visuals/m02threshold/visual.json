@@ -1,13 +1,13 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
-  "name": "m01networkstationlist",
+  "name": "m02threshold",
   "position": {
-    "x": 344,
-    "y": 958,
-    "z": 52,
-    "height": 210,
-    "width": 300,
-    "tabOrder": 52
+    "x": 816,
+    "y": 76,
+    "z": 12,
+    "height": 64,
+    "width": 220,
+    "tabOrder": 12
   },
   "visual": {
     "visualType": "slicer",
@@ -20,15 +20,15 @@
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "ParentStation"
+                      "Entity": "Delay Threshold (Minutes)"
                     }
                   },
-                  "Property": "ParentStationName"
+                  "Property": "Value"
                 }
               },
-              "queryRef": "ParentStation.ParentStationName",
-              "nativeQueryRef": "ParentStationName",
-              "displayName": "Station Name",
+              "queryRef": "Delay Threshold (Minutes).Value",
+              "nativeQueryRef": "Value",
+              "displayName": "Delay Threshold (Minutes)",
               "active": true
             }
           ],
@@ -65,7 +65,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Network Station Names'"
+                  "Value": "'Delay Threshold (Minutes)'"
                 }
               }
             },

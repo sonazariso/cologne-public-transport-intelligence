@@ -9,6 +9,9 @@ monitored realtime scope alongside the full network baseline, the actual
 monitoring period, comparable scheduled trips, observed realtime trips, and
 punctuality.
 
+Detailed station performance and station browsing now live on
+`M02 - Station Coverage & Performance`.
+
 M01 does not use the full static GTFS trip total as its plan-versus-realtime
 KPI. The comparison is limited to scheduled trips that have a legitimate
 operational outcome in the trusted realtime reliability dataset.
@@ -41,6 +44,12 @@ counts without counting repeated realtime observations as extra services.
 `ParticipatedInSamplingPanel = TRUE`. The page therefore distinguishes the
 realtime sampling panel from the complete `ParentStation` network dimension.
 
+The report also contains a small calculated `ManagementDate` dimension. It is
+derived from the refreshed `ManagementComparableTrip` population and relates
+only to the three management facts. It keeps the management date slicers
+dynamic without changing the legacy `ActiveDate` relationships used by older
+pages.
+
 ## Measures and behavior
 
 M01 measures are stored in `_Measures` under display folder
@@ -53,8 +62,12 @@ network parent stations, realtime monitored stations, monitoring start/end,
 distinct observed days, route count, best/worst mode, best/worst monitored
 station, and the dynamic system-status sentence.
 
+Station-grain delayed count and percentage measures are shared with M02's
+management table.
+
 The `Delay Threshold (Minutes)` parameter remains a disconnected 0–15 minute
-slicer and defaults to 0. For `difference = final observed estimated delay`:
+slicer and defaults to 0. Both M01 and M02 use the same parameter. For
+`difference = final observed estimated delay`:
 
 - On Time: `ABS(difference) <= threshold`
 - Delayed: `difference > threshold`
@@ -74,7 +87,9 @@ is reported.
 
 ## Page design
 
-Only the `M01 - System Overview` page is rebuilt. It contains:
+The management pages contain:
+
+### M01 — System Overview
 
 - a navy header with the dynamic status summary;
 - Transport Mode, Service Date / Date Range, and Delay Threshold filters;
@@ -83,9 +98,24 @@ Only the `M01 - System Overview` page is rebuilt. It contains:
 - Scheduled vs Realtime Trips by Transport Mode;
 - Punctuality of Observed Trips;
 - On-Time Rate by Transport Mode;
-- separate searchable network-station and realtime-monitored-station controls;
-- best/worst mode and monitored-station summaries; and
+- best/worst mode summaries; and
 - one concise sampling-panel scope note.
+
+The detailed station section was removed from M01. Its high-level Network
+Stations, Realtime Monitored Stations, and Observed Stop Positions KPIs remain.
+
+### M02 — Station Coverage & Performance
+
+- the same Transport Mode, realtime Service Date / Date Range, and Delay
+  Threshold filters;
+- network/monitoring and punctuality KPIs;
+- On-Time Rate by Monitored Station;
+- Observed Realtime Trips by Monitored Station;
+- a compact seven-station management detail table;
+- direct monitored-station names and a searchable Network Station selector;
+- best/worst monitored-station summaries;
+- a plain-language Station versus Stop Position explanation; and
+- a compact Transport Mode Guide and scope note.
 
 M01 formatting is applied directly to the page and its visuals. The global
 registered report theme and every other report page remain unchanged.

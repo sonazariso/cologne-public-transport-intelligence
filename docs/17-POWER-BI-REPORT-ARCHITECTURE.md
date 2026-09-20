@@ -3,6 +3,8 @@
 ## Report page inventory and order
 
 ```text
+M01 - System Overview
+M02 - Station Coverage & Performance
 00 - Template
 01 - Executive Overview
 02 - Reliability
@@ -17,7 +19,11 @@
 92 - Legacy QA - Data Quality & Collector
 ```
 
-`00 - Template` is the authoritative Design System / Component Library reference page. Pages `01` through `08` are the final portfolio report architecture. Pages `90` through `92` preserve earlier validation/prototype evidence and are not final analytical report pages.
+`M01 - System Overview` and `M02 - Station Coverage & Performance` are the
+manager-facing management pages. `00 - Template` is the authoritative Design
+System / Component Library reference page. Pages `01` through `08` are the
+final portfolio report architecture. Pages `90` through `92` preserve earlier
+validation/prototype evidence and are not final analytical report pages.
 
 ## Common page convention
 

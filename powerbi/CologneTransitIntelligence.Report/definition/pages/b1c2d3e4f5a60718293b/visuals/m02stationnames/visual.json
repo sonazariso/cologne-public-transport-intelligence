@@ -1,38 +1,39 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
-  "name": "m01subtitle",
+  "name": "m02stationnames",
   "position": {
     "x": 32,
-    "y": 44,
-    "z": 1,
-    "height": 23,
-    "width": 1216,
-    "tabOrder": 1
+    "y": 726,
+    "z": 50,
+    "height": 160,
+    "width": 300,
+    "tabOrder": 51
   },
   "visual": {
-    "visualType": "textbox",
-    "objects": {
-      "general": [
-        {
-          "properties": {
-            "paragraphs": [
-              {
-                "textRuns": [
-                  {
-                    "value": "A clear view of network coverage, service volume and punctuality",
-                    "textStyle": {
-                      "fontWeight": "normal",
-                      "fontFamily": "'''Segoe UI'', wf_segoe-ui_normal, helvetica, arial, sans-serif'",
-                      "fontSize": "11pt",
-                      "color": "#DCEAF7"
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "ManagementMonitoredStation"
                     }
-                  }
-                ]
-              }
-            ]
-          }
+                  },
+                  "Property": "MonitoredStationName"
+                }
+              },
+              "queryRef": "ManagementMonitoredStation.MonitoredStationName",
+              "nativeQueryRef": "MonitoredStationName",
+              "displayName": "Monitored Station"
+            }
+          ],
+          "showAll": true
         }
-      ]
+      }
     },
     "visualContainerObjects": {
       "title": [
@@ -41,7 +42,53 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "false"
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Realtime Monitored Stations'"
+                }
+              }
+            },
+            "fontFamily": {
+              "expr": {
+                "Literal": {
+                  "Value": "'''Segoe UI Semibold'', wf_segoe-ui_semibold, helvetica, arial, sans-serif'"
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "9D"
+                }
+              }
+            },
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#102A43'"
+                    }
+                  }
+                }
+              }
+            },
+            "titleWrap": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "alignment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'left'"
                 }
               }
             }
@@ -63,7 +110,7 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#0B1F3A'"
+                      "Value": "'#FFFFFF'"
                     }
                   }
                 }
@@ -85,7 +132,7 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "false"
+                  "Value": "true"
                 }
               }
             },

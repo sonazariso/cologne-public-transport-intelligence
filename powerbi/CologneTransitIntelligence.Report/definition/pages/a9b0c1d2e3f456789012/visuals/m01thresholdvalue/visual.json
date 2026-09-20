@@ -245,7 +245,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Selected threshold (min)'"
+                  "Value": "'Selected threshold (minutes)'"
                 }
               }
             },

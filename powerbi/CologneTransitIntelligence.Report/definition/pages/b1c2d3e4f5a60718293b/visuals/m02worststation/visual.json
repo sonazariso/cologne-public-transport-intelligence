@@ -1,13 +1,13 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
-  "name": "m01worstmode",
+  "name": "m02worststation",
   "position": {
     "x": 960,
-    "y": 920,
-    "z": 54,
-    "height": 108,
+    "y": 726,
+    "z": 53,
+    "height": 110,
     "width": 288,
-    "tabOrder": 54
+    "tabOrder": 56
   },
   "visual": {
     "visualType": "cardVisual",
@@ -23,11 +23,11 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Worst Performing Mode"
+                  "Property": "Worst Performing Monitored Station"
                 }
               },
-              "queryRef": "_Measures.Worst Performing Mode",
-              "nativeQueryRef": "Worst Performing Mode"
+              "queryRef": "_Measures.Worst Performing Monitored Station",
+              "nativeQueryRef": "Worst Performing Monitored Station"
             }
           ]
         }
@@ -47,7 +47,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "12D"
+                  "Value": "11D"
                 }
               }
             },
@@ -244,7 +244,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Worst Performing Mode'"
+                  "Value": "'Worst Performing Monitored Station'"
                 }
               }
             },

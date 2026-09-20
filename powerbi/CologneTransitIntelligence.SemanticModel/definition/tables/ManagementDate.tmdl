@@ -1,0 +1,33 @@
+table ManagementDate
+	lineageTag: b2c3d4e5-f607-1829-3a4b-5c6d7e8f9012
+	dataCategory: Time
+
+	column DateKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b2c3d4e5-f607-1829-3a4b-5c6d7e8f9013
+		summarizeBy: none
+		sourceColumn: [DateKey]
+
+		changedProperty = IsHidden
+
+	column DateValue
+		dataType: dateTime
+		isKey
+		formatString: Short Date
+		lineageTag: b2c3d4e5-f607-1829-3a4b-5c6d7e8f9014
+		summarizeBy: none
+		sourceColumn: [DateValue]
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition ManagementDate = calculated
+		mode: import
+		source = DISTINCT (
+			SELECTCOLUMNS (
+				ManagementComparableTrip,
+				"DateKey", ManagementComparableTrip[DateKey],
+				"DateValue", ManagementComparableTrip[ServiceDate]
+			)
+		)

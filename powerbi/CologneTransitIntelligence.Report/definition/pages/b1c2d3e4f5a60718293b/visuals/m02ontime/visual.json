@@ -1,13 +1,13 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
-  "name": "m01beststation",
+  "name": "m02ontime",
   "position": {
-    "x": 656,
-    "y": 1074,
-    "z": 55,
-    "height": 104,
-    "width": 288,
-    "tabOrder": 55
+    "x": 812,
+    "y": 154,
+    "z": 33,
+    "height": 82,
+    "width": 185,
+    "tabOrder": 33
   },
   "visual": {
     "visualType": "cardVisual",
@@ -23,11 +23,12 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Best Performing Monitored Station"
+                  "Property": "On-Time %"
                 }
               },
-              "queryRef": "_Measures.Best Performing Monitored Station",
-              "nativeQueryRef": "Best Performing Monitored Station"
+            "queryRef": "_Measures.On-Time %",
+            "nativeQueryRef": "On-Time %",
+            "displayName": "On-Time %"
             }
           ]
         }
@@ -47,7 +48,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "12D"
+                  "Value": "18D"
                 }
               }
             },
@@ -88,7 +89,7 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "false"
+                  "Value": "true"
                 }
               }
             },
@@ -244,7 +245,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Best Performing Monitored Station'"
+                  "Value": "'On-Time %'"
                 }
               }
             },

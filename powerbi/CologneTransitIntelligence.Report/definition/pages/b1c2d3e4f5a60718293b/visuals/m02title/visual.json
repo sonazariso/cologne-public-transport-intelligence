@@ -1,13 +1,13 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
-  "name": "m01subtitle",
+  "name": "m02title",
   "position": {
     "x": 32,
-    "y": 44,
-    "z": 1,
-    "height": 23,
+    "y": 12,
+    "z": 0,
+    "height": 32,
     "width": 1216,
-    "tabOrder": 1
+    "tabOrder": 0
   },
   "visual": {
     "visualType": "textbox",
@@ -19,12 +19,12 @@
               {
                 "textRuns": [
                   {
-                    "value": "A clear view of network coverage, service volume and punctuality",
+                  "value": "M02 - Station Coverage & Performance",
                     "textStyle": {
-                      "fontWeight": "normal",
-                      "fontFamily": "'''Segoe UI'', wf_segoe-ui_normal, helvetica, arial, sans-serif'",
-                      "fontSize": "11pt",
-                      "color": "#DCEAF7"
+                      "fontWeight": "bold",
+                      "fontFamily": "'''Segoe UI Semibold'', wf_segoe-ui_semibold, helvetica, arial, sans-serif'",
+                      "fontSize": "22pt",
+                      "color": "#FFFFFF"
                     }
                   }
                 ]

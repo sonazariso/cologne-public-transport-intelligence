@@ -1,13 +1,13 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
-  "name": "m01worstmode",
+  "name": "m02monitoredstations",
   "position": {
-    "x": 960,
-    "y": 920,
-    "z": 54,
-    "height": 108,
-    "width": 288,
-    "tabOrder": 54
+    "x": 227,
+    "y": 154,
+    "z": 22,
+    "height": 76,
+    "width": 185,
+    "tabOrder": 22
   },
   "visual": {
     "visualType": "cardVisual",
@@ -23,11 +23,12 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Worst Performing Mode"
+                  "Property": "Realtime Monitored Stations"
                 }
               },
-              "queryRef": "_Measures.Worst Performing Mode",
-              "nativeQueryRef": "Worst Performing Mode"
+              "queryRef": "_Measures.Realtime Monitored Stations",
+              "nativeQueryRef": "Realtime Monitored Stations",
+              "displayName": "Realtime Monitored Stations"
             }
           ]
         }
@@ -47,7 +48,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "12D"
+                  "Value": "18D"
                 }
               }
             },
@@ -56,7 +57,7 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#D95D39'"
+                      "Value": "'#102A43'"
                     }
                   }
                 }
@@ -88,7 +89,7 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "false"
+                  "Value": "true"
                 }
               }
             },
@@ -244,7 +245,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Worst Performing Mode'"
+                  "Value": "'Realtime Monitored Stations'"
                 }
               }
             },

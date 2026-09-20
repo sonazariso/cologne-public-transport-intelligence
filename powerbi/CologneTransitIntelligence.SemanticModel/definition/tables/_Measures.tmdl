@@ -1151,6 +1151,28 @@ table _Measures
 		displayFolder: 09 M01 System Overview
 		lineageTag: a0000000-0000-0000-0000-000000000028
 
+	measure 'Station Delayed Trips' =
+
+			CALCULATE (
+			    DISTINCTCOUNT ( ManagementTripStation[ManagementTripKey] ),
+			    FILTER (
+			        ManagementTripStation,
+			        ManagementTripStation[HasValidRealtimeObservation] = TRUE ()
+			            && ManagementTripStation[FinalObservedEstimatedDelayMinutes]
+			                > [Delay Threshold (Minutes)]
+			    )
+			)
+		formatString: #,0
+		displayFolder: 09 M01 System Overview
+		lineageTag: a0000000-0000-0000-0000-000000000043
+
+	measure 'Station Delayed %' =
+
+			DIVIDE ( [Station Delayed Trips], [Station Observed Realtime Trips] )
+		formatString: 0.0\ %;-0.0\ %;0.0\ %
+		displayFolder: 09 M01 System Overview
+		lineageTag: a0000000-0000-0000-0000-000000000044
+
 	measure 'Station Average Absolute Schedule Gap Minutes' =
 			
 			AVERAGEX (

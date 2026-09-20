@@ -1,13 +1,13 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
-  "name": "m01worstmode",
+  "name": "m02thresholdvalue",
   "position": {
-    "x": 960,
-    "y": 920,
-    "z": 54,
-    "height": 108,
-    "width": 288,
-    "tabOrder": 54
+    "x": 1048,
+    "y": 76,
+    "z": 13,
+    "height": 64,
+    "width": 200,
+    "tabOrder": 13
   },
   "visual": {
     "visualType": "cardVisual",
@@ -23,11 +23,12 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Worst Performing Mode"
+                  "Property": "Delay Threshold (Minutes)"
                 }
               },
-              "queryRef": "_Measures.Worst Performing Mode",
-              "nativeQueryRef": "Worst Performing Mode"
+              "queryRef": "_Measures.Delay Threshold (Minutes)",
+              "nativeQueryRef": "Delay Threshold (Minutes)",
+              "displayName": "Selected threshold"
             }
           ]
         }
@@ -47,7 +48,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "12D"
+                  "Value": "18D"
                 }
               }
             },
@@ -56,7 +57,7 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#D95D39'"
+                      "Value": "'#102A43'"
                     }
                   }
                 }
@@ -157,28 +158,28 @@
             "leftMargin": {
               "expr": {
                 "Literal": {
-                  "Value": "12D"
+                  "Value": "10D"
                 }
               }
             },
             "rightMargin": {
               "expr": {
                 "Literal": {
-                  "Value": "12D"
+                  "Value": "10D"
                 }
               }
             },
             "topMargin": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "6D"
                 }
               }
             },
             "bottomMargin": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "6D"
                 }
               }
             }
@@ -244,7 +245,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Worst Performing Mode'"
+                  "Value": "'Selected threshold (minutes)'"
                 }
               }
             },

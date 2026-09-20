@@ -5,7 +5,7 @@
     "x": 32,
     "y": 68,
     "z": 2,
-    "height": 80,
+    "height": 84,
     "width": 1216,
     "tabOrder": 2
   },
@@ -47,7 +47,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "12D"
+                  "Value": "13D"
                 }
               }
             },
@@ -244,7 +244,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Live network status'"
+                  "Value": "'Current status'"
                 }
               }
             },

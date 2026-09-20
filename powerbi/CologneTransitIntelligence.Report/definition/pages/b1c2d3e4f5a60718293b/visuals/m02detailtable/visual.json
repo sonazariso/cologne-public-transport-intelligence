@@ -1,16 +1,16 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
-  "name": "m01dateslicer",
+  "name": "m02detailtable",
   "position": {
-    "x": 420,
-    "y": 156,
-    "z": 11,
-    "height": 72,
-    "width": 372,
-    "tabOrder": 11
+    "x": 32,
+    "y": 534,
+    "z": 40,
+    "height": 180,
+    "width": 1216,
+    "tabOrder": 40
   },
   "visual": {
-    "visualType": "slicer",
+    "visualType": "tableEx",
     "query": {
       "queryState": {
         "Values": {
@@ -20,36 +20,110 @@
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "ManagementDate"
+                      "Entity": "ManagementTripStation"
                     }
                   },
-                  "Property": "DateValue"
+                  "Property": "Station"
                 }
               },
-              "queryRef": "ManagementDate.DateValue",
-              "nativeQueryRef": "DateValue",
-              "displayName": "Service Date",
-              "active": true
+              "queryRef": "ManagementTripStation.Station",
+              "nativeQueryRef": "Station",
+              "displayName": "Monitored Station"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Station Observed Realtime Trips"
+                }
+              },
+              "queryRef": "_Measures.Station Observed Realtime Trips",
+              "nativeQueryRef": "Station Observed Realtime Trips",
+              "displayName": "Observed Realtime Trips"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Station On-Time Trips"
+                }
+              },
+              "queryRef": "_Measures.Station On-Time Trips",
+              "nativeQueryRef": "Station On-Time Trips",
+              "displayName": "On-Time Trips"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Station On-Time %"
+                }
+              },
+              "queryRef": "_Measures.Station On-Time %",
+              "nativeQueryRef": "Station On-Time %",
+              "displayName": "On-Time %"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Station Delayed Trips"
+                }
+              },
+              "queryRef": "_Measures.Station Delayed Trips",
+              "nativeQueryRef": "Station Delayed Trips",
+              "displayName": "Delayed Trips"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Station Delayed %"
+                }
+              },
+              "queryRef": "_Measures.Station Delayed %",
+              "nativeQueryRef": "Station Delayed %",
+              "displayName": "Delayed %"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Observed Stop Positions"
+                }
+              },
+              "queryRef": "_Measures.Observed Stop Positions",
+              "nativeQueryRef": "Observed Stop Positions",
+              "displayName": "Observed Stop Positions"
             }
           ],
           "showAll": true
         }
       }
-    },
-    "objects": {
-      "data": [
-        {
-          "properties": {
-            "mode": {
-              "expr": {
-                "Literal": {
-                  "Value": "'Between'"
-                }
-              }
-            }
-          }
-        }
-      ]
     },
     "visualContainerObjects": {
       "title": [
@@ -65,7 +139,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Service Date / Date Range'"
+                  "Value": "'Monitored Station Detail'"
                 }
               }
             },
