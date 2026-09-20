@@ -3,9 +3,9 @@
   "name": "m01summaryline2",
   "position": {
     "x": 32,
-    "y": 114,
+    "y": 68,
     "z": 3,
-    "height": 38,
+    "height": 84,
     "width": 1216,
     "tabOrder": 3
   },
@@ -166,7 +166,7 @@
             "alignment": {
               "expr": {
                 "Literal": {
-                  "Value": "'top'"
+                  "Value": "'middle'"
                 }
               }
             },
