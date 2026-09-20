@@ -1622,7 +1622,7 @@ table _Measures
 		lineageTag: a0000000-0000-0000-0000-000000000050
 
 	measure 'System Status Summary Line 2' =
-
+			
 			VAR BestMode = [Best Performing Mode]
 			VAR WorstMode = [Worst Performing Mode]
 			RETURN
