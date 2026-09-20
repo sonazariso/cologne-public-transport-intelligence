@@ -892,16 +892,6 @@ table _Measures
 		displayFolder: 09 M01 System Overview
 		lineageTag: a0000000-0000-0000-0000-000000000001
 
-	measure 'M01 Effective Threshold Display' =
-			
-			FORMAT (
-			    [Delay Threshold (Minutes)],
-			    "0",
-			    "en-US"
-			) & " min"
-		displayFolder: 09 M01 System Overview
-		lineageTag: a0000000-0000-0000-0000-000000000052
-
 	measure 'Comparable Scheduled Trips' =
 			
 			COUNTROWS ( ManagementComparableTrip )
@@ -1643,6 +1633,16 @@ table _Measures
 			    )
 		displayFolder: 09 M01 System Overview
 		lineageTag: a0000000-0000-0000-0000-000000000051
+
+	measure 'M01 Effective Threshold Display' =
+			
+			FORMAT (
+			    [Delay Threshold (Minutes)],
+			    "0",
+			    "en-US"
+			) & " min"
+		displayFolder: 09 M01 System Overview
+		lineageTag: a0000000-0000-0000-0000-000000000052
 
 	column _Placeholder
 		dataType: int64
