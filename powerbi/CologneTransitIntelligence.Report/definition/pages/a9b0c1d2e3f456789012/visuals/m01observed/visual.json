@@ -3,7 +3,7 @@
   "name": "m01observed",
   "position": {
     "x": 227,
-    "y": 294,
+    "y": 302,
     "z": 31,
     "height": 82,
     "width": 185,
@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "_Measures.Observed Realtime Trips",
-              "nativeQueryRef": "Observed Realtime Trips"
+              "nativeQueryRef": "Observed Realtime Trips",
+              "displayName": "Observed Trips"
             }
           ]
         }

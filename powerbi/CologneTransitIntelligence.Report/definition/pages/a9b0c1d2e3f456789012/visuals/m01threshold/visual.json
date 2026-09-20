@@ -3,7 +3,7 @@
   "name": "m01threshold",
   "position": {
     "x": 820,
-    "y": 126,
+    "y": 134,
     "z": 12,
     "height": 62,
     "width": 380,
@@ -27,7 +27,9 @@
                 }
               },
               "queryRef": "Delay Threshold (Minutes).Value",
-              "nativeQueryRef": "Value"
+              "nativeQueryRef": "Value",
+              "displayName": "Delay Threshold (Minutes)",
+              "active": true
             }
           ],
           "showAll": true

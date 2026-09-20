@@ -3,7 +3,7 @@
   "name": "m01ontime",
   "position": {
     "x": 617,
-    "y": 294,
+    "y": 302,
     "z": 33,
     "height": 82,
     "width": 185,
@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "_Measures.On-Time Summary",
-              "nativeQueryRef": "On-Time Summary"
+              "nativeQueryRef": "On-Time Summary",
+              "displayName": "On Time"
             }
           ]
         }

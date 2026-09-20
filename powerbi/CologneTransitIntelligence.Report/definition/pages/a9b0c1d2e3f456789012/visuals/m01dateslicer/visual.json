@@ -3,7 +3,7 @@
   "name": "m01dateslicer",
   "position": {
     "x": 426,
-    "y": 126,
+    "y": 134,
     "z": 11,
     "height": 62,
     "width": 380,
@@ -27,7 +27,9 @@
                 }
               },
               "queryRef": "ActiveDate.DateValue",
-              "nativeQueryRef": "DateValue"
+              "nativeQueryRef": "DateValue",
+              "displayName": "Service Date",
+              "active": true
             }
           ],
           "showAll": true

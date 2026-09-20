@@ -3,7 +3,7 @@
   "name": "m01networkstations",
   "position": {
     "x": 227,
-    "y": 202,
+    "y": 210,
     "z": 21,
     "height": 76,
     "width": 185,
@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "_Measures.Network Parent Stations",
-              "nativeQueryRef": "Network Parent Stations"
+              "nativeQueryRef": "Network Parent Stations",
+              "displayName": "Network Stations"
             }
           ]
         }

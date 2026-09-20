@@ -3,7 +3,7 @@
   "name": "m01covereddays",
   "position": {
     "x": 1007,
-    "y": 202,
+    "y": 210,
     "z": 25,
     "height": 76,
     "width": 185,
@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "_Measures.Realtime Observed Days",
-              "nativeQueryRef": "Realtime Observed Days"
+              "nativeQueryRef": "Realtime Observed Days",
+              "displayName": "Observed Days"
             }
           ]
         }

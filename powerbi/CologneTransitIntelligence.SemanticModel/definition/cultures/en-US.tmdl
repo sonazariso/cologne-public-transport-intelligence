@@ -12,19 +12,7 @@ cultureInfo en-US
 			          "ConceptualProperty": "ModeDetail"
 			        }
 			      },
-			      "State": "Generated",
-			      "Terms": [
-			        {
-			          "Transport mode": {
-			            "State": "Suggested",
-			            "Source": {
-			              "Type": "External",
-			              "Agent": "PowerBI.VisualColumnRename"
-			            },
-			            "Weight": 0.9
-			          }
-			        }
-			      ]
+			      "State": "Generated"
 			    },
 			    "managementmonitoredstation.monitoredstationname": {
 			      "Definition": {
@@ -36,7 +24,7 @@ cultureInfo en-US
 			      "State": "Generated",
 			      "Terms": [
 			        {
-			          "Monitored realtime station": {
+			          "Monitored station": {
 			            "State": "Suggested",
 			            "Source": {
 			              "Type": "External",
@@ -54,19 +42,7 @@ cultureInfo en-US
 			          "ConceptualProperty": "StaticParentStationName"
 			        }
 			      },
-			      "State": "Generated",
-			      "Terms": [
-			        {
-			          "Static parent station": {
-			            "State": "Suggested",
-			            "Source": {
-			              "Type": "External",
-			              "Agent": "PowerBI.VisualColumnRename"
-			            },
-			            "Weight": 0.9
-			          }
-			        }
-			      ]
+			      "State": "Generated"
 			    }
 			  }
 			}

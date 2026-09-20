@@ -3,7 +3,7 @@
   "name": "m01coveragestatus",
   "position": {
     "x": 422,
-    "y": 294,
+    "y": 302,
     "z": 32,
     "height": 82,
     "width": 185,
@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "_Measures.Observed Stop Positions",
-              "nativeQueryRef": "Observed Stop Positions"
+              "nativeQueryRef": "Observed Stop Positions",
+              "displayName": "Stop positions within monitored scope"
             }
           ]
         }
@@ -109,7 +110,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "9D"
+                  "Value": "8D"
                 }
               }
             },

@@ -3,7 +3,7 @@
   "name": "m01monitoredstations",
   "position": {
     "x": 422,
-    "y": 202,
+    "y": 210,
     "z": 22,
     "height": 76,
     "width": 185,
@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "_Measures.Realtime Monitored Stations",
-              "nativeQueryRef": "Realtime Monitored Stations"
+              "nativeQueryRef": "Realtime Monitored Stations",
+              "displayName": "Realtime Monitored Stations"
             }
           ]
         }

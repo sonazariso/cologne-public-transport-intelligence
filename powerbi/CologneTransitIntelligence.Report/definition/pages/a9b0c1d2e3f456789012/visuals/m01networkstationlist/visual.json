@@ -3,7 +3,7 @@
   "name": "m01networkstationlist",
   "position": {
     "x": 344,
-    "y": 674,
+    "y": 682,
     "z": 52,
     "height": 235,
     "width": 300,
@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "ParentStation.ParentStationName",
-              "nativeQueryRef": "ParentStationName"
+              "nativeQueryRef": "ParentStationName",
+              "active": true
             }
           ],
           "showAll": true

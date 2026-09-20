@@ -3,7 +3,7 @@
   "name": "m01modeslicer",
   "position": {
     "x": 32,
-    "y": 126,
+    "y": 134,
     "z": 10,
     "height": 62,
     "width": 380,
@@ -27,7 +27,9 @@
                 }
               },
               "queryRef": "Mode.ModeDetail",
-              "nativeQueryRef": "ModeDetail"
+              "nativeQueryRef": "ModeDetail",
+              "displayName": "Transport Mode",
+              "active": true
             }
           ],
           "showAll": true

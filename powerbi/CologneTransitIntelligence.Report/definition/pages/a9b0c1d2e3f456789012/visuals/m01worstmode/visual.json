@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01worstmode",
   "position": {
-    "x": 656,
-    "y": 734,
+    "x": 960,
+    "y": 682,
     "z": 54,
-    "height": 55,
-    "width": 592,
+    "height": 84,
+    "width": 288,
     "tabOrder": 54
   },
   "visual": {
@@ -47,7 +47,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "11D"
+                  "Value": "10D"
                 }
               }
             },
@@ -88,7 +88,7 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "true"
+                  "Value": "false"
                 }
               }
             },

@@ -3,7 +3,7 @@
   "name": "m01early",
   "position": {
     "x": 1007,
-    "y": 294,
+    "y": 302,
     "z": 35,
     "height": 82,
     "width": 185,
@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "_Measures.Early Summary",
-              "nativeQueryRef": "Early Summary"
+              "nativeQueryRef": "Early Summary",
+              "displayName": "Early"
             }
           ]
         }

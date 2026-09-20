@@ -3,7 +3,7 @@
   "name": "m01dataend",
   "position": {
     "x": 812,
-    "y": 202,
+    "y": 210,
     "z": 24,
     "height": 76,
     "width": 185,
@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "_Measures.Realtime Data End Date",
-              "nativeQueryRef": "Realtime Data End Date"
+              "nativeQueryRef": "Realtime Data End Date",
+              "displayName": "Monitoring End"
             }
           ]
         }

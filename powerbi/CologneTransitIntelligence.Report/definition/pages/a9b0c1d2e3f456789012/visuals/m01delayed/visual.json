@@ -3,7 +3,7 @@
   "name": "m01delayed",
   "position": {
     "x": 812,
-    "y": 294,
+    "y": 302,
     "z": 34,
     "height": 82,
     "width": 185,
@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "_Measures.Delayed Summary",
-              "nativeQueryRef": "Delayed Summary"
+              "nativeQueryRef": "Delayed Summary",
+              "displayName": "Delayed"
             }
           ]
         }

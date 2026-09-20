@@ -3,14 +3,14 @@
   "name": "m01volumebymode",
   "position": {
     "x": 339,
-    "y": 398,
+    "y": 406,
     "z": 41,
     "height": 230,
     "width": 295,
     "tabOrder": 41
   },
   "visual": {
-    "visualType": "clusteredColumnChart",
+    "visualType": "clusteredBarChart",
     "query": {
       "queryState": {
         "Category": {
@@ -27,7 +27,9 @@
                 }
               },
               "queryRef": "Mode.ModeDetail",
-              "nativeQueryRef": "ModeDetail"
+              "nativeQueryRef": "ModeDetail",
+              "displayName": "Transport Mode",
+              "active": true
             }
           ],
           "showAll": true
@@ -46,7 +48,8 @@
                 }
               },
               "queryRef": "_Measures.Scheduled Trips in Monitored Scope",
-              "nativeQueryRef": "Scheduled Trips in Monitored Scope"
+              "nativeQueryRef": "Scheduled Trips in Monitored Scope",
+              "displayName": "Scheduled Trips"
             },
             {
               "field": {
@@ -60,7 +63,8 @@
                 }
               },
               "queryRef": "_Measures.Observed Realtime Trips",
-              "nativeQueryRef": "Observed Realtime Trips"
+              "nativeQueryRef": "Observed Realtime Trips",
+              "displayName": "Observed Trips"
             }
           ]
         }
@@ -102,7 +106,21 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "9D"
+                  "Value": "7D"
+                }
+              }
+            },
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "innerPadding": {
+              "expr": {
+                "Literal": {
+                  "Value": "12D"
                 }
               }
             }
@@ -127,6 +145,13 @@
               "expr": {
                 "Literal": {
                   "Value": "9D"
+                }
+              }
+            },
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
                 }
               }
             }

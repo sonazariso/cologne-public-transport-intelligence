@@ -3,7 +3,7 @@
   "name": "m01comparable",
   "position": {
     "x": 32,
-    "y": 294,
+    "y": 302,
     "z": 30,
     "height": 82,
     "width": 185,
@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "_Measures.Scheduled Trips in Monitored Scope",
-              "nativeQueryRef": "Scheduled Trips in Monitored Scope"
+              "nativeQueryRef": "Scheduled Trips in Monitored Scope",
+              "displayName": "Scheduled Trips"
             }
           ]
         }

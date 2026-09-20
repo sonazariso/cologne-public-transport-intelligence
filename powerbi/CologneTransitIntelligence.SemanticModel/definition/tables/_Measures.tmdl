@@ -1083,9 +1083,9 @@ table _Measures
 			RETURN
 			    SWITCH (
 			        SelectedStatus,
-			        "On Time", [On-Time Trips],
-			        "Delayed", [Delayed Trips],
-			        "Early", [Early Trips]
+			        "On Time", COALESCE ( [On-Time Trips], 0 ),
+			        "Delayed", COALESCE ( [Delayed Trips], 0 ),
+			        "Early", COALESCE ( [Early Trips], 0 )
 			    )
 		formatString: #,0
 		displayFolder: 09 M01 System Overview
@@ -1097,9 +1097,9 @@ table _Measures
 			RETURN
 			    SWITCH (
 			        SelectedStatus,
-			        "On Time", [On-Time %],
-			        "Delayed", [Delayed %],
-			        "Early", [Early %]
+			        "On Time", COALESCE ( [On-Time %], 0 ),
+			        "Delayed", COALESCE ( [Delayed %], 0 ),
+			        "Early", COALESCE ( [Early %], 0 )
 			    )
 		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		displayFolder: 09 M01 System Overview
@@ -1235,8 +1235,9 @@ table _Measures
 			    IF (
 			        ISBLANK ( ModeName ),
 			        "No observed realtime trips are available for the current selection.",
-			        ModeName & " — " & FORMAT ( ModePct, "0.0%" )
-			            & " on time (" & FORMAT ( ObservedTrips, "#,0" ) & " observed trips)"
+			        ModeName & UNICHAR ( 10 ) & FORMAT ( ModePct, "0.0%" )
+			            & " On Time" & UNICHAR ( 10 )
+			            & FORMAT ( ObservedTrips, "#,0" ) & " observed trips"
 			    )
 		displayFolder: 09 M01 System Overview
 		lineageTag: a0000000-0000-0000-0000-000000000032
@@ -1266,8 +1267,9 @@ table _Measures
 			    IF (
 			        ISBLANK ( ModeName ),
 			        "No observed realtime trips are available for the current selection.",
-			        ModeName & " — " & FORMAT ( ModePct, "0.0%" )
-			            & " on time (" & FORMAT ( ObservedTrips, "#,0" ) & " observed trips)"
+			        ModeName & UNICHAR ( 10 ) & FORMAT ( ModePct, "0.0%" )
+			            & " On Time" & UNICHAR ( 10 )
+			            & FORMAT ( ObservedTrips, "#,0" ) & " observed trips"
 			    )
 		displayFolder: 09 M01 System Overview
 		lineageTag: a0000000-0000-0000-0000-000000000033
@@ -1343,8 +1345,9 @@ table _Measures
 			    IF (
 			        ISBLANK ( StationName ),
 			        "No observed realtime station trips are available for the current selection.",
-			        StationName & " — " & FORMAT ( StationPct, "0.0%" )
-			            & " on time (" & FORMAT ( ObservedTrips, "#,0" ) & " observed trips)"
+			        StationName & UNICHAR ( 10 ) & FORMAT ( StationPct, "0.0%" )
+			            & " On Time" & UNICHAR ( 10 )
+			            & FORMAT ( ObservedTrips, "#,0" ) & " observed trips"
 			    )
 		displayFolder: 09 M01 System Overview
 		lineageTag: a0000000-0000-0000-0000-000000000036
@@ -1374,8 +1377,9 @@ table _Measures
 			    IF (
 			        ISBLANK ( StationName ),
 			        "No observed realtime station trips are available for the current selection.",
-			        StationName & " — " & FORMAT ( StationPct, "0.0%" )
-			            & " on time (" & FORMAT ( ObservedTrips, "#,0" ) & " observed trips)"
+			        StationName & UNICHAR ( 10 ) & FORMAT ( StationPct, "0.0%" )
+			            & " On Time" & UNICHAR ( 10 )
+			            & FORMAT ( ObservedTrips, "#,0" ) & " observed trips"
 			    )
 		displayFolder: 09 M01 System Overview
 		lineageTag: a0000000-0000-0000-0000-000000000037
@@ -1385,7 +1389,8 @@ table _Measures
 			IF (
 			    ISBLANK ( [Observed Realtime Trips] ) || [Observed Realtime Trips] = 0,
 			    "No observations",
-			    FORMAT ( [On-Time Trips], "#,0" ) & "  |  " & FORMAT ( [On-Time %], "0.0%" )
+			    FORMAT ( COALESCE ( [On-Time Trips], 0 ), "#,0" ) & "  |  "
+			        & FORMAT ( COALESCE ( [On-Time %], 0 ), "0.0%" )
 			)
 		displayFolder: 09 M01 System Overview
 		lineageTag: a0000000-0000-0000-0000-000000000038
@@ -1395,7 +1400,8 @@ table _Measures
 			IF (
 			    ISBLANK ( [Observed Realtime Trips] ) || [Observed Realtime Trips] = 0,
 			    "No observations",
-			    FORMAT ( [Delayed Trips], "#,0" ) & "  |  " & FORMAT ( [Delayed %], "0.0%" )
+			    FORMAT ( COALESCE ( [Delayed Trips], 0 ), "#,0" ) & "  |  "
+			        & FORMAT ( COALESCE ( [Delayed %], 0 ), "0.0%" )
 			)
 		displayFolder: 09 M01 System Overview
 		lineageTag: a0000000-0000-0000-0000-000000000039
@@ -1405,7 +1411,8 @@ table _Measures
 			IF (
 			    ISBLANK ( [Observed Realtime Trips] ) || [Observed Realtime Trips] = 0,
 			    "No observations",
-			    FORMAT ( [Early Trips], "#,0" ) & "  |  " & FORMAT ( [Early %], "0.0%" )
+			    FORMAT ( COALESCE ( [Early Trips], 0 ), "#,0" ) & "  |  "
+			        & FORMAT ( COALESCE ( [Early %], 0 ), "0.0%" )
 			)
 		displayFolder: 09 M01 System Overview
 		lineageTag: a0000000-0000-0000-0000-000000000040
@@ -1453,8 +1460,8 @@ table _Measures
 			            & FORMAT ( EndDate, "d MMM yyyy" ) & ", "
 			            & FORMAT ( ObservedTrips, "#,0" ) & " realtime trips were observed across "
 			            & FORMAT ( ModeCount, "#,0" ) & " transport modes and "
-			            & FORMAT ( StationCount, "#,0" ) & " monitored stations. "
-			            & BestMode & " has the highest on-time rate, while "
+			            & FORMAT ( StationCount, "#,0" ) & " monitored stations."
+			            & UNICHAR ( 10 ) & BestMode & " has the highest on-time rate; "
 			            & WorstMode & " has the lowest."
 			    )
 		displayFolder: 09 M01 System Overview

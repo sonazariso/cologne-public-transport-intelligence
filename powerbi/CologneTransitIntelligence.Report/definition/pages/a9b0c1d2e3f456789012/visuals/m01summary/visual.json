@@ -5,7 +5,7 @@
     "x": 32,
     "y": 68,
     "z": 2,
-    "height": 44,
+    "height": 58,
     "width": 1216,
     "tabOrder": 2
   },
@@ -47,7 +47,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "11D"
+                  "Value": "10D"
                 }
               }
             },
@@ -171,14 +171,14 @@
             "topMargin": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "6D"
                 }
               }
             },
             "bottomMargin": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "6D"
                 }
               }
             }

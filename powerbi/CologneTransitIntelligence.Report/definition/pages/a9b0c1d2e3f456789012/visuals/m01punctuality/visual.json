@@ -3,7 +3,7 @@
   "name": "m01punctuality",
   "position": {
     "x": 646,
-    "y": 398,
+    "y": 406,
     "z": 42,
     "height": 230,
     "width": 295,
@@ -27,28 +27,11 @@
                 }
               },
               "queryRef": "PunctualityStatus.Status",
-              "nativeQueryRef": "Status"
+              "nativeQueryRef": "Status",
+              "active": true
             }
           ],
           "showAll": true
-        },
-        "Y": {
-          "projections": [
-            {
-              "field": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "_Measures"
-                    }
-                  },
-                  "Property": "Punctuality Trips"
-                }
-              },
-              "queryRef": "_Measures.Punctuality Trips",
-              "nativeQueryRef": "Punctuality Trips"
-            }
-          ]
         },
         "Tooltips": {
           "projections": [
@@ -64,7 +47,27 @@
                 }
               },
               "queryRef": "_Measures.Punctuality %",
-              "nativeQueryRef": "Punctuality %"
+              "nativeQueryRef": "Punctuality %",
+              "displayName": "Share of Trips"
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Punctuality Trips"
+                }
+              },
+              "queryRef": "_Measures.Punctuality Trips",
+              "nativeQueryRef": "Punctuality Trips",
+              "displayName": "Trips"
             }
           ]
         }
@@ -109,6 +112,13 @@
                   "Value": "9D"
                 }
               }
+            },
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
             }
           }
         }
@@ -133,6 +143,13 @@
                   "Value": "9D"
                 }
               }
+            },
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
             }
           }
         }
@@ -150,7 +167,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "9D"
                 }
               }
             },

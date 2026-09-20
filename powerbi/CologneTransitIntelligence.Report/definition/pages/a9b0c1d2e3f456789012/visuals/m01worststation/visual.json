@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01worststation",
   "position": {
-    "x": 656,
-    "y": 854,
+    "x": 960,
+    "y": 778,
     "z": 56,
-    "height": 55,
-    "width": 592,
+    "height": 84,
+    "width": 288,
     "tabOrder": 56
   },
   "visual": {
@@ -47,7 +47,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "11D"
+                  "Value": "10D"
                 }
               }
             },
@@ -88,7 +88,7 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "true"
+                  "Value": "false"
                 }
               }
             },
