@@ -28,7 +28,7 @@
               },
               "queryRef": "_Measures.M01 Observed Realtime Trips Display",
               "nativeQueryRef": "M01 Observed Realtime Trips Display",
-              "displayName": "Observed Trips"
+              "displayName": "Trips with Usable Realtime Timing"
             }
           ]
         }
@@ -245,7 +245,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Observed Realtime Trips'"
+                  "Value": "'Trips with Usable Realtime Timing'"
                 }
               }
             },

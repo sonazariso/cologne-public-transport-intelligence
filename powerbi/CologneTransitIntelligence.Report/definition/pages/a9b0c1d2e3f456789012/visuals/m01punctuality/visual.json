@@ -3,9 +3,9 @@
   "name": "m01punctuality",
   "position": {
     "x": 32,
-    "y": 704,
+    "y": 686,
     "z": 42,
-    "height": 250,
+    "height": 240,
     "width": 598,
     "tabOrder": 42
   },
@@ -385,7 +385,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Punctuality of Observed Trips'"
+                  "Value": "'Punctuality of Trips with Usable Realtime Timing'"
                 }
               }
             },

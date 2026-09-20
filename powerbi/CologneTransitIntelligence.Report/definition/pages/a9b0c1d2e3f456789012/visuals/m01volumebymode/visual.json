@@ -5,7 +5,7 @@
     "x": 650,
     "y": 438,
     "z": 41,
-    "height": 250,
+    "height": 240,
     "width": 598,
     "tabOrder": 41
   },
@@ -49,7 +49,7 @@
               },
               "queryRef": "_Measures.Scheduled Trips in Monitored Scope",
               "nativeQueryRef": "Scheduled Trips in Monitored Scope",
-              "displayName": "Scheduled Trips"
+              "displayName": "Scheduled Trips Matched to Realtime"
             },
             {
               "field": {
@@ -64,7 +64,7 @@
               },
               "queryRef": "_Measures.Observed Realtime Trips",
               "nativeQueryRef": "Observed Realtime Trips",
-              "displayName": "Observed Trips"
+              "displayName": "Trips with Usable Realtime Timing"
             }
           ]
         }
@@ -302,7 +302,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Scheduled vs Realtime Trips by Transport Mode'"
+                  "Value": "'Matched Scheduled vs Usable-Timing Trips by Transport Mode'"
                 }
               }
             },

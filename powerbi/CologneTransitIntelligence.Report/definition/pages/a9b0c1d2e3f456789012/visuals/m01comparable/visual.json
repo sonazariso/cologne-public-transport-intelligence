@@ -28,7 +28,7 @@
               },
               "queryRef": "_Measures.M01 Scheduled Trips Display",
               "nativeQueryRef": "M01 Scheduled Trips Display",
-              "displayName": "Scheduled Trips"
+              "displayName": "Scheduled Trips Matched to Realtime"
             }
           ]
         }
@@ -245,7 +245,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Scheduled Trips in Monitored Scope'"
+                  "Value": "'Scheduled Trips Matched to Realtime'"
                 }
               }
             },
