@@ -23,13 +23,12 @@
                       "Entity": "ManagementTripStation"
                     }
                   },
-                "Property": "Station"
+                  "Property": "Station"
                 }
               },
-          "queryRef": "ManagementTripStation.Station",
-          "nativeQueryRef": "Station",
-          "displayName": "Monitored Station",
-            "displayName": "Monitored Station",
+              "queryRef": "ManagementTripStation.Station",
+              "nativeQueryRef": "Station",
+              "displayName": "Monitored Station",
               "active": true
             }
           ],
@@ -65,7 +64,7 @@
                     "Entity": "_Measures"
                   }
                 },
-                  "Property": "Station On-Time %"
+                "Property": "Station On-Time %"
               }
             },
             "direction": "Descending"
@@ -252,7 +251,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                "Value": "'On-Time Rate by Monitored Station'"
+                  "Value": "'On-Time Rate by Monitored Station'"
                 }
               }
             },

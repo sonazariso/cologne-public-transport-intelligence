@@ -20,13 +20,13 @@
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                  "Entity": "ManagementDate"
+                      "Entity": "ManagementDate"
                     }
                   },
-                "Property": "DateValue"
+                  "Property": "DateValue"
                 }
               },
-            "queryRef": "ManagementDate.DateValue",
+              "queryRef": "ManagementDate.DateValue",
               "nativeQueryRef": "DateValue",
               "displayName": "Service Date",
               "active": true

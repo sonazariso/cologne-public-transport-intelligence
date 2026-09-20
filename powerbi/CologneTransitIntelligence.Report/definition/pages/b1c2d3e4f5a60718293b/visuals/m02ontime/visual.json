@@ -26,9 +26,9 @@
                   "Property": "On-Time %"
                 }
               },
-            "queryRef": "_Measures.On-Time %",
-            "nativeQueryRef": "On-Time %",
-            "displayName": "On-Time %"
+              "queryRef": "_Measures.On-Time %",
+              "nativeQueryRef": "On-Time %",
+              "displayName": "On-Time %"
             }
           ]
         }

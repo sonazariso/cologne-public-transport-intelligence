@@ -25,10 +25,11 @@ table ManagementDate
 	partition ManagementDate = calculated
 		mode: import
 		source =
-			DISTINCT (
-				SELECTCOLUMNS (
-					ManagementComparableTrip,
-					"DateKey", ManagementComparableTrip[DateKey],
-					"DateValue", ManagementComparableTrip[ServiceDate]
+				DISTINCT (
+					SELECTCOLUMNS (
+						ManagementComparableTrip,
+						"DateKey", ManagementComparableTrip[DateKey],
+						"DateValue", ManagementComparableTrip[ServiceDate]
+					)
 				)
-			)
+

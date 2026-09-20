@@ -26,9 +26,9 @@
                   "Property": "Delayed %"
                 }
               },
-            "queryRef": "_Measures.Delayed %",
-            "nativeQueryRef": "Delayed %",
-            "displayName": "Delayed %"
+              "queryRef": "_Measures.Delayed %",
+              "nativeQueryRef": "Delayed %",
+              "displayName": "Delayed %"
             }
           ]
         }

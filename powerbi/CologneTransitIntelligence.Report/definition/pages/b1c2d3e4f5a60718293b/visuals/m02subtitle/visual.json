@@ -19,7 +19,7 @@
               {
                 "textRuns": [
                   {
-                  "value": "Performance and realtime coverage across monitored Cologne stations",
+                    "value": "Performance and realtime coverage across monitored Cologne stations",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "'''Segoe UI'', wf_segoe-ui_normal, helvetica, arial, sans-serif'",
