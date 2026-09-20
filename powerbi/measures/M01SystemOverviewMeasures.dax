@@ -8,6 +8,13 @@
 Delay Threshold (Minutes) =
 SELECTEDVALUE ( 'Delay Threshold (Minutes)'[Value], 0 )
 
+M01 Effective Threshold Display =
+FORMAT (
+    [Delay Threshold (Minutes)],
+    "0",
+    "en-US"
+) & " min"
+
 Comparable Scheduled Trips =
 COUNTROWS ( ManagementComparableTrip )
 
@@ -477,18 +484,27 @@ VAR StartDate =
     MIN ( ManagementComparableTrip[ServiceDate] )
 VAR EndDate =
     MAX ( ManagementComparableTrip[ServiceDate] )
+VAR DateRange =
+    IF (
+        YEAR ( StartDate ) = YEAR ( EndDate ),
+        FORMAT ( StartDate, "d MMM", "en-US" )
+            & UNICHAR ( 8211 )
+            & FORMAT ( EndDate, "d MMM yyyy", "en-US" ),
+        FORMAT ( StartDate, "d MMM yyyy", "en-US" )
+            & UNICHAR ( 8211 )
+            & FORMAT ( EndDate, "d MMM yyyy", "en-US" )
+    )
 RETURN
     IF (
         ISBLANK ( StartDate ) || ISBLANK ( EndDate ) || ScheduledTrips = 0,
-        "No scheduled trips matched to realtime are available for the selected period.",
-        "From " & FORMAT ( StartDate, "d MMM yyyy", "en-US" ) & " to "
-            & FORMAT ( EndDate, "d MMM yyyy", "en-US" ) & ", "
+        "No matched trips are available for the selected period.",
+        "Selected period: " & DateRange
+            & "  |  Matched trips: "
             & FORMAT ( ScheduledTrips, "#,##0", "en-US" )
-            & " scheduled trips were matched to realtime; "
+            & "  |  Usable realtime timing: "
             & FORMAT ( ObservedTrips, "#,##0", "en-US" )
-            & " had usable realtime timing and "
+            & "  |  Timing unavailable: "
             & FORMAT ( TimingUnavailable, "#,##0", "en-US" )
-            & " had timing unavailable."
     )
 
 System Status Summary Line 2 =
@@ -498,7 +514,7 @@ RETURN
     IF (
         ISBLANK ( BestMode ) || ISBLANK ( WorstMode ),
         "No mode-level on-time comparison is available for the selected period.",
-        BestMode & " has the highest on-time rate; " & WorstMode & " has the lowest."
+        "Best on-time performance: " & BestMode & "  |  Lowest: " & WorstMode
     )
 
 System Status Summary =

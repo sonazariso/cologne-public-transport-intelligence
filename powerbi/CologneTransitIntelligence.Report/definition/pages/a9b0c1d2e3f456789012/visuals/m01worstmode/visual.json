@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01worstmode",
   "position": {
-    "x": 650,
-    "y": 990,
+    "x": 959,
+    "y": 934,
     "z": 54,
-    "height": 50,
-    "width": 598,
+    "height": 106,
+    "width": 289,
     "tabOrder": 54
   },
   "visual": {

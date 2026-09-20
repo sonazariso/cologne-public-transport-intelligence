@@ -19,7 +19,7 @@
               {
                 "textRuns": [
                   {
-                  "value": "Realtime results represent the monitored sampling panel, not the full Cologne network. Realtime arrival values are estimates; timing unavailable does not imply cancellation.",
+                    "value": "Realtime results represent the monitored sampling panel, not the full Cologne network. Realtime arrival values are estimates; timing unavailable does not imply cancellation.",
                     "textStyle": {
                       "fontWeight": "normal",
                       "fontFamily": "'''Segoe UI'', wf_segoe-ui_normal, helvetica, arial, sans-serif'",

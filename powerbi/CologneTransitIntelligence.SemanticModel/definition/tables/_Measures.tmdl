@@ -892,6 +892,16 @@ table _Measures
 		displayFolder: 09 M01 System Overview
 		lineageTag: a0000000-0000-0000-0000-000000000001
 
+	measure 'M01 Effective Threshold Display' =
+			
+			FORMAT (
+			    [Delay Threshold (Minutes)],
+			    "0",
+			    "en-US"
+			) & " min"
+		displayFolder: 09 M01 System Overview
+		lineageTag: a0000000-0000-0000-0000-000000000052
+
 	measure 'Comparable Scheduled Trips' =
 			
 			COUNTROWS ( ManagementComparableTrip )
@@ -907,7 +917,7 @@ table _Measures
 		lineageTag: a0000000-0000-0000-0000-000000000003
 
 	measure 'Observed Realtime Trips' =
-
+			
 			CALCULATE (
 			    COUNTROWS ( ManagementComparableTrip ),
 			    ManagementComparableTrip[HasValidRealtimeObservation] = TRUE ()
@@ -915,14 +925,6 @@ table _Measures
 		formatString: #,0
 		displayFolder: 09 M01 System Overview
 		lineageTag: a0000000-0000-0000-0000-000000000004
-
-	measure 'Timing Unavailable Trips' =
-
-			COALESCE ( [Comparable Scheduled Trips], 0 )
-			    - COALESCE ( [Observed Realtime Trips], 0 )
-		formatString: #,0
-		displayFolder: 09 M01 System Overview
-		lineageTag: a0000000-0000-0000-0000-000000000045
 
 	measure 'Observed Matched Trips' =
 			
@@ -1076,7 +1078,7 @@ table _Measures
 		lineageTag: a0000000-0000-0000-0000-000000000020
 
 	measure 'Observed Stop Positions' =
-
+			
 			CALCULATE (
 			    DISTINCTCOUNT ( ManagementTripStation[StopKey] ),
 			    ManagementTripStation[HasValidRealtimeObservation] = TRUE ()
@@ -1084,96 +1086,6 @@ table _Measures
 		formatString: #,0
 		displayFolder: 09 M01 System Overview
 		lineageTag: a0000000-0000-0000-0000-000000000021
-
-	measure 'M01 Routes Display' =
-
-			FORMAT ( COALESCE ( [Mode Route Count], 0 ), "#,##0", "en-US" )
-		displayFolder: 09 M01 System Overview
-		lineageTag: a0000000-0000-0000-0000-000000000046
-
-	measure 'M01 Network Stations Display' =
-
-			FORMAT ( COALESCE ( [Network Parent Stations], 0 ), "#,##0", "en-US" )
-		displayFolder: 09 M01 System Overview
-		lineageTag: a0000000-0000-0000-0000-000000000047
-
-	measure 'M01 Monitored Stations Display' =
-
-			FORMAT ( COALESCE ( [Realtime Monitored Stations], 0 ), "#,##0", "en-US" )
-		displayFolder: 09 M01 System Overview
-		lineageTag: a0000000-0000-0000-0000-000000000048
-
-	measure 'M01 Observed Stop Positions Display' =
-
-			FORMAT ( COALESCE ( [Observed Stop Positions], 0 ), "#,##0", "en-US" )
-		displayFolder: 09 M01 System Overview
-		lineageTag: a0000000-0000-0000-0000-000000000049
-
-	measure 'M01 Collector Start Display' =
-
-			VAR CollectorStart =
-			    CALCULATE (
-			        [Realtime Data Start Date],
-			        REMOVEFILTERS ( ManagementDate )
-			    )
-			RETURN
-			    IF (
-			        ISBLANK ( CollectorStart ),
-			        "No data",
-			        FORMAT ( CollectorStart, "d MMM yyyy", "en-US" )
-			    )
-		displayFolder: 09 M01 System Overview
-		lineageTag: a0000000-0000-0000-0000-00000000004a
-
-	measure 'M01 Collector End Display' =
-
-			VAR CollectorEnd =
-			    CALCULATE (
-			        [Realtime Data End Date],
-			        REMOVEFILTERS ( ManagementDate )
-			    )
-			RETURN
-			    IF (
-			        ISBLANK ( CollectorEnd ),
-			        "No data",
-			        FORMAT ( CollectorEnd, "d MMM yyyy", "en-US" )
-			    )
-		displayFolder: 09 M01 System Overview
-		lineageTag: a0000000-0000-0000-0000-00000000004b
-
-	measure 'M01 Observed Days Display' =
-
-			FORMAT (
-			    COALESCE (
-			        CALCULATE (
-			            [Realtime Observed Days],
-			            REMOVEFILTERS ( ManagementDate )
-			        ),
-			        0
-			    ),
-			    "#,##0",
-			    "en-US"
-			)
-		displayFolder: 09 M01 System Overview
-		lineageTag: a0000000-0000-0000-0000-00000000004c
-
-	measure 'M01 Scheduled Trips Display' =
-
-			FORMAT ( COALESCE ( [Scheduled Trips in Monitored Scope], 0 ), "#,##0", "en-US" )
-		displayFolder: 09 M01 System Overview
-		lineageTag: a0000000-0000-0000-0000-00000000004d
-
-	measure 'M01 Observed Realtime Trips Display' =
-
-			FORMAT ( COALESCE ( [Observed Realtime Trips], 0 ), "#,##0", "en-US" )
-		displayFolder: 09 M01 System Overview
-		lineageTag: a0000000-0000-0000-0000-00000000004e
-
-	measure 'M01 Timing Unavailable Display' =
-
-			FORMAT ( COALESCE ( [Timing Unavailable Trips], 0 ), "#,##0", "en-US" )
-		displayFolder: 09 M01 System Overview
-		lineageTag: a0000000-0000-0000-0000-00000000004f
 
 	measure 'Punctuality Trips' =
 			
@@ -1483,7 +1395,7 @@ table _Measures
 		lineageTag: a0000000-0000-0000-0000-000000000037
 
 	measure 'On-Time Summary' =
-
+			
 			IF (
 			    ISBLANK ( [Observed Realtime Trips] ) || [Observed Realtime Trips] = 0,
 			    "No observations",
@@ -1494,7 +1406,7 @@ table _Measures
 		lineageTag: a0000000-0000-0000-0000-000000000038
 
 	measure 'Delayed Summary' =
-
+			
 			IF (
 			    ISBLANK ( [Observed Realtime Trips] ) || [Observed Realtime Trips] = 0,
 			    "No observations",
@@ -1505,7 +1417,7 @@ table _Measures
 		lineageTag: a0000000-0000-0000-0000-000000000039
 
 	measure 'Early Summary' =
-
+			
 			IF (
 			    ISBLANK ( [Observed Realtime Trips] ) || [Observed Realtime Trips] = 0,
 			    "No observations",
@@ -1516,7 +1428,7 @@ table _Measures
 		lineageTag: a0000000-0000-0000-0000-000000000040
 
 	measure 'Realtime Monitoring Scope Note' =
-
+			
 			"Realtime results represent the monitored sampling panel, not the full Cologne network. Realtime arrival values are estimates; timing unavailable does not imply cancellation."
 		displayFolder: 09 M01 System Overview
 		lineageTag: a0000000-0000-0000-0000-000000000041
@@ -1565,44 +1477,6 @@ table _Measures
 		displayFolder: 09 M01 System Overview
 		lineageTag: a0000000-0000-0000-0000-000000000042
 
-	measure 'System Status Summary Line 1' =
-
-			VAR ScheduledTrips = COALESCE ( [Comparable Scheduled Trips], 0 )
-			VAR ObservedTrips = COALESCE ( [Observed Realtime Trips], 0 )
-			VAR TimingUnavailable = COALESCE ( [Timing Unavailable Trips], 0 )
-			VAR StartDate =
-			    MIN ( ManagementComparableTrip[ServiceDate] )
-			VAR EndDate =
-			    MAX ( ManagementComparableTrip[ServiceDate] )
-			RETURN
-			    IF (
-			        ISBLANK ( StartDate ) || ISBLANK ( EndDate ) || ScheduledTrips = 0,
-			        "No scheduled trips matched to realtime are available for the selected period.",
-			        "From " & FORMAT ( StartDate, "d MMM yyyy", "en-US" ) & " to "
-			            & FORMAT ( EndDate, "d MMM yyyy", "en-US" ) & ", "
-			            & FORMAT ( ScheduledTrips, "#,##0", "en-US" )
-			            & " scheduled trips were matched to realtime; "
-			            & FORMAT ( ObservedTrips, "#,##0", "en-US" )
-			            & " had usable realtime timing and "
-			            & FORMAT ( TimingUnavailable, "#,##0", "en-US" )
-			            & " had timing unavailable."
-			    )
-		displayFolder: 09 M01 System Overview
-		lineageTag: a0000000-0000-0000-0000-000000000050
-
-	measure 'System Status Summary Line 2' =
-
-			VAR BestMode = [Best Performing Mode Name]
-			VAR WorstMode = [Worst Performing Mode Name]
-			RETURN
-			    IF (
-			        ISBLANK ( BestMode ) || ISBLANK ( WorstMode ),
-			        "No mode-level on-time comparison is available for the selected period.",
-			        BestMode & " has the highest on-time rate; " & WorstMode & " has the lowest."
-			    )
-		displayFolder: 09 M01 System Overview
-		lineageTag: a0000000-0000-0000-0000-000000000051
-
 	measure 'Station Delayed Trips' =
 			
 			CALCULATE (
@@ -1624,6 +1498,151 @@ table _Measures
 		formatString: 0.0\ %;-0.0\ %;0.0\ %
 		displayFolder: 09 M01 System Overview
 		lineageTag: a0000000-0000-0000-0000-000000000044
+
+	measure 'Timing Unavailable Trips' =
+			
+			COALESCE ( [Comparable Scheduled Trips], 0 )
+			    - COALESCE ( [Observed Realtime Trips], 0 )
+		formatString: #,0
+		displayFolder: 09 M01 System Overview
+		lineageTag: a0000000-0000-0000-0000-000000000045
+
+	measure 'M01 Routes Display' =
+			
+			FORMAT ( COALESCE ( [Mode Route Count], 0 ), "#,##0", "en-US" )
+		displayFolder: 09 M01 System Overview
+		lineageTag: a0000000-0000-0000-0000-000000000046
+
+	measure 'M01 Network Stations Display' =
+			
+			FORMAT ( COALESCE ( [Network Parent Stations], 0 ), "#,##0", "en-US" )
+		displayFolder: 09 M01 System Overview
+		lineageTag: a0000000-0000-0000-0000-000000000047
+
+	measure 'M01 Monitored Stations Display' =
+			
+			FORMAT ( COALESCE ( [Realtime Monitored Stations], 0 ), "#,##0", "en-US" )
+		displayFolder: 09 M01 System Overview
+		lineageTag: a0000000-0000-0000-0000-000000000048
+
+	measure 'M01 Observed Stop Positions Display' =
+			
+			FORMAT ( COALESCE ( [Observed Stop Positions], 0 ), "#,##0", "en-US" )
+		displayFolder: 09 M01 System Overview
+		lineageTag: a0000000-0000-0000-0000-000000000049
+
+	measure 'M01 Collector Start Display' =
+			
+			VAR CollectorStart =
+			    CALCULATE (
+			        [Realtime Data Start Date],
+			        REMOVEFILTERS ( ManagementDate )
+			    )
+			RETURN
+			    IF (
+			        ISBLANK ( CollectorStart ),
+			        "No data",
+			        FORMAT ( CollectorStart, "d MMM yyyy", "en-US" )
+			    )
+		displayFolder: 09 M01 System Overview
+		lineageTag: a0000000-0000-0000-0000-00000000004a
+
+	measure 'M01 Collector End Display' =
+			
+			VAR CollectorEnd =
+			    CALCULATE (
+			        [Realtime Data End Date],
+			        REMOVEFILTERS ( ManagementDate )
+			    )
+			RETURN
+			    IF (
+			        ISBLANK ( CollectorEnd ),
+			        "No data",
+			        FORMAT ( CollectorEnd, "d MMM yyyy", "en-US" )
+			    )
+		displayFolder: 09 M01 System Overview
+		lineageTag: a0000000-0000-0000-0000-00000000004b
+
+	measure 'M01 Observed Days Display' =
+			
+			FORMAT (
+			    COALESCE (
+			        CALCULATE (
+			            [Realtime Observed Days],
+			            REMOVEFILTERS ( ManagementDate )
+			        ),
+			        0
+			    ),
+			    "#,##0",
+			    "en-US"
+			)
+		displayFolder: 09 M01 System Overview
+		lineageTag: a0000000-0000-0000-0000-00000000004c
+
+	measure 'M01 Scheduled Trips Display' =
+			
+			FORMAT ( COALESCE ( [Scheduled Trips in Monitored Scope], 0 ), "#,##0", "en-US" )
+		displayFolder: 09 M01 System Overview
+		lineageTag: a0000000-0000-0000-0000-00000000004d
+
+	measure 'M01 Observed Realtime Trips Display' =
+			
+			FORMAT ( COALESCE ( [Observed Realtime Trips], 0 ), "#,##0", "en-US" )
+		displayFolder: 09 M01 System Overview
+		lineageTag: a0000000-0000-0000-0000-00000000004e
+
+	measure 'M01 Timing Unavailable Display' =
+			
+			FORMAT ( COALESCE ( [Timing Unavailable Trips], 0 ), "#,##0", "en-US" )
+		displayFolder: 09 M01 System Overview
+		lineageTag: a0000000-0000-0000-0000-00000000004f
+
+	measure 'System Status Summary Line 1' =
+			
+			VAR ScheduledTrips = COALESCE ( [Comparable Scheduled Trips], 0 )
+			VAR ObservedTrips = COALESCE ( [Observed Realtime Trips], 0 )
+			VAR TimingUnavailable = COALESCE ( [Timing Unavailable Trips], 0 )
+			VAR StartDate =
+			    MIN ( ManagementComparableTrip[ServiceDate] )
+			VAR EndDate =
+			    MAX ( ManagementComparableTrip[ServiceDate] )
+			VAR DateRange =
+			    IF (
+			        YEAR ( StartDate ) = YEAR ( EndDate ),
+			        FORMAT ( StartDate, "d MMM", "en-US" )
+			            & UNICHAR ( 8211 )
+			            & FORMAT ( EndDate, "d MMM yyyy", "en-US" ),
+			        FORMAT ( StartDate, "d MMM yyyy", "en-US" )
+			            & UNICHAR ( 8211 )
+			            & FORMAT ( EndDate, "d MMM yyyy", "en-US" )
+			    )
+			RETURN
+			    IF (
+			        ISBLANK ( StartDate ) || ISBLANK ( EndDate ) || ScheduledTrips = 0,
+			        "No matched trips are available for the selected period.",
+			        "Selected period: " & DateRange
+			            & "  |  Matched trips: "
+			            & FORMAT ( ScheduledTrips, "#,##0", "en-US" )
+			            & "  |  Usable realtime timing: "
+			            & FORMAT ( ObservedTrips, "#,##0", "en-US" )
+			            & "  |  Timing unavailable: "
+			            & FORMAT ( TimingUnavailable, "#,##0", "en-US" )
+			    )
+		displayFolder: 09 M01 System Overview
+		lineageTag: a0000000-0000-0000-0000-000000000050
+
+	measure 'System Status Summary Line 2' =
+			
+			VAR BestMode = [Best Performing Mode Name]
+			VAR WorstMode = [Worst Performing Mode Name]
+			RETURN
+			    IF (
+			        ISBLANK ( BestMode ) || ISBLANK ( WorstMode ),
+			        "No mode-level on-time comparison is available for the selected period.",
+			        "Best on-time performance: " & BestMode & "  |  Lowest: " & WorstMode
+			    )
+		displayFolder: 09 M01 System Overview
+		lineageTag: a0000000-0000-0000-0000-000000000051
 
 	column _Placeholder
 		dataType: int64
