@@ -1,13 +1,13 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "101k0000000000000001",
   "position": {
     "x": 32,
     "y": 570,
-    "z": 4000,
+    "z": 10000,
     "height": 112,
     "width": 1216,
-    "tabOrder": 4000
+    "tabOrder": 11000
   },
   "visual": {
     "visualType": "textbox",
@@ -17,32 +17,32 @@
           "properties": {
             "paragraphs": [
               {
-                "horizontalTextAlignment": "left",
                 "textRuns": [
                   {
+                    "value": "Scope & interpretation",
                     "textStyle": {
                       "color": "#1F2933",
                       "fontFamily": "Segoe UI Semibold",
                       "fontSize": "12pt",
                       "fontWeight": "bold"
-                    },
-                    "value": "Scope & interpretation"
+                    }
                   }
-                ]
+                ],
+                "horizontalTextAlignment": "left"
               },
               {
-                "horizontalTextAlignment": "left",
                 "textRuns": [
                   {
+                    "value": "Realtime analysis is based on seven selected Cologne sampling targets (Sampling Panel), not full Cologne realtime network coverage. Observed Estimated Delay indicators summarize validated matched services and should not be interpreted as confirmed physical delay.",
                     "textStyle": {
                       "color": "#1F2933",
                       "fontFamily": "Segoe UI",
                       "fontSize": "10pt",
                       "fontWeight": "normal"
-                    },
-                    "value": "Realtime analysis is based on seven selected Cologne sampling targets (Sampling Panel), not full Cologne realtime network coverage. Observed Estimated Delay indicators summarize validated matched services and should not be interpreted as confirmed physical delay."
+                    }
                   }
-                ]
+                ],
+                "horizontalTextAlignment": "left"
               }
             ]
           }

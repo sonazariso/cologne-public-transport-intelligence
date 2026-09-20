@@ -4,10 +4,10 @@
   "position": {
     "x": 404,
     "y": 76,
-    "z": 11,
+    "z": 3000,
     "height": 64,
     "width": 400,
-    "tabOrder": 11
+    "tabOrder": 3000
   },
   "visual": {
     "visualType": "slicer",
@@ -28,8 +28,8 @@
               },
               "queryRef": "ManagementDate.DateValue",
               "nativeQueryRef": "DateValue",
-              "displayName": "Service Date",
-              "active": true
+              "active": true,
+              "displayName": "Service Date"
             }
           ],
           "showAll": true

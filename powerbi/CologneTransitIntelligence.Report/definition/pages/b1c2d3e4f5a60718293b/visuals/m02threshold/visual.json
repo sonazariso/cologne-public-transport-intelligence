@@ -4,10 +4,10 @@
   "position": {
     "x": 816,
     "y": 76,
-    "z": 12,
+    "z": 4000,
     "height": 64,
     "width": 220,
-    "tabOrder": 12
+    "tabOrder": 4000
   },
   "visual": {
     "visualType": "slicer",
@@ -28,8 +28,8 @@
               },
               "queryRef": "Delay Threshold (Minutes).Value",
               "nativeQueryRef": "Value",
-              "displayName": "Delay Threshold (Minutes)",
-              "active": true
+              "active": true,
+              "displayName": "Delay Threshold (Minutes)"
             }
           ],
           "showAll": true

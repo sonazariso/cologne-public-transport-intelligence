@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01modeslicer",
   "position": {
-    "x": 32,
-    "y": 114,
-    "z": 10,
-    "height": 72,
+    "x": 48,
+    "y": 144,
+    "z": 3000,
+    "height": 120,
     "width": 384,
-    "tabOrder": 10
+    "tabOrder": 3000
   },
   "visual": {
     "visualType": "slicer",
@@ -28,8 +28,8 @@
               },
               "queryRef": "Mode.ModeDetail",
               "nativeQueryRef": "ModeDetail",
-              "displayName": "All modes",
-              "active": true
+              "active": true,
+              "displayName": "All modes"
             }
           ],
           "showAll": true
@@ -48,6 +48,11 @@
               }
             }
           }
+        }
+      ],
+      "general": [
+        {
+          "properties": {}
         }
       ]
     },

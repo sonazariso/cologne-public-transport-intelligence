@@ -1,13 +1,13 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "707j0000000000000001",
   "position": {
     "x": 32,
     "y": 570,
-    "z": 4000,
+    "z": 9000,
     "height": 112,
     "width": 1216,
-    "tabOrder": 4000
+    "tabOrder": 10000
   },
   "visual": {
     "visualType": "textbox",
@@ -17,46 +17,46 @@
           "properties": {
             "paragraphs": [
               {
-                "horizontalTextAlignment": "left",
                 "textRuns": [
                   {
+                    "value": "Evidence interpretation",
                     "textStyle": {
                       "color": "#1F2933",
                       "fontFamily": "Segoe UI Semibold",
                       "fontSize": "12pt",
                       "fontWeight": "bold"
-                    },
-                    "value": "Evidence interpretation"
+                    }
                   }
-                ]
+                ],
+                "horizontalTextAlignment": "left"
               },
               {
-                "horizontalTextAlignment": "left",
                 "textRuns": [
                   {
+                    "value": "Situation association is evidence, not confirmed causality. Platform Changed requires explicit planned-versus-observed estimated platform difference; Unchanged requires comparable evidence of the same platform value; Unknown means the available evidence is insufficient. Missing estimated platform information is not treated as Unchanged.",
                     "textStyle": {
                       "color": "#1F2933",
                       "fontFamily": "Segoe UI",
                       "fontSize": "10pt",
                       "fontWeight": "normal"
-                    },
-                    "value": "Situation association is evidence, not confirmed causality. Platform Changed requires explicit planned-versus-observed estimated platform difference; Unchanged requires comparable evidence of the same platform value; Unknown means the available evidence is insufficient. Missing estimated platform information is not treated as Unchanged."
+                    }
                   }
-                ]
+                ],
+                "horizontalTextAlignment": "left"
               },
               {
-                "horizontalTextAlignment": "left",
                 "textRuns": [
                   {
+                    "value": "Realtime values remain based on the existing seven-location Sampling Panel, not full Cologne realtime coverage.",
                     "textStyle": {
                       "color": "#5F6B6D",
                       "fontFamily": "Segoe UI",
                       "fontSize": "9pt",
                       "fontWeight": "normal"
-                    },
-                    "value": "Realtime values remain based on the existing seven-location Sampling Panel, not full Cologne realtime coverage."
+                    }
                   }
-                ]
+                ],
+                "horizontalTextAlignment": "left"
               }
             ]
           }

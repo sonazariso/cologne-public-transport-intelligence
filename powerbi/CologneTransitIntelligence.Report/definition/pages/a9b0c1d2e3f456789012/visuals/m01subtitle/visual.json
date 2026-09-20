@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01subtitle",
   "position": {
-    "x": 32,
-    "y": 44,
-    "z": 1,
-    "height": 23,
-    "width": 1216,
-    "tabOrder": 1
+    "x": 24,
+    "y": 48,
+    "z": 1000,
+    "height": 48,
+    "width": 1224,
+    "tabOrder": 1000
   },
   "visual": {
     "visualType": "textbox",
@@ -21,10 +21,8 @@
                   {
                     "value": "A clear view of network coverage, service volume and punctuality",
                     "textStyle": {
-                      "fontWeight": "normal",
-                      "fontFamily": "'''Segoe UI'', wf_segoe-ui_normal, helvetica, arial, sans-serif'",
                       "fontSize": "11pt",
-                      "color": "#DCEAF7"
+                      "color": "#dceaf7"
                     }
                   }
                 ]

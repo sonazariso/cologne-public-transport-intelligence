@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01title",
   "position": {
-    "x": 32,
-    "y": 12,
+    "x": 24,
+    "y": 0,
     "z": 0,
-    "height": 32,
-    "width": 1216,
+    "height": 48,
+    "width": 1224,
     "tabOrder": 0
   },
   "visual": {
@@ -22,9 +22,8 @@
                     "value": "M01 - System Overview",
                     "textStyle": {
                       "fontWeight": "bold",
-                      "fontFamily": "'''Segoe UI Semibold'', wf_segoe-ui_semibold, helvetica, arial, sans-serif'",
                       "fontSize": "20pt",
-                      "color": "#FFFFFF"
+                      "color": "#ffffff"
                     }
                   }
                 ]

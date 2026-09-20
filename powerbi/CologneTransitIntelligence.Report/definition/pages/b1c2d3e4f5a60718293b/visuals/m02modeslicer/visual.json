@@ -4,10 +4,10 @@
   "position": {
     "x": 32,
     "y": 76,
-    "z": 10,
+    "z": 2000,
     "height": 64,
     "width": 360,
-    "tabOrder": 10
+    "tabOrder": 2000
   },
   "visual": {
     "visualType": "slicer",
@@ -28,8 +28,8 @@
               },
               "queryRef": "Mode.ModeDetail",
               "nativeQueryRef": "ModeDetail",
-              "displayName": "Transport Mode",
-              "active": true
+              "active": true,
+              "displayName": "Transport Mode"
             }
           ],
           "showAll": true

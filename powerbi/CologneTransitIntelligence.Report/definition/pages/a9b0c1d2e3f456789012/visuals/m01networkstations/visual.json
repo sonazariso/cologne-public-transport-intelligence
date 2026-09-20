@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01networkstations",
   "position": {
-    "x": 207,
-    "y": 200,
-    "z": 21,
-    "height": 84,
-    "width": 166,
-    "tabOrder": 21
+    "x": 216,
+    "y": 264,
+    "z": 8000,
+    "height": 72,
+    "width": 168,
+    "tabOrder": 8000
   },
   "visual": {
     "visualType": "cardVisual",

@@ -4,10 +4,10 @@
   "position": {
     "x": 32,
     "y": 316,
-    "z": 43,
+    "z": 16000,
     "height": 200,
     "width": 598,
-    "tabOrder": 43
+    "tabOrder": 14000
   },
   "visual": {
     "visualType": "clusteredBarChart",
@@ -28,8 +28,8 @@
               },
               "queryRef": "ManagementTripStation.Station",
               "nativeQueryRef": "Station",
-              "displayName": "Monitored Station",
-              "active": true
+              "active": true,
+              "displayName": "Monitored Station"
             }
           ],
           "showAll": true

@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01dateslicer",
   "position": {
-    "x": 448,
-    "y": 114,
-    "z": 11,
-    "height": 72,
-    "width": 384,
-    "tabOrder": 11
+    "x": 816,
+    "y": 144,
+    "z": 4000,
+    "height": 120,
+    "width": 264,
+    "tabOrder": 4000
   },
   "visual": {
     "visualType": "slicer",
@@ -28,8 +28,8 @@
               },
               "queryRef": "ManagementDate.DateValue",
               "nativeQueryRef": "DateValue",
-              "displayName": "Service Date",
-              "active": true
+              "active": true,
+              "displayName": "Service Date"
             }
           ],
           "showAll": true

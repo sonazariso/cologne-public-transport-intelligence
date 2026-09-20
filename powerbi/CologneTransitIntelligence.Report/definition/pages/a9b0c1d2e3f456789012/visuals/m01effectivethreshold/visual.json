@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01effectivethreshold",
   "position": {
-    "x": 1124,
-    "y": 114,
-    "z": 13,
-    "height": 72,
-    "width": 124,
-    "tabOrder": 13
+    "x": 1080,
+    "y": 144,
+    "z": 6000,
+    "height": 120,
+    "width": 168,
+    "tabOrder": 6000
   },
   "visual": {
     "visualType": "cardVisual",
