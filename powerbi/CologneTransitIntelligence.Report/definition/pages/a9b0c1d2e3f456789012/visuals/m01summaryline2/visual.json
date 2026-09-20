@@ -2,8 +2,8 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01summaryline2",
   "position": {
-    "x": 24,
-    "y": 96,
+    "x": 32,
+    "y": 90,
     "z": 2000,
     "height": 38,
     "width": 1216,
@@ -244,7 +244,7 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#163B65'"
+                      "Value": "'#CFDAE6'"
                     }
                   }
                 }

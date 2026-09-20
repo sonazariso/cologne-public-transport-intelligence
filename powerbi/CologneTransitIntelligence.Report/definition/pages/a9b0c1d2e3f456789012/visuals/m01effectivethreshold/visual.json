@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01effectivethreshold",
   "position": {
-    "x": 1080,
-    "y": 144,
+    "x": 1098,
+    "y": 140,
     "z": 6000,
-    "height": 120,
-    "width": 168,
+    "height": 92,
+    "width": 150,
     "tabOrder": 6000
   },
   "visual": {

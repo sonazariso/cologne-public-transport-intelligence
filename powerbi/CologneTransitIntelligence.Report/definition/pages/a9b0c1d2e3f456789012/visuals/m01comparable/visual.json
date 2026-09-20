@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01comparable",
   "position": {
-    "x": 38.592964824120607,
-    "y": 335.89949748743732,
+    "x": 32,
+    "y": 328,
     "z": 13000,
     "height": 88,
-    "width": 193,
+    "width": 200,
     "tabOrder": 13000
   },
   "visual": {

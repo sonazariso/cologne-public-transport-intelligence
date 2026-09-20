@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01subtitle",
   "position": {
-    "x": 24,
-    "y": 48,
+    "x": 32,
+    "y": 52,
     "z": 1000,
-    "height": 48,
-    "width": 1224,
+    "height": 28,
+    "width": 1216,
     "tabOrder": 1000
   },
   "visual": {
@@ -22,7 +22,7 @@
                     "value": "A clear view of network coverage, service volume and punctuality",
                     "textStyle": {
                       "fontSize": "11pt",
-                      "color": "#dceaf7"
+                      "color": "#ffffff"
                     }
                   }
                 ]

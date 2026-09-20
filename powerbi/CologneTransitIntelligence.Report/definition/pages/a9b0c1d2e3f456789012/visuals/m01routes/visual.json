@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01routes",
   "position": {
-    "x": 48,
-    "y": 264,
+    "x": 32,
+    "y": 244,
     "z": 7000,
     "height": 72,
-    "width": 168,
+    "width": 160,
     "tabOrder": 7000
   },
   "visual": {

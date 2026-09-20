@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01covereddays",
   "position": {
-    "x": 1080,
-    "y": 264,
+    "x": 1112,
+    "y": 244,
     "z": 12000,
     "height": 72,
-    "width": 168,
+    "width": 136,
     "tabOrder": 12000
   },
   "visual": {

@@ -2,8 +2,8 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01coveragestatus",
   "position": {
-    "x": 576,
-    "y": 264,
+    "x": 572,
+    "y": 244,
     "z": 15000,
     "height": 72,
     "width": 168,

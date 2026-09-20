@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01modetable",
   "position": {
-    "x": 34.934673366834168,
-    "y": 431.66834170854281,
+    "x": 32,
+    "y": 428,
     "z": 20000,
-    "height": 270,
-    "width": 598,
+    "height": 264,
+    "width": 600,
     "tabOrder": 20000
   },
   "visual": {

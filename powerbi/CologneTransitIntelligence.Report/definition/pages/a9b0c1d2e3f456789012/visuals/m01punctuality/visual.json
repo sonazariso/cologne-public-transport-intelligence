@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01punctuality",
   "position": {
-    "x": 32.361809045226131,
-    "y": 709.25628140703463,
+    "x": 32,
+    "y": 704,
     "z": 22000,
-    "height": 270,
-    "width": 598,
+    "height": 264,
+    "width": 600,
     "tabOrder": 22000
   },
   "visual": {
