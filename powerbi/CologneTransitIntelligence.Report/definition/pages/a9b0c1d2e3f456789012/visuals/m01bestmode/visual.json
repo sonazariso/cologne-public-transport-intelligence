@@ -3,9 +3,9 @@
   "name": "m01bestmode",
   "position": {
     "x": 656,
-    "y": 682,
+    "y": 958,
     "z": 53,
-    "height": 84,
+    "height": 104,
     "width": 288,
     "tabOrder": 53
   },
@@ -47,7 +47,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "10D"
+                  "Value": "12D"
                 }
               }
             },

@@ -3,10 +3,10 @@
   "name": "m01modeslicer",
   "position": {
     "x": 32,
-    "y": 134,
+    "y": 156,
     "z": 10,
-    "height": 62,
-    "width": 380,
+    "height": 72,
+    "width": 372,
     "tabOrder": 10
   },
   "visual": {

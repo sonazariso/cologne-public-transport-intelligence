@@ -3,9 +3,9 @@
   "name": "m01beststation",
   "position": {
     "x": 656,
-    "y": 778,
+    "y": 1074,
     "z": 55,
-    "height": 84,
+    "height": 104,
     "width": 288,
     "tabOrder": 55
   },
@@ -47,7 +47,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "10D"
+                  "Value": "12D"
                 }
               }
             },

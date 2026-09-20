@@ -3,9 +3,9 @@
   "name": "m01footer",
   "position": {
     "x": 32,
-    "y": 940,
+    "y": 1200,
     "z": 60,
-    "height": 25,
+    "height": 36,
     "width": 1216,
     "tabOrder": 60
   },

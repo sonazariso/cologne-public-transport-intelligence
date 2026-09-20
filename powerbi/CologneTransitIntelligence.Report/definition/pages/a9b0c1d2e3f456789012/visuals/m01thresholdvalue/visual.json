@@ -1,13 +1,13 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
-  "name": "m01coveragestatus",
+  "name": "m01thresholdvalue",
   "position": {
-    "x": 422,
-    "y": 334,
-    "z": 32,
-    "height": 82,
-    "width": 185,
-    "tabOrder": 32
+    "x": 1084,
+    "y": 156,
+    "z": 13,
+    "height": 72,
+    "width": 164,
+    "tabOrder": 13
   },
   "visual": {
     "visualType": "cardVisual",
@@ -23,12 +23,12 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Observed Stop Positions"
+                  "Property": "Delay Threshold (Minutes)"
                 }
               },
-              "queryRef": "_Measures.Observed Stop Positions",
-              "nativeQueryRef": "Observed Stop Positions",
-              "displayName": "Stop positions within monitored scope"
+              "queryRef": "_Measures.Delay Threshold (Minutes)",
+              "nativeQueryRef": "Delay Threshold (Minutes)",
+              "displayName": "Selected threshold"
             }
           ]
         }
@@ -89,7 +89,7 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "true"
+                  "Value": "false"
                 }
               }
             },
@@ -110,7 +110,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "9D"
                 }
               }
             },
@@ -158,28 +158,28 @@
             "leftMargin": {
               "expr": {
                 "Literal": {
-                  "Value": "12D"
+                  "Value": "10D"
                 }
               }
             },
             "rightMargin": {
               "expr": {
                 "Literal": {
-                  "Value": "12D"
+                  "Value": "10D"
                 }
               }
             },
             "topMargin": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "6D"
                 }
               }
             },
             "bottomMargin": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "6D"
                 }
               }
             }
@@ -245,7 +245,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Observed Stop Positions'"
+                  "Value": "'Selected threshold (min)'"
                 }
               }
             },
