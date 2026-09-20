@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01delayed",
   "position": {
-    "x": 812,
+    "x": 848,
     "y": 334,
     "z": 34,
     "height": 82,
-    "width": 185,
+    "width": 193,
     "tabOrder": 34
   },
   "visual": {

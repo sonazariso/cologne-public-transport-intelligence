@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01dataend",
   "position": {
-    "x": 812,
+    "x": 907,
     "y": 242,
     "z": 24,
     "height": 76,
-    "width": 185,
+    "width": 166,
     "tabOrder": 24
   },
   "visual": {
@@ -23,12 +23,12 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Realtime Data End Date"
+                  "Property": "M01 Collector End Display"
                 }
               },
-              "queryRef": "_Measures.Realtime Data End Date",
-              "nativeQueryRef": "Realtime Data End Date",
-              "displayName": "Monitoring End"
+              "queryRef": "_Measures.M01 Collector End Display",
+              "nativeQueryRef": "M01 Collector End Display",
+              "displayName": "Collector End"
             }
           ]
         }
@@ -245,7 +245,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Monitoring End'"
+                  "Value": "'Collector End'"
                 }
               }
             },

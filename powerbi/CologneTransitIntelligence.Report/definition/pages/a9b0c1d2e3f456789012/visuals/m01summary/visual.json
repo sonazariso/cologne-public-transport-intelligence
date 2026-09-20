@@ -23,11 +23,11 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "System Status Summary"
+                  "Property": "System Status Summary Line 1"
                 }
               },
-              "queryRef": "_Measures.System Status Summary",
-              "nativeQueryRef": "System Status Summary"
+              "queryRef": "_Measures.System Status Summary Line 1",
+              "nativeQueryRef": "System Status Summary Line 1"
             }
           ]
         }
@@ -47,7 +47,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "13D"
+                  "Value": "12D"
                 }
               }
             },
@@ -171,14 +171,14 @@
             "topMargin": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "4D"
                 }
               }
             },
             "bottomMargin": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "4D"
                 }
               }
             }
@@ -244,7 +244,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Current status'"
+                  "Value": "'Current Status'"
                 }
               }
             },

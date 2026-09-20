@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01coveragestatus",
   "position": {
-    "x": 422,
-    "y": 334,
+    "x": 557,
+    "y": 242,
     "z": 32,
-    "height": 82,
-    "width": 185,
+    "height": 76,
+    "width": 166,
     "tabOrder": 32
   },
   "visual": {
@@ -23,12 +23,12 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Observed Stop Positions"
+                  "Property": "M01 Observed Stop Positions Display"
                 }
               },
-              "queryRef": "_Measures.Observed Stop Positions",
-              "nativeQueryRef": "Observed Stop Positions",
-              "displayName": "Stop positions within monitored scope"
+              "queryRef": "_Measures.M01 Observed Stop Positions Display",
+              "nativeQueryRef": "M01 Observed Stop Positions Display",
+              "displayName": "Stop positions observed within monitored scope"
             }
           ]
         }

@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01monitoredstations",
   "position": {
-    "x": 422,
+    "x": 382,
     "y": 242,
     "z": 22,
     "height": 76,
-    "width": 185,
+    "width": 166,
     "tabOrder": 22
   },
   "visual": {
@@ -23,11 +23,11 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Realtime Monitored Stations"
+                  "Property": "M01 Monitored Stations Display"
                 }
               },
-              "queryRef": "_Measures.Realtime Monitored Stations",
-              "nativeQueryRef": "Realtime Monitored Stations",
+              "queryRef": "_Measures.M01 Monitored Stations Display",
+              "nativeQueryRef": "M01 Monitored Stations Display",
               "displayName": "Realtime Monitored Stations"
             }
           ]

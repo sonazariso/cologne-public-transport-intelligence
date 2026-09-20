@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01covereddays",
   "position": {
-    "x": 1007,
+    "x": 1082,
     "y": 242,
     "z": 25,
     "height": 76,
-    "width": 185,
+    "width": 166,
     "tabOrder": 25
   },
   "visual": {
@@ -23,11 +23,11 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Realtime Observed Days"
+                  "Property": "M01 Observed Days Display"
                 }
               },
-              "queryRef": "_Measures.Realtime Observed Days",
-              "nativeQueryRef": "Realtime Observed Days",
+              "queryRef": "_Measures.M01 Observed Days Display",
+              "nativeQueryRef": "M01 Observed Days Display",
               "displayName": "Observed Days"
             }
           ]

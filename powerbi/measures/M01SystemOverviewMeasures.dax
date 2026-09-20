@@ -20,6 +20,10 @@ CALCULATE (
     ManagementComparableTrip[HasValidRealtimeObservation] = TRUE ()
 )
 
+Timing Unavailable Trips =
+COALESCE ( [Comparable Scheduled Trips], 0 )
+    - COALESCE ( [Observed Realtime Trips], 0 )
+
 Observed Matched Trips =
 [Observed Realtime Trips]
 
@@ -112,6 +116,48 @@ CALCULATE (
     DISTINCTCOUNT ( ManagementTripStation[StopKey] ),
     ManagementTripStation[HasValidRealtimeObservation] = TRUE ()
 )
+
+M01 Routes Display =
+FORMAT ( COALESCE ( [Mode Route Count], 0 ), "#,##0", "en-US" )
+
+M01 Network Stations Display =
+FORMAT ( COALESCE ( [Network Parent Stations], 0 ), "#,##0", "en-US" )
+
+M01 Monitored Stations Display =
+FORMAT ( COALESCE ( [Realtime Monitored Stations], 0 ), "#,##0", "en-US" )
+
+M01 Observed Stop Positions Display =
+FORMAT ( COALESCE ( [Observed Stop Positions], 0 ), "#,##0", "en-US" )
+
+M01 Collector Start Display =
+VAR CollectorStart = [Realtime Data Start Date]
+RETURN
+    IF (
+        ISBLANK ( CollectorStart ),
+        "No data",
+        FORMAT ( CollectorStart, "d MMM yyyy", "en-US" )
+    )
+
+M01 Collector End Display =
+VAR CollectorEnd = [Realtime Data End Date]
+RETURN
+    IF (
+        ISBLANK ( CollectorEnd ),
+        "No data",
+        FORMAT ( CollectorEnd, "d MMM yyyy", "en-US" )
+    )
+
+M01 Observed Days Display =
+FORMAT ( COALESCE ( [Realtime Observed Days], 0 ), "#,##0", "en-US" )
+
+M01 Scheduled Trips Display =
+FORMAT ( COALESCE ( [Scheduled Trips in Monitored Scope], 0 ), "#,##0", "en-US" )
+
+M01 Observed Realtime Trips Display =
+FORMAT ( COALESCE ( [Observed Realtime Trips], 0 ), "#,##0", "en-US" )
+
+M01 Timing Unavailable Display =
+FORMAT ( COALESCE ( [Timing Unavailable Trips], 0 ), "#,##0", "en-US" )
 
 Punctuality Trips =
 VAR SelectedStatus = SELECTEDVALUE ( PunctualityStatus[Status] )
@@ -246,9 +292,9 @@ RETURN
     IF (
         ISBLANK ( ModeName ),
         "No observed realtime trips are available for the current selection.",
-        ModeName & UNICHAR ( 10 ) & FORMAT ( ModePct, "0.0%" )
+        ModeName & UNICHAR ( 10 ) & FORMAT ( ModePct, "0.0%", "en-US" )
             & " On Time" & UNICHAR ( 10 )
-            & FORMAT ( ObservedTrips, "#,0" ) & " observed trips"
+            & FORMAT ( ObservedTrips, "#,##0", "en-US" ) & " observed trips"
     )
 
 Worst Performing Mode =
@@ -275,9 +321,9 @@ RETURN
     IF (
         ISBLANK ( ModeName ),
         "No observed realtime trips are available for the current selection.",
-        ModeName & UNICHAR ( 10 ) & FORMAT ( ModePct, "0.0%" )
+        ModeName & UNICHAR ( 10 ) & FORMAT ( ModePct, "0.0%", "en-US" )
             & " On Time" & UNICHAR ( 10 )
-            & FORMAT ( ObservedTrips, "#,0" ) & " observed trips"
+            & FORMAT ( ObservedTrips, "#,##0", "en-US" ) & " observed trips"
     )
 
 Best Performing Monitored Station Name =
@@ -382,28 +428,75 @@ On-Time Summary =
 IF (
     ISBLANK ( [Observed Realtime Trips] ) || [Observed Realtime Trips] = 0,
     "No observations",
-    FORMAT ( COALESCE ( [On-Time Trips], 0 ), "#,0" ) & "  |  "
-        & FORMAT ( COALESCE ( [On-Time %], 0 ), "0.0%" )
+    FORMAT ( COALESCE ( [On-Time Trips], 0 ), "#,##0", "en-US" ) & "  |  "
+        & FORMAT ( COALESCE ( [On-Time %], 0 ), "0.0%", "en-US" )
 )
 
 Delayed Summary =
 IF (
     ISBLANK ( [Observed Realtime Trips] ) || [Observed Realtime Trips] = 0,
     "No observations",
-    FORMAT ( COALESCE ( [Delayed Trips], 0 ), "#,0" ) & "  |  "
-        & FORMAT ( COALESCE ( [Delayed %], 0 ), "0.0%" )
+    FORMAT ( COALESCE ( [Delayed Trips], 0 ), "#,##0", "en-US" ) & "  |  "
+        & FORMAT ( COALESCE ( [Delayed %], 0 ), "0.0%", "en-US" )
 )
 
 Early Summary =
 IF (
     ISBLANK ( [Observed Realtime Trips] ) || [Observed Realtime Trips] = 0,
     "No observations",
-    FORMAT ( COALESCE ( [Early Trips], 0 ), "#,0" ) & "  |  "
-        & FORMAT ( COALESCE ( [Early %], 0 ), "0.0%" )
+    FORMAT ( COALESCE ( [Early Trips], 0 ), "#,##0", "en-US" ) & "  |  "
+        & FORMAT ( COALESCE ( [Early %], 0 ), "0.0%", "en-US" )
 )
 
 Realtime Monitoring Scope Note =
-"Realtime results represent the monitored sampling panel, not the full Cologne network. Realtime arrival values are estimates; missing observations are not cancellations."
+"Realtime results represent the monitored sampling panel, not the full Cologne network. Realtime arrival values are estimates; timing unavailable does not imply cancellation."
+
+System Status Summary Line 1 =
+VAR ObservedTrips = [Observed Realtime Trips]
+VAR StartDate =
+    CALCULATE (
+        MIN ( ManagementComparableTrip[ServiceDate] ),
+        ManagementComparableTrip[HasValidRealtimeObservation] = TRUE ()
+    )
+VAR EndDate =
+    CALCULATE (
+        MAX ( ManagementComparableTrip[ServiceDate] ),
+        ManagementComparableTrip[HasValidRealtimeObservation] = TRUE ()
+    )
+VAR ModeCount =
+    COUNTROWS (
+        FILTER (
+            VALUES ( Mode[ModeDetail] ),
+            CALCULATE ( [Observed Realtime Trips] ) > 0
+        )
+    )
+VAR StationCount =
+    COUNTROWS (
+        FILTER (
+            VALUES ( ManagementTripStation[Station] ),
+            CALCULATE ( [Station Observed Realtime Trips] ) > 0
+        )
+    )
+RETURN
+    IF (
+        ISBLANK ( ObservedTrips ) || ObservedTrips = 0,
+        "No realtime trips with a usable estimated timing are available for the selected period.",
+        "From " & FORMAT ( StartDate, "d MMM yyyy", "en-US" ) & " to "
+            & FORMAT ( EndDate, "d MMM yyyy", "en-US" ) & ", "
+            & FORMAT ( ObservedTrips, "#,##0", "en-US" ) & " realtime trips were observed across "
+            & FORMAT ( ModeCount, "#,##0", "en-US" ) & " transport modes and "
+            & FORMAT ( StationCount, "#,##0", "en-US" ) & " monitored stations."
+    )
+
+System Status Summary Line 2 =
+VAR BestMode = [Best Performing Mode Name]
+VAR WorstMode = [Worst Performing Mode Name]
+RETURN
+    IF (
+        ISBLANK ( BestMode ) || ISBLANK ( WorstMode ),
+        "No mode-level on-time comparison is available for the selected period.",
+        BestMode & " has the highest on-time rate; " & WorstMode & " has the lowest."
+    )
 
 System Status Summary =
 VAR ObservedTrips = [Observed Realtime Trips]
@@ -437,11 +530,11 @@ RETURN
     IF (
         ISBLANK ( ObservedTrips ) || ObservedTrips = 0,
         "No realtime trips with a usable estimated timing are available for the selected period.",
-        "From " & FORMAT ( StartDate, "d MMM yyyy" ) & " to "
-            & FORMAT ( EndDate, "d MMM yyyy" ) & ", "
-            & FORMAT ( ObservedTrips, "#,0" ) & " realtime trips were observed across "
-            & FORMAT ( ModeCount, "#,0" ) & " transport modes and "
-            & FORMAT ( StationCount, "#,0" ) & " monitored stations."
+        "From " & FORMAT ( StartDate, "d MMM yyyy", "en-US" ) & " to "
+            & FORMAT ( EndDate, "d MMM yyyy", "en-US" ) & ", "
+            & FORMAT ( ObservedTrips, "#,##0", "en-US" ) & " realtime trips were observed across "
+            & FORMAT ( ModeCount, "#,##0", "en-US" ) & " transport modes and "
+            & FORMAT ( StationCount, "#,##0", "en-US" ) & " monitored stations."
             & UNICHAR ( 10 ) & BestMode & " has the highest on-time rate; "
             & WorstMode & " has the lowest."
     )

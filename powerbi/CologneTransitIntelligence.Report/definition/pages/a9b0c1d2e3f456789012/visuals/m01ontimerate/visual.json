@@ -3,9 +3,9 @@
   "name": "m01ontimerate",
   "position": {
     "x": 650,
-    "y": 678,
+    "y": 704,
     "z": 43,
-    "height": 224,
+    "height": 250,
     "width": 598,
     "tabOrder": 43
   },
@@ -31,8 +31,7 @@
               "displayName": "Transport Mode",
               "active": true
             }
-          ],
-          "showAll": true
+          ]
         },
         "Y": {
           "projections": [
@@ -90,7 +89,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "9D"
                 }
               }
             },
@@ -104,7 +103,7 @@
             "innerPadding": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "4D"
                 }
               }
             }

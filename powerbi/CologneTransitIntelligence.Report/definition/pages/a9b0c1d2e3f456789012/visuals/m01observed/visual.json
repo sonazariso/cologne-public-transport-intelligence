@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01observed",
   "position": {
-    "x": 227,
+    "x": 236,
     "y": 334,
     "z": 31,
     "height": 82,
-    "width": 185,
+    "width": 193,
     "tabOrder": 31
   },
   "visual": {
@@ -23,11 +23,11 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Observed Realtime Trips"
+                  "Property": "M01 Observed Realtime Trips Display"
                 }
               },
-              "queryRef": "_Measures.Observed Realtime Trips",
-              "nativeQueryRef": "Observed Realtime Trips",
+              "queryRef": "_Measures.M01 Observed Realtime Trips Display",
+              "nativeQueryRef": "M01 Observed Realtime Trips Display",
               "displayName": "Observed Trips"
             }
           ]

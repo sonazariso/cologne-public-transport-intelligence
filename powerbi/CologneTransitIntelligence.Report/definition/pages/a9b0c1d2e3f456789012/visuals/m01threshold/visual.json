@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01threshold",
   "position": {
-    "x": 808,
+    "x": 864,
     "y": 156,
     "z": 12,
     "height": 72,
-    "width": 260,
+    "width": 384,
     "tabOrder": 12
   },
   "visual": {
@@ -43,7 +43,7 @@
             "mode": {
               "expr": {
                 "Literal": {
-                  "Value": "'Basic'"
+                  "Value": "'Dropdown'"
                 }
               }
             }

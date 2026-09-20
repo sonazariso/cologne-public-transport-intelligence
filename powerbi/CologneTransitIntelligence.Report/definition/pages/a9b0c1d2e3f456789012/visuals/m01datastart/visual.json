@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01datastart",
   "position": {
-    "x": 617,
+    "x": 732,
     "y": 242,
     "z": 23,
     "height": 76,
-    "width": 185,
+    "width": 166,
     "tabOrder": 23
   },
   "visual": {
@@ -23,12 +23,12 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Realtime Data Start Date"
+                  "Property": "M01 Collector Start Display"
                 }
               },
-              "queryRef": "_Measures.Realtime Data Start Date",
-              "nativeQueryRef": "Realtime Data Start Date",
-              "displayName": "Monitoring Start"
+              "queryRef": "_Measures.M01 Collector Start Display",
+              "nativeQueryRef": "M01 Collector Start Display",
+              "displayName": "Collector Start"
             }
           ]
         }
@@ -245,7 +245,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Monitoring Start'"
+                  "Value": "'Collector Start'"
                 }
               }
             },

@@ -6,7 +6,7 @@
     "y": 156,
     "z": 10,
     "height": 72,
-    "width": 372,
+    "width": 384,
     "tabOrder": 10
   },
   "visual": {
@@ -43,7 +43,7 @@
             "mode": {
               "expr": {
                 "Literal": {
-                  "Value": "'Basic'"
+                  "Value": "'Dropdown'"
                 }
               }
             }

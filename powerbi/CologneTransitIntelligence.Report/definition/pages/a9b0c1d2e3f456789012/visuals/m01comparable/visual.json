@@ -6,7 +6,7 @@
     "y": 334,
     "z": 30,
     "height": 82,
-    "width": 185,
+    "width": 193,
     "tabOrder": 30
   },
   "visual": {
@@ -23,11 +23,11 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Scheduled Trips in Monitored Scope"
+                  "Property": "M01 Scheduled Trips Display"
                 }
               },
-              "queryRef": "_Measures.Scheduled Trips in Monitored Scope",
-              "nativeQueryRef": "Scheduled Trips in Monitored Scope",
+              "queryRef": "_Measures.M01 Scheduled Trips Display",
+              "nativeQueryRef": "M01 Scheduled Trips Display",
               "displayName": "Scheduled Trips"
             }
           ]

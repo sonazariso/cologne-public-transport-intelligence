@@ -1,0 +1,163 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "m01modeguideright",
+  "position": {
+    "x": 341,
+    "y": 928,
+    "z": 56,
+    "height": 108,
+    "width": 289,
+    "tabOrder": 56
+  },
+  "visual": {
+    "visualType": "textbox",
+    "query": null,
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Urban Bus (KVB) — KVB city bus service",
+                    "textStyle": {
+                      "fontWeight": "normal",
+                      "fontFamily": "'''Segoe UI'', wf_segoe-ui_normal, helvetica, arial, sans-serif'",
+                      "fontSize": "9pt",
+                      "color": "#52667A"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Regional / Other Bus — Regional or non-KVB bus service",
+                    "textStyle": {
+                      "fontWeight": "normal",
+                      "fontFamily": "'''Segoe UI'', wf_segoe-ui_normal, helvetica, arial, sans-serif'",
+                      "fontSize": "9pt",
+                      "color": "#52667A"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Rail Replacement Bus (SEV) — Bus service replacing rail service",
+                    "textStyle": {
+                      "fontWeight": "normal",
+                      "fontFamily": "'''Segoe UI'', wf_segoe-ui_normal, helvetica, arial, sans-serif'",
+                      "fontSize": "9pt",
+                      "color": "#52667A"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#FFFFFF'"
+                    }
+                  }
+                }
+              }
+            },
+            "transparency": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#CFDAE6'"
+                    }
+                  }
+                }
+              }
+            },
+            "width": {
+              "expr": {
+                "Literal": {
+                  "Value": "1D"
+                }
+              }
+            },
+            "radius": {
+              "expr": {
+                "Literal": {
+                  "Value": "6L"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

@@ -6,7 +6,7 @@
     "y": 242,
     "z": 20,
     "height": 76,
-    "width": 185,
+    "width": 166,
     "tabOrder": 20
   },
   "visual": {
@@ -23,11 +23,11 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Mode Route Count"
+                  "Property": "M01 Routes Display"
                 }
               },
-              "queryRef": "_Measures.Mode Route Count",
-              "nativeQueryRef": "Mode Route Count",
+              "queryRef": "_Measures.M01 Routes Display",
+              "nativeQueryRef": "M01 Routes Display",
               "displayName": "Routes"
             }
           ]

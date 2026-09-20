@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01networkstations",
   "position": {
-    "x": 227,
+    "x": 207,
     "y": 242,
     "z": 21,
     "height": 76,
-    "width": 185,
+    "width": 166,
     "tabOrder": 21
   },
   "visual": {
@@ -23,11 +23,11 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Network Parent Stations"
+                  "Property": "M01 Network Stations Display"
                 }
               },
-              "queryRef": "_Measures.Network Parent Stations",
-              "nativeQueryRef": "Network Parent Stations",
+              "queryRef": "_Measures.M01 Network Stations Display",
+              "nativeQueryRef": "M01 Network Stations Display",
               "displayName": "Network Stations"
             }
           ]

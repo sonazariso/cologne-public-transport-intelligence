@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m01ontime",
   "position": {
-    "x": 617,
+    "x": 644,
     "y": 334,
     "z": 33,
     "height": 82,
-    "width": 185,
+    "width": 193,
     "tabOrder": 33
   },
   "visual": {
