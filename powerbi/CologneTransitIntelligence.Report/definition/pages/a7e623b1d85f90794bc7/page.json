@@ -1,0 +1,8 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "a7e623b1d85f90794bc7",
+  "displayName": "07 - Situation & Platform Evidence",
+  "displayOption": "FitToPage",
+  "height": 720,
+  "width": 1280
+}

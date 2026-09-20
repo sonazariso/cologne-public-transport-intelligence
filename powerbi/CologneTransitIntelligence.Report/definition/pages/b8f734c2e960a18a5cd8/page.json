@@ -1,0 +1,8 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "b8f734c2e960a18a5cd8",
+  "displayName": "08 - Methodology",
+  "displayOption": "FitToPage",
+  "height": 720,
+  "width": 1280
+}
