@@ -1111,7 +1111,11 @@ table _Measures
 
 	measure 'M01 Collector Start Display' =
 
-			VAR CollectorStart = [Realtime Data Start Date]
+			VAR CollectorStart =
+			    CALCULATE (
+			        [Realtime Data Start Date],
+			        REMOVEFILTERS ( ManagementDate )
+			    )
 			RETURN
 			    IF (
 			        ISBLANK ( CollectorStart ),
@@ -1123,7 +1127,11 @@ table _Measures
 
 	measure 'M01 Collector End Display' =
 
-			VAR CollectorEnd = [Realtime Data End Date]
+			VAR CollectorEnd =
+			    CALCULATE (
+			        [Realtime Data End Date],
+			        REMOVEFILTERS ( ManagementDate )
+			    )
 			RETURN
 			    IF (
 			        ISBLANK ( CollectorEnd ),
@@ -1135,7 +1143,17 @@ table _Measures
 
 	measure 'M01 Observed Days Display' =
 
-			FORMAT ( COALESCE ( [Realtime Observed Days], 0 ), "#,##0", "en-US" )
+			FORMAT (
+			    COALESCE (
+			        CALCULATE (
+			            [Realtime Observed Days],
+			            REMOVEFILTERS ( ManagementDate )
+			        ),
+			        0
+			    ),
+			    "#,##0",
+			    "en-US"
+			)
 		displayFolder: 09 M01 System Overview
 		lineageTag: a0000000-0000-0000-0000-00000000004c
 
@@ -1549,40 +1567,25 @@ table _Measures
 
 	measure 'System Status Summary Line 1' =
 
-			VAR ObservedTrips = [Observed Realtime Trips]
+			VAR ScheduledTrips = COALESCE ( [Comparable Scheduled Trips], 0 )
+			VAR ObservedTrips = COALESCE ( [Observed Realtime Trips], 0 )
+			VAR TimingUnavailable = COALESCE ( [Timing Unavailable Trips], 0 )
 			VAR StartDate =
-			    CALCULATE (
-			        MIN ( ManagementComparableTrip[ServiceDate] ),
-			        ManagementComparableTrip[HasValidRealtimeObservation] = TRUE ()
-			    )
+			    MIN ( ManagementComparableTrip[ServiceDate] )
 			VAR EndDate =
-			    CALCULATE (
-			        MAX ( ManagementComparableTrip[ServiceDate] ),
-			        ManagementComparableTrip[HasValidRealtimeObservation] = TRUE ()
-			    )
-			VAR ModeCount =
-			    COUNTROWS (
-			        FILTER (
-			            VALUES ( Mode[ModeDetail] ),
-			            CALCULATE ( [Observed Realtime Trips] ) > 0
-			        )
-			    )
-			VAR StationCount =
-			    COUNTROWS (
-			        FILTER (
-			            VALUES ( ManagementTripStation[Station] ),
-			            CALCULATE ( [Station Observed Realtime Trips] ) > 0
-			        )
-			    )
+			    MAX ( ManagementComparableTrip[ServiceDate] )
 			RETURN
 			    IF (
-			        ISBLANK ( ObservedTrips ) || ObservedTrips = 0,
-			        "No realtime trips with a usable estimated timing are available for the selected period.",
+			        ISBLANK ( StartDate ) || ISBLANK ( EndDate ) || ScheduledTrips = 0,
+			        "No scheduled trips matched to realtime are available for the selected period.",
 			        "From " & FORMAT ( StartDate, "d MMM yyyy", "en-US" ) & " to "
 			            & FORMAT ( EndDate, "d MMM yyyy", "en-US" ) & ", "
-			            & FORMAT ( ObservedTrips, "#,##0", "en-US" ) & " realtime trips were observed across "
-			            & FORMAT ( ModeCount, "#,##0", "en-US" ) & " transport modes and "
-			            & FORMAT ( StationCount, "#,##0", "en-US" ) & " monitored stations."
+			            & FORMAT ( ScheduledTrips, "#,##0", "en-US" )
+			            & " scheduled trips were matched to realtime; "
+			            & FORMAT ( ObservedTrips, "#,##0", "en-US" )
+			            & " had usable realtime timing and "
+			            & FORMAT ( TimingUnavailable, "#,##0", "en-US" )
+			            & " had timing unavailable."
 			    )
 		displayFolder: 09 M01 System Overview
 		lineageTag: a0000000-0000-0000-0000-000000000050
