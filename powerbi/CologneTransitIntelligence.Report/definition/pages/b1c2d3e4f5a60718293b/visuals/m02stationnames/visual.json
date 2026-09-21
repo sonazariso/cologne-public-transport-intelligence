@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m02stationnames",
   "position": {
-    "x": 264,
-    "y": 720,
+    "x": 24,
+    "y": 736,
     "z": 17000,
-    "height": 168,
-    "width": 240,
-    "tabOrder": 15000
+    "height": 152,
+    "width": 300,
+    "tabOrder": 16000
   },
   "visual": {
     "visualType": "tableEx",
@@ -33,6 +33,23 @@
           ],
           "showAll": true
         }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "ManagementMonitoredStation"
+                  }
+                },
+                "Property": "MonitoredStationName"
+              }
+            },
+            "direction": "Descending"
+          }
+        ]
       }
     },
     "visualContainerObjects": {

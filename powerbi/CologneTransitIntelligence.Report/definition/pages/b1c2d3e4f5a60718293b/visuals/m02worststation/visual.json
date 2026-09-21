@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m02worststation",
   "position": {
-    "x": 880,
+    "x": 748,
     "y": 816,
     "z": 20000,
     "height": 72,
-    "width": 368,
-    "tabOrder": 18000
+    "width": 500,
+    "tabOrder": 20000
   },
   "visual": {
     "visualType": "cardVisual",

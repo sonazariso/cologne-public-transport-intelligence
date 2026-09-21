@@ -116,8 +116,7 @@ Stations, Realtime Monitored Stations, and Observed Stop Positions KPIs remain.
 - a compact seven-station management detail table;
 - direct monitored-station names and a searchable Network Station selector;
 - best/worst monitored-station summaries;
-- a plain-language Station versus Stop Position explanation; and
-- a compact Transport Mode Guide and scope note.
+- a plain-language Station versus Stop Position explanation and scope note.
 
 M01 formatting is applied directly to the page and its visuals. The global
 registered report theme and every other report page remain unchanged.

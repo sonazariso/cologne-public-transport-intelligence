@@ -21,7 +21,7 @@ The page includes only the context needed to interpret station performance:
 - the monitored-station detail table;
 - a full-network Network Station Search and coverage-status message;
 - the Station versus Stop Position explanation; and
-- a compact Transport Mode Guide.
+- a concise scope/footer explanation.
 
 M02 deliberately excludes route, mode-ranking, delay-trend, time-of-day,
 delay-reason, disruption, cancellation, forecast, recommendation, and full
@@ -87,8 +87,11 @@ The station measures count a trip once within a station and inherit the same
 - Early: `delay < -threshold`.
 
 M02 includes the same Transport Mode, Service Date / Date Range, Delay
-Threshold, and Effective Threshold context as M01. Mode and date selections
-recalculate station volume, punctuality, callouts, and the detail table.
+Threshold, and Effective Threshold context as M01. The Transport Mode and
+Delay Threshold list filters use the compact dropdown presentation used by
+M01; their fields and filtering semantics are unchanged. Mode and date
+selections recalculate station volume, punctuality, callouts, and the detail
+table.
 Changing the threshold changes On-Time Trips, Delayed Trips, On-Time %, and
 Delayed %, but it does not change the pure-volume `Station Observed Realtime
 Trips` measure.
@@ -131,7 +134,7 @@ in the dynamic Selected Network Station Coverage card:
 The lookup does not create zero-valued punctuality metrics for an unmonitored
 station or cross-filter the station performance comparisons.
 
-## R2-2 correction record
+## Source correction record
 
 - The invalid `drillFilterOtherVisuals` property was removed from the
   `visual.visualContainerObjects` object in `m02networkstatus` and kept at the
@@ -140,7 +143,8 @@ station or cross-filter the station performance comparisons.
   uses the monitored-station dimension rather than the trip-station fact
   column. It counts distinct observed `StopKey` values in the current station,
   mode, and date context.
-- The detail table explicitly sets `visual.objects.total.show` to `false`; no
+- The detail table uses the schema-valid `visual.objects.total.totals`
+  expression with literal `false` to disable the grand Total row; no
   calculated station total was added. Power BI Desktop still needs to confirm
   the rendered result after opening and saving the PBIP.
 - No SQL view, M01 page file, `diagramLayout.json`, or later-report content was

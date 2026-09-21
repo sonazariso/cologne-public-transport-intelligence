@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m02stationnote",
   "position": {
-    "x": 23.999999999999996,
+    "x": 24,
     "y": 264,
     "z": 6000,
-    "height": 47.999999999999993,
+    "height": 40,
     "width": 1224,
-    "tabOrder": 19000
+    "tabOrder": 12000
   },
   "visual": {
     "visualType": "textbox",
