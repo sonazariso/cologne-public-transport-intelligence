@@ -108,7 +108,7 @@ WITH RouteLabels AS
             THEN LTRIM(RTRIM(route.RouteShortName))
             WHEN NULLIF(LTRIM(RTRIM(route.RouteLongName)), N'') IS NOT NULL
             THEN LTRIM(RTRIM(route.RouteLongName))
-            ELSE route.RouteId
+            ELSE route.RouteId COLLATE DATABASE_DEFAULT
         END AS RouteName
     FROM dw.DimRoute AS route
 ),
@@ -365,7 +365,7 @@ WITH RouteLabels AS
             THEN LTRIM(RTRIM(route.RouteShortName))
             WHEN NULLIF(LTRIM(RTRIM(route.RouteLongName)), N'') IS NOT NULL
             THEN LTRIM(RTRIM(route.RouteLongName))
-            ELSE route.RouteId
+            ELSE route.RouteId COLLATE DATABASE_DEFAULT
         END AS RouteName
     FROM dw.DimRoute AS route
 )
