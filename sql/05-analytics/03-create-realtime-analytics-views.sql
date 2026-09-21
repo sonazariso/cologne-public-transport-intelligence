@@ -334,6 +334,34 @@ GO
 /* One row per dated operational stop outcome with dimension-friendly labels. */
 CREATE OR ALTER VIEW analytics.vwRealtimeReliabilityOutcome
 AS
+WITH RouteLabels AS
+(
+    SELECT
+        route.RouteKey,
+        route.RouteId,
+        route.RouteShortName,
+        route.RouteLongName,
+        /* RouteName is the canonical reporting/display label.  The raw
+           GTFS names remain available for fidelity and diagnostics; RouteId
+           and RouteKey remain the identifiers. */
+        CASE
+            WHEN NULLIF(LTRIM(RTRIM(route.RouteShortName)), N'') IS NOT NULL
+             AND NULLIF(LTRIM(RTRIM(route.RouteLongName)), N'') IS NOT NULL
+             AND LTRIM(RTRIM(route.RouteShortName))
+                 <> LTRIM(RTRIM(route.RouteLongName))
+            THEN CONCAT(
+                LTRIM(RTRIM(route.RouteShortName)),
+                N' — ',
+                LTRIM(RTRIM(route.RouteLongName))
+            )
+            WHEN NULLIF(LTRIM(RTRIM(route.RouteShortName)), N'') IS NOT NULL
+            THEN LTRIM(RTRIM(route.RouteShortName))
+            WHEN NULLIF(LTRIM(RTRIM(route.RouteLongName)), N'') IS NOT NULL
+            THEN LTRIM(RTRIM(route.RouteLongName))
+            ELSE route.RouteId
+        END AS RouteName
+    FROM dw.DimRoute AS route
+)
 SELECT
     outcome.OperationalStopOutcomeKey,
     outcome.DateKey,
@@ -342,6 +370,7 @@ SELECT
     outcome.TripKey,
     outcome.RouteKey,
     route.RouteId,
+    route.RouteName,
     route.RouteShortName AS Route,
     route.RouteShortName AS Line,
     route.RouteLongName,
@@ -388,7 +417,7 @@ SELECT
 FROM dw.FactOperationalStopOutcome AS outcome
 JOIN dw.FactScheduledTrip AS trip
     ON trip.TripKey = outcome.TripKey
-JOIN dw.DimRoute AS route
+JOIN RouteLabels AS route
     ON route.RouteKey = outcome.RouteKey
 JOIN dw.DimStop AS stop
     ON stop.StopKey = outcome.StopKey
@@ -405,13 +434,37 @@ GO
 */
 CREATE OR ALTER VIEW analytics.vwRealtimeReliabilityByDimension
 AS
-WITH Base AS
+WITH RouteLabels AS
+(
+    SELECT
+        route.RouteKey,
+        /* RouteName is the canonical reporting/display label; RouteKey is
+           still the route dimension key. */
+        CASE
+            WHEN NULLIF(LTRIM(RTRIM(route.RouteShortName)), N'') IS NOT NULL
+             AND NULLIF(LTRIM(RTRIM(route.RouteLongName)), N'') IS NOT NULL
+             AND LTRIM(RTRIM(route.RouteShortName))
+                 <> LTRIM(RTRIM(route.RouteLongName))
+            THEN CONCAT(
+                LTRIM(RTRIM(route.RouteShortName)),
+                N' — ',
+                LTRIM(RTRIM(route.RouteLongName))
+            )
+            WHEN NULLIF(LTRIM(RTRIM(route.RouteShortName)), N'') IS NOT NULL
+            THEN LTRIM(RTRIM(route.RouteShortName))
+            WHEN NULLIF(LTRIM(RTRIM(route.RouteLongName)), N'') IS NOT NULL
+            THEN LTRIM(RTRIM(route.RouteLongName))
+            ELSE route.RouteId
+        END AS RouteName
+    FROM dw.DimRoute AS route
+),
+Base AS
 (
     SELECT
         outcome.OperationalStopOutcomeKey,
         outcome.ServiceDate,
         outcome.RouteKey,
-        route.RouteShortName AS Route,
+        route.RouteName,
         outcome.StopKey,
         stop.StopName AS Stop,
         COALESCE(parent_stop.StopName, stop.StopName) AS Station,
@@ -428,7 +481,7 @@ WITH Base AS
         outcome.HasSituationEvidence,
         outcome.PlatformChangeEvidence
     FROM dw.FactOperationalStopOutcome AS outcome
-    JOIN dw.DimRoute AS route
+    JOIN RouteLabels AS route
         ON route.RouteKey = outcome.RouteKey
     JOIN dw.DimStop AS stop
         ON stop.StopKey = outcome.StopKey
@@ -460,7 +513,7 @@ DimensionRows AS
     SELECT
         N'Route',
         CONVERT(NVARCHAR(30), base.RouteKey),
-        COALESCE(base.Route, N'(unnamed route)'),
+        COALESCE(base.RouteName, N'(unnamed route)'),
         base.*
     FROM Base AS base
 
@@ -594,10 +647,37 @@ GO
 /* Platform evidence by dated route/stop outcome, without forcing NULL to zero. */
 CREATE OR ALTER VIEW analytics.vwRealtimePlatformChangeEvidence
 AS
+WITH RouteLabels AS
+(
+    SELECT
+        route.RouteKey,
+        route.RouteShortName,
+        route.RouteLongName,
+        /* RouteName is the canonical reporting/display label.  The raw
+           GTFS names remain available for fidelity and diagnostics. */
+        CASE
+            WHEN NULLIF(LTRIM(RTRIM(route.RouteShortName)), N'') IS NOT NULL
+             AND NULLIF(LTRIM(RTRIM(route.RouteLongName)), N'') IS NOT NULL
+             AND LTRIM(RTRIM(route.RouteShortName))
+                 <> LTRIM(RTRIM(route.RouteLongName))
+            THEN CONCAT(
+                LTRIM(RTRIM(route.RouteShortName)),
+                N' — ',
+                LTRIM(RTRIM(route.RouteLongName))
+            )
+            WHEN NULLIF(LTRIM(RTRIM(route.RouteShortName)), N'') IS NOT NULL
+            THEN LTRIM(RTRIM(route.RouteShortName))
+            WHEN NULLIF(LTRIM(RTRIM(route.RouteLongName)), N'') IS NOT NULL
+            THEN LTRIM(RTRIM(route.RouteLongName))
+            ELSE route.RouteId
+        END AS RouteName
+    FROM dw.DimRoute AS route
+)
 SELECT
     outcome.ServiceDate,
     outcome.DateKey,
     outcome.RouteKey,
+    route.RouteName,
     route.RouteShortName AS Route,
     outcome.StopKey,
     stop.StopName AS Stop,
@@ -610,7 +690,7 @@ SELECT
              THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END)
         AS SituationLinkedOutcomeCount
 FROM dw.FactOperationalStopOutcome AS outcome
-JOIN dw.DimRoute AS route
+JOIN RouteLabels AS route
     ON route.RouteKey = outcome.RouteKey
 JOIN dw.DimStop AS stop
     ON stop.StopKey = outcome.StopKey
@@ -620,6 +700,7 @@ GROUP BY
     outcome.ServiceDate,
     outcome.DateKey,
     outcome.RouteKey,
+    route.RouteName,
     route.RouteShortName,
     outcome.StopKey,
     stop.StopName,

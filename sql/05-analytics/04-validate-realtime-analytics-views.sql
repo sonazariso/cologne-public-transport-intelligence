@@ -229,7 +229,45 @@ SELECT
 FROM analytics.vwRealtimeReliabilityByDimension AS performance
 WHERE performance.DimensionType = N'Overall';
 
-/* 7. Realtime source and outcome scope remains explicit. */
+/* 7. Route dimension labels use the canonical RouteName while retaining
+       RouteKey as DimensionKey. */
+SELECT
+    COUNT_BIG(*) AS RouteDimensionRows,
+    COUNT_BIG(CASE
+        WHEN dimension.DimensionLabel = profile.RouteName THEN 1
+    END) AS CanonicalLabelMatches,
+    COUNT_BIG(CASE
+        WHEN dimension.DimensionLabel <> profile.RouteName THEN 1
+    END) AS CanonicalLabelMismatches,
+    CASE
+        WHEN COUNT_BIG(CASE
+                 WHEN dimension.DimensionLabel <> profile.RouteName THEN 1
+             END) = 0
+        THEN 'PASS'
+        ELSE 'REVIEW'
+    END AS CheckStatus
+FROM analytics.vwRealtimeReliabilityByDimension AS dimension
+JOIN analytics.vwRouteScheduleProfile AS profile
+    ON dimension.DimensionType = N'Route'
+   AND dimension.DimensionKey = CONVERT(NVARCHAR(30), profile.RouteKey)
+WHERE dimension.DimensionType = N'Route';
+
+SELECT
+    dimension.DimensionKey,
+    dimension.DimensionLabel,
+    profile.RouteId,
+    profile.RouteName,
+    profile.RouteShortName,
+    profile.RouteLongName
+FROM analytics.vwRealtimeReliabilityByDimension AS dimension
+JOIN analytics.vwRouteScheduleProfile AS profile
+    ON dimension.DimensionType = N'Route'
+   AND dimension.DimensionKey = CONVERT(NVARCHAR(30), profile.RouteKey)
+WHERE dimension.DimensionType = N'Route'
+  AND dimension.DimensionLabel <> profile.RouteName
+ORDER BY dimension.DimensionLabel, profile.RouteId;
+
+/* 8. Realtime source and outcome scope remains explicit. */
 SELECT
     (SELECT COUNT_BIG(*) FROM stg.MddRealtimeStopObservation)
         AS SourceObservationCount,

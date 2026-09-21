@@ -168,3 +168,63 @@ SELECT
         AS RoutesWithVaryingTripDistances
 FROM RouteDistanceStats;
 GO
+
+/* 7. Validate the canonical route display label. */
+SELECT COUNT_BIG(*) AS InvalidRouteNameCount
+FROM analytics.vwRouteScheduleProfile
+WHERE NULLIF(LTRIM(RTRIM(RouteName)), N'') IS NULL;
+
+/* 8. Route profile cardinality remains one row per RouteKey and reconciles
+       to the independent warehouse route count. */
+SELECT
+    profile.RouteProfileRowCount,
+    profile.DistinctRouteKeyCount,
+    baseline.RouteCount AS WarehouseRouteCount,
+    CASE
+        WHEN profile.RouteProfileRowCount = profile.DistinctRouteKeyCount
+         AND profile.RouteProfileRowCount = baseline.RouteCount
+        THEN 'PASS'
+        ELSE 'REVIEW'
+    END AS CheckStatus
+FROM
+(
+    SELECT
+        COUNT_BIG(*) AS RouteProfileRowCount,
+        COUNT_BIG(DISTINCT RouteKey) AS DistinctRouteKeyCount
+    FROM analytics.vwRouteScheduleProfile
+) AS profile
+CROSS JOIN analytics.vwNetworkBaselineKpi AS baseline;
+
+/* 9. SEV examples show the source fields and their canonical label together. */
+SELECT
+    RouteId,
+    RouteShortName,
+    RouteLongName,
+    RouteName,
+    AgencyName,
+    ModeDetail
+FROM analytics.vwRouteScheduleProfile
+WHERE ModeDetail = N'Rail Replacement Bus (SEV)'
+ORDER BY RouteName, RouteId;
+
+/* 10. Both source names are populated: RouteName must be Short — Long. */
+SELECT TOP (50)
+    RouteId,
+    RouteShortName,
+    RouteLongName,
+    RouteName
+FROM analytics.vwRouteScheduleProfile
+WHERE NULLIF(LTRIM(RTRIM(RouteShortName)), N'') IS NOT NULL
+  AND NULLIF(LTRIM(RTRIM(RouteLongName)), N'') IS NOT NULL
+ORDER BY RouteName;
+
+/* 11. Duplicate display names are diagnostic only; RouteKey / RouteId remain
+       the authoritative identifiers. */
+SELECT
+    RouteName,
+    COUNT_BIG(*) AS RouteCount
+FROM analytics.vwRouteScheduleProfile
+GROUP BY RouteName
+HAVING COUNT_BIG(*) > 1
+ORDER BY RouteCount DESC, RouteName;
+GO

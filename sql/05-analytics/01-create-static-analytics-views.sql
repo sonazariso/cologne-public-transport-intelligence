@@ -79,7 +79,40 @@ GO
 /* One row per Cologne-serving route, including planned supply and network reach. */
 CREATE OR ALTER VIEW analytics.vwRouteScheduleProfile
 AS
-WITH TripPatternStats AS
+WITH RouteLabels AS
+(
+    SELECT
+        route.RouteKey,
+        route.RouteId,
+        route.AgencyKey,
+        route.ModeKey,
+        route.RouteShortName,
+        route.RouteLongName,
+        route.RouteTypeCode,
+        route.RouteColor,
+        route.RouteTextColor,
+        /* RouteName is the canonical reporting/display label.  The raw
+           GTFS names remain available for fidelity and diagnostics; RouteId
+           and RouteKey remain the identifiers. */
+        CASE
+            WHEN NULLIF(LTRIM(RTRIM(route.RouteShortName)), N'') IS NOT NULL
+             AND NULLIF(LTRIM(RTRIM(route.RouteLongName)), N'') IS NOT NULL
+             AND LTRIM(RTRIM(route.RouteShortName))
+                 <> LTRIM(RTRIM(route.RouteLongName))
+            THEN CONCAT(
+                LTRIM(RTRIM(route.RouteShortName)),
+                N' — ',
+                LTRIM(RTRIM(route.RouteLongName))
+            )
+            WHEN NULLIF(LTRIM(RTRIM(route.RouteShortName)), N'') IS NOT NULL
+            THEN LTRIM(RTRIM(route.RouteShortName))
+            WHEN NULLIF(LTRIM(RTRIM(route.RouteLongName)), N'') IS NOT NULL
+            THEN LTRIM(RTRIM(route.RouteLongName))
+            ELSE route.RouteId
+        END AS RouteName
+    FROM dw.DimRoute AS route
+),
+TripPatternStats AS
 (
     SELECT
         RouteKey,
@@ -113,6 +146,7 @@ StopEventStats AS
 SELECT
     route.RouteKey,
     route.RouteId,
+    route.RouteName,
     route.RouteShortName,
     route.RouteLongName,
     route.RouteTypeCode,
@@ -133,7 +167,7 @@ SELECT
     stop_event.LatestScheduledArrivalSeconds,
     route.RouteColor,
     route.RouteTextColor
-FROM dw.DimRoute AS route
+FROM RouteLabels AS route
 LEFT JOIN dw.DimAgency AS agency ON agency.AgencyKey = route.AgencyKey
 JOIN dw.DimMode AS mode ON mode.ModeKey = route.ModeKey
 JOIN TripPatternStats AS trip_pattern ON trip_pattern.RouteKey = route.RouteKey
@@ -305,6 +339,36 @@ GO
 /* One row per active date and route for planned daily-service analysis. */
 CREATE OR ALTER VIEW analytics.vwDailyScheduledTripProfile
 AS
+WITH RouteLabels AS
+(
+    SELECT
+        route.RouteKey,
+        route.RouteId,
+        route.AgencyKey,
+        route.ModeKey,
+        route.RouteShortName,
+        route.RouteLongName,
+        /* RouteName is the canonical reporting/display label.  The raw
+           GTFS names remain available for fidelity and diagnostics; RouteId
+           and RouteKey remain the identifiers. */
+        CASE
+            WHEN NULLIF(LTRIM(RTRIM(route.RouteShortName)), N'') IS NOT NULL
+             AND NULLIF(LTRIM(RTRIM(route.RouteLongName)), N'') IS NOT NULL
+             AND LTRIM(RTRIM(route.RouteShortName))
+                 <> LTRIM(RTRIM(route.RouteLongName))
+            THEN CONCAT(
+                LTRIM(RTRIM(route.RouteShortName)),
+                N' — ',
+                LTRIM(RTRIM(route.RouteLongName))
+            )
+            WHEN NULLIF(LTRIM(RTRIM(route.RouteShortName)), N'') IS NOT NULL
+            THEN LTRIM(RTRIM(route.RouteShortName))
+            WHEN NULLIF(LTRIM(RTRIM(route.RouteLongName)), N'') IS NOT NULL
+            THEN LTRIM(RTRIM(route.RouteLongName))
+            ELSE route.RouteId
+        END AS RouteName
+    FROM dw.DimRoute AS route
+)
 SELECT
     date_dimension.DateKey,
     date_dimension.DateValue,
@@ -318,6 +382,7 @@ SELECT
     date_dimension.IsWeekend,
     route.RouteKey,
     route.RouteId,
+    route.RouteName,
     route.RouteShortName,
     route.RouteLongName,
     agency.AgencyId,
@@ -331,7 +396,7 @@ SELECT
 FROM dw.BridgeServiceDate AS service_date
 JOIN dw.DimDate AS date_dimension ON date_dimension.DateKey = service_date.DateKey
 JOIN dw.FactScheduledTrip AS trip ON trip.ServiceKey = service_date.ServiceKey
-JOIN dw.DimRoute AS route ON route.RouteKey = trip.RouteKey
+JOIN RouteLabels AS route ON route.RouteKey = trip.RouteKey
 LEFT JOIN dw.DimAgency AS agency ON agency.AgencyKey = route.AgencyKey
 JOIN dw.DimMode AS mode ON mode.ModeKey = trip.ModeKey
 GROUP BY
@@ -347,6 +412,7 @@ GROUP BY
     date_dimension.IsWeekend,
     route.RouteKey,
     route.RouteId,
+    route.RouteName,
     route.RouteShortName,
     route.RouteLongName,
     agency.AgencyId,
