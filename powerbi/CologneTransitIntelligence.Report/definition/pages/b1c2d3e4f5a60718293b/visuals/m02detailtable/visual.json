@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m02detailtable",
   "position": {
-    "x": 32,
-    "y": 534,
+    "x": 408,
+    "y": 312,
     "z": 15000,
-    "height": 180,
-    "width": 1216,
+    "height": 191.99999999999997,
+    "width": 840,
     "tabOrder": 13000
   },
   "visual": {
@@ -20,14 +20,14 @@
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "ManagementTripStation"
+                      "Entity": "ManagementMonitoredStation"
                     }
                   },
-                  "Property": "Station"
+                  "Property": "MonitoredStationName"
                 }
               },
-              "queryRef": "ManagementTripStation.Station",
-              "nativeQueryRef": "Station",
+              "queryRef": "ManagementMonitoredStation.MonitoredStationName",
+              "nativeQueryRef": "MonitoredStationName",
               "displayName": "Monitored Station"
             },
             {
@@ -113,17 +113,24 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Observed Stop Positions"
+                  "Property": "Station Observed Stop Positions"
                 }
               },
-              "queryRef": "_Measures.Observed Stop Positions",
-              "nativeQueryRef": "Observed Stop Positions",
+              "queryRef": "_Measures.Station Observed Stop Positions",
+              "nativeQueryRef": "Station Observed Stop Positions",
               "displayName": "Observed Stop Positions"
             }
           ],
           "showAll": true
         }
       }
+    },
+    "objects": {
+      "total": [
+        {
+          "properties": {}
+        }
+      ]
     },
     "visualContainerObjects": {
       "title": [

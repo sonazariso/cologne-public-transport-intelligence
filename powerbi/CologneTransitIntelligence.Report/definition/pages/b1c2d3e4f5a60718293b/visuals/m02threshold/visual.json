@@ -3,10 +3,10 @@
   "name": "m02threshold",
   "position": {
     "x": 816,
-    "y": 76,
+    "y": 95.999999999999986,
     "z": 4000,
-    "height": 64,
-    "width": 220,
+    "height": 72,
+    "width": 240,
     "tabOrder": 4000
   },
   "visual": {

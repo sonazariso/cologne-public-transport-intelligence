@@ -1029,16 +1029,6 @@ table _Measures
 		displayFolder: 09 M01 System Overview
 		lineageTag: a0000000-0000-0000-0000-000000000015
 
-	measure 'M02 Network Stations' =
-
-			CALCULATE (
-			    [Network Parent Stations],
-			    REMOVEFILTERS ( ParentStation )
-			)
-		formatString: #,0
-		displayFolder: 10 M02 Station Coverage
-		lineageTag: a0000000-0000-0000-0000-000000000053
-
 	measure 'Realtime Monitored Stations' =
 			
 			CALCULATE (
@@ -1117,17 +1107,34 @@ table _Measures
 
 	measure 'Station Comparable Trips' =
 			
-			DISTINCTCOUNT ( ManagementTripStation[ManagementTripKey] )
+			VAR MonitoredStations =
+			    VALUES ( ManagementMonitoredStation[MonitoredStationName] )
+			RETURN
+			    CALCULATE (
+			        DISTINCTCOUNT ( ManagementTripStation[ManagementTripKey] ),
+			        KEEPFILTERS (
+			            TREATAS ( MonitoredStations, ManagementTripStation[Station] )
+			        )
+			    )
 		formatString: #,0
 		displayFolder: 09 M01 System Overview
 		lineageTag: a0000000-0000-0000-0000-000000000024
 
 	measure 'Station Observed Realtime Trips' =
 			
-			CALCULATE (
-			    DISTINCTCOUNT ( ManagementTripStation[ManagementTripKey] ),
-			    ManagementTripStation[HasValidRealtimeObservation] = TRUE ()
-			)
+			VAR MonitoredStations =
+			    VALUES ( ManagementMonitoredStation[MonitoredStationName] )
+			RETURN
+			    COALESCE (
+			        CALCULATE (
+			            DISTINCTCOUNT ( ManagementTripStation[ManagementTripKey] ),
+			            KEEPFILTERS (
+			                TREATAS ( MonitoredStations, ManagementTripStation[Station] )
+			            ),
+			            ManagementTripStation[HasValidRealtimeObservation] = TRUE ()
+			        ),
+			        0
+			    )
 		formatString: #,0
 		displayFolder: 09 M01 System Overview
 		lineageTag: a0000000-0000-0000-0000-000000000025
@@ -1141,15 +1148,24 @@ table _Measures
 
 	measure 'Station On-Time Trips' =
 			
-			CALCULATE (
-			    DISTINCTCOUNT ( ManagementTripStation[ManagementTripKey] ),
-			    FILTER (
-			        ManagementTripStation,
-			        ManagementTripStation[HasValidRealtimeObservation] = TRUE ()
-			            && ABS ( ManagementTripStation[FinalObservedEstimatedDelayMinutes] )
-			                <= [Delay Threshold (Minutes)]
+			VAR MonitoredStations =
+			    VALUES ( ManagementMonitoredStation[MonitoredStationName] )
+			RETURN
+			    COALESCE (
+			        CALCULATE (
+			            DISTINCTCOUNT ( ManagementTripStation[ManagementTripKey] ),
+			            KEEPFILTERS (
+			                TREATAS ( MonitoredStations, ManagementTripStation[Station] )
+			            ),
+			            ManagementTripStation[HasValidRealtimeObservation] = TRUE (),
+			            FILTER (
+			                ALL ( ManagementTripStation[FinalObservedEstimatedDelayMinutes] ),
+			                ABS ( ManagementTripStation[FinalObservedEstimatedDelayMinutes] )
+			                    <= [Delay Threshold (Minutes)]
+			            )
+			        ),
+			        0
 			    )
-			)
 		formatString: #,0
 		displayFolder: 09 M01 System Overview
 		lineageTag: a0000000-0000-0000-0000-000000000027
@@ -1288,7 +1304,7 @@ table _Measures
 			
 			VAR StationRows =
 			    ADDCOLUMNS (
-			        ALLSELECTED ( ManagementTripStation[Station] ),
+			        ALLSELECTED ( ManagementMonitoredStation[MonitoredStationName] ),
 			        "__OnTime", CALCULATE ( [Station On-Time %] ),
 			        "__Observed", CALCULATE ( [Station Observed Realtime Trips] )
 			    )
@@ -1297,10 +1313,10 @@ table _Measures
 			        1,
 			        FILTER ( StationRows, [__Observed] > 0 && NOT ISBLANK ( [__OnTime] ) ),
 			        [__OnTime], DESC,
-			        ManagementTripStation[Station], ASC
+			        ManagementMonitoredStation[MonitoredStationName], ASC
 			    )
 			RETURN
-			    MAXX ( TopStation, ManagementTripStation[Station] )
+			    MAXX ( TopStation, ManagementMonitoredStation[MonitoredStationName] )
 		displayFolder: 09 M01 System Overview
 		lineageTag: a0000000-0000-0000-0000-000000000034
 
@@ -1308,7 +1324,7 @@ table _Measures
 			
 			VAR StationRows =
 			    ADDCOLUMNS (
-			        ALLSELECTED ( ManagementTripStation[Station] ),
+			        ALLSELECTED ( ManagementMonitoredStation[MonitoredStationName] ),
 			        "__OnTime", CALCULATE ( [Station On-Time %] ),
 			        "__Observed", CALCULATE ( [Station Observed Realtime Trips] )
 			    )
@@ -1317,10 +1333,10 @@ table _Measures
 			        1,
 			        FILTER ( StationRows, [__Observed] > 0 && NOT ISBLANK ( [__OnTime] ) ),
 			        [__OnTime], ASC,
-			        ManagementTripStation[Station], ASC
+			        ManagementMonitoredStation[MonitoredStationName], ASC
 			    )
 			RETURN
-			    MAXX ( BottomStation, ManagementTripStation[Station] )
+			    MAXX ( BottomStation, ManagementMonitoredStation[MonitoredStationName] )
 		displayFolder: 09 M01 System Overview
 		lineageTag: a0000000-0000-0000-0000-000000000035
 
@@ -1328,7 +1344,7 @@ table _Measures
 			
 			VAR StationRows =
 			    ADDCOLUMNS (
-			        ALLSELECTED ( ManagementTripStation[Station] ),
+			        ALLSELECTED ( ManagementMonitoredStation[MonitoredStationName] ),
 			        "__OnTime", CALCULATE ( [Station On-Time %] ),
 			        "__Observed", CALCULATE ( [Station Observed Realtime Trips] )
 			    )
@@ -1337,9 +1353,9 @@ table _Measures
 			        1,
 			        FILTER ( StationRows, [__Observed] > 0 && NOT ISBLANK ( [__OnTime] ) ),
 			        [__OnTime], DESC,
-			        ManagementTripStation[Station], ASC
+			        ManagementMonitoredStation[MonitoredStationName], ASC
 			    )
-			VAR StationName = MAXX ( TopStation, ManagementTripStation[Station] )
+			VAR StationName = MAXX ( TopStation, ManagementMonitoredStation[MonitoredStationName] )
 			VAR StationPct = MAXX ( TopStation, [__OnTime] )
 			VAR ObservedTrips = MAXX ( TopStation, [__Observed] )
 			RETURN
@@ -1357,7 +1373,7 @@ table _Measures
 			
 			VAR StationRows =
 			    ADDCOLUMNS (
-			        ALLSELECTED ( ManagementTripStation[Station] ),
+			        ALLSELECTED ( ManagementMonitoredStation[MonitoredStationName] ),
 			        "__OnTime", CALCULATE ( [Station On-Time %] ),
 			        "__Observed", CALCULATE ( [Station Observed Realtime Trips] )
 			    )
@@ -1366,9 +1382,9 @@ table _Measures
 			        1,
 			        FILTER ( StationRows, [__Observed] > 0 && NOT ISBLANK ( [__OnTime] ) ),
 			        [__OnTime], ASC,
-			        ManagementTripStation[Station], ASC
+			        ManagementMonitoredStation[MonitoredStationName], ASC
 			    )
-			VAR StationName = MAXX ( BottomStation, ManagementTripStation[Station] )
+			VAR StationName = MAXX ( BottomStation, ManagementMonitoredStation[MonitoredStationName] )
 			VAR StationPct = MAXX ( BottomStation, [__OnTime] )
 			VAR ObservedTrips = MAXX ( BottomStation, [__Observed] )
 			RETURN
@@ -1467,15 +1483,24 @@ table _Measures
 
 	measure 'Station Delayed Trips' =
 			
-			CALCULATE (
-			    DISTINCTCOUNT ( ManagementTripStation[ManagementTripKey] ),
-			    FILTER (
-			        ManagementTripStation,
-			        ManagementTripStation[HasValidRealtimeObservation] = TRUE ()
-			            && ManagementTripStation[FinalObservedEstimatedDelayMinutes]
-			                > [Delay Threshold (Minutes)]
+			VAR MonitoredStations =
+			    VALUES ( ManagementMonitoredStation[MonitoredStationName] )
+			RETURN
+			    COALESCE (
+			        CALCULATE (
+			            DISTINCTCOUNT ( ManagementTripStation[ManagementTripKey] ),
+			            KEEPFILTERS (
+			                TREATAS ( MonitoredStations, ManagementTripStation[Station] )
+			            ),
+			            ManagementTripStation[HasValidRealtimeObservation] = TRUE (),
+			            FILTER (
+			                ALL ( ManagementTripStation[FinalObservedEstimatedDelayMinutes] ),
+			                ManagementTripStation[FinalObservedEstimatedDelayMinutes]
+			                    > [Delay Threshold (Minutes)]
+			            )
+			        ),
+			        0
 			    )
-			)
 		formatString: #,0
 		displayFolder: 09 M01 System Overview
 		lineageTag: a0000000-0000-0000-0000-000000000043
@@ -1643,8 +1668,36 @@ table _Measures
 		displayFolder: 09 M01 System Overview
 		lineageTag: a0000000-0000-0000-0000-000000000052
 
-	measure 'M02 Network Station Coverage Status' =
+	measure 'M02 Network Stations' =
+			
+			CALCULATE (
+			    [Network Parent Stations],
+			    REMOVEFILTERS ( ParentStation )
+			)
+		formatString: #,0
+		displayFolder: 10 M02 Station Coverage
+		lineageTag: a0000000-0000-0000-0000-000000000053
 
+	measure 'Station Observed Stop Positions' =
+			
+			VAR MonitoredStations =
+			    VALUES ( ManagementMonitoredStation[MonitoredStationName] )
+			RETURN
+			    COALESCE (
+			        CALCULATE (
+			            DISTINCTCOUNT ( ManagementTripStation[StopKey] ),
+			            KEEPFILTERS (
+			                TREATAS ( MonitoredStations, ManagementTripStation[Station] )
+			            ),
+			            ManagementTripStation[HasValidRealtimeObservation] = TRUE ()
+			        ),
+			        0
+			    )
+		displayFolder: 10 M02 Station Coverage
+		lineageTag: a0000000-0000-0000-0000-000000000055
+
+	measure 'M02 Network Station Coverage Status' =
+			
 			VAR HasSingleNetworkStation =
 			    HASONEVALUE ( ParentStation[ParentStationName] )
 			VAR SelectedStation =

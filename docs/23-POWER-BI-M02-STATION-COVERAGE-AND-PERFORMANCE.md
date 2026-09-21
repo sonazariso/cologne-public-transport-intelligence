@@ -1,8 +1,8 @@
 # Power BI M02 — Station Coverage & Performance
 
-**Status:** PBIP/TMDL/PBIR source implementation is complete on the dedicated
-M02 branch. SQL deployment, Import Refresh, rendering, slicer interaction, and
-the final Power BI Desktop save round-trip remain runtime validation steps.
+**Status:** M02 source corrections are applied on the dedicated branch.
+Power BI Desktop Import Refresh, rendering, interaction, and the final save
+round-trip remain runtime validation steps and are not claimed complete here.
 
 ## Business purpose and scope
 
@@ -41,12 +41,14 @@ M02 reuses the deployed management views:
 
 `vwManagementTripStation` is intentionally at trusted stop-position grain.
 Its `Station` label is the parent-station label for the outcome. M02 station
-measures distinct-count `ManagementTripKey` within the current station
-context, so a trip with multiple stop positions at one station is counted
-once for that station. The same dated trip may legitimately appear at more
-than one monitored station and is counted once in each station context. As a
-result, station-level trip counts are not an additive reconciliation to the
-overall unique observed-trip count.
+measures distinct-count `ManagementTripKey` within the current monitored
+station context, using `TREATAS` from
+`ManagementMonitoredStation[MonitoredStationName]` to
+`ManagementTripStation[Station]`. A trip with multiple stop positions at one
+station is counted once for that station. The same dated trip may legitimately
+appear at more than one monitored station and is counted once in each station
+context. As a result, station-level trip counts are not an additive
+reconciliation to the overall unique observed-trip count.
 
 No new SQL view was required; the existing management analytics layer already
 provides the trusted grain. The SQL creation comments and read-only validation
@@ -61,13 +63,21 @@ M02 reuses the shared measures in `_Measures` and the source mirror
 - `Station Observed Realtime Trips`;
 - `Station On-Time Trips` and `Station On-Time %`;
 - `Station Delayed Trips` and `Station Delayed %`;
-- `Observed Stop Positions`; and
+- `Station Observed Stop Positions` for the detail-table station context;
+- `Observed Stop Positions` for the page-level context KPI; and
 - `Best Performing Monitored Station` / `Worst Performing Monitored Station`.
 
 M02-specific helpers are `M02 Network Stations` and `M02 Network Station
 Coverage Status`; the first keeps the full-network KPI invariant to the lookup
 selection, while the second communicates whether a selected network station
 has monitoring evidence under the current filters.
+
+The On-Time Rate chart, Observed Realtime Trips chart, and Monitored Station
+Detail table all use `ManagementMonitoredStation[MonitoredStationName]` as
+their category/row source. `showAll` remains enabled, and the station volume
+measure returns zero when no matching trip rows exist. This keeps a monitored
+station identifiable for the selected monitoring period while the percentage
+measures remain blank when their observed-trip denominator is zero.
 
 The station measures count a trip once within a station and inherit the same
 `Delay Threshold (Minutes)` parameter as M01. The definition is unchanged:
@@ -121,6 +131,21 @@ in the dynamic Selected Network Station Coverage card:
 The lookup does not create zero-valued punctuality metrics for an unmonitored
 station or cross-filter the station performance comparisons.
 
+## R2-2 correction record
+
+- The invalid `drillFilterOtherVisuals` property was removed from the
+  `visual.visualContainerObjects` object in `m02networkstatus` and kept at the
+  valid `visual` level.
+- `Station Observed Stop Positions` was added because the detail table now
+  uses the monitored-station dimension rather than the trip-station fact
+  column. It counts distinct observed `StopKey` values in the current station,
+  mode, and date context.
+- The detail table explicitly sets `visual.objects.total.show` to `false`; no
+  calculated station total was added. Power BI Desktop still needs to confirm
+  the rendered result after opening and saving the PBIP.
+- No SQL view, M01 page file, `diagramLayout.json`, or later-report content was
+  added or changed by this correction.
+
 ## Station versus Stop Position
 
 The visible page explains the distinction in plain language:
@@ -134,23 +159,32 @@ Positions may be greater than Realtime Monitored Stations.
 
 ## Validation status
 
-Completed source-level checks for this implementation include:
+Completed source-level checks for this correction include:
 
 - branch isolation on `feature/powerbi-m02-station-performance`;
 - valid JSON for the M02 page and all M02 visuals;
+- the `m02networkstatus` drill-filter property at the valid PBIR level;
+- all three station-performance visual row/category bindings using
+  `ManagementMonitoredStation[MonitoredStationName]`;
+- station-specific trip, punctuality, and stop-position measures using the
+  monitored-station-to-trip-station mapping;
 - station chart sort definitions bound to the correct independent measures;
 - the Effective Threshold visual bound to the shared display measure;
 - the Network Stations KPI remaining independent of the lookup selection;
-- all required detail-table columns present and no configured total-row
-  projection;
+- all required detail-table columns present and an explicit disabled total-row
+  setting;
 - no current station or stop-position counts in visible explanatory text;
-- all referenced M02 measures present in the semantic model; and
+- all referenced M02 measures present in the semantic model;
+- the frozen M01 page files remaining unchanged; and
 - the M02 page remaining finite-height with all lower-page content visible in
   the existing FitToPage layout.
 
 The read-only SQL grain checks are in
 `sql/05-analytics/06-validate-m01-management-views.sql`. Power BI Desktop is
 still required to run Import Refresh, verify the actual slicer interactions,
-render the page, inspect accessibility/readability, perform the normal save
-round-trip, and review the resulting Git diff. `diagramLayout.json` is not
+confirm zero-observation station visibility, confirm the rendered absence of
+the detail-table Total row, inspect accessibility/readability, perform the
+normal save round-trip, and review the resulting Git diff. Those runtime
+checks were not run in this macOS workspace because Power BI Desktop is not
+available here, so no runtime pass is claimed. `diagramLayout.json` is not
 intentionally edited.

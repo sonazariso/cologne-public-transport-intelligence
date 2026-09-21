@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m02stationnote",
   "position": {
-    "x": 32,
-    "y": 238,
+    "x": 23.999999999999996,
+    "y": 264,
     "z": 6000,
-    "height": 36,
-    "width": 1216,
+    "height": 47.999999999999993,
+    "width": 1224,
     "tabOrder": 19000
   },
   "visual": {
@@ -19,12 +19,21 @@
               {
                 "textRuns": [
                   {
-                    "value": "Station = the monitored station/location used for management reporting.\nStop Position = the physical boarding location, platform, bay, or stop position inside or associated with the station. A station can contain multiple stop positions, so Observed Stop Positions may be greater than Realtime Monitored Stations.",
+                    "value": "Station = the monitored station/location used for management reporting.",
                     "textStyle": {
-                      "fontWeight": "normal",
-                      "fontFamily": "'''Segoe UI'', wf_segoe-ui_normal, helvetica, arial, sans-serif'",
                       "fontSize": "8pt",
-                      "color": "#52667A"
+                      "color": "#52667a"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Stop Position = the physical boarding location, platform, bay, or stop position inside or associated with the station. A station can contain multiple stop positions, so Observed Stop Positions may be greater than Realtime Monitored Stations.",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "#52667a"
                     }
                   }
                 ]

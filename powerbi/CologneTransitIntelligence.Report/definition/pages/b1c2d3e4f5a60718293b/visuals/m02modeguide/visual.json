@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m02modeguide",
   "position": {
-    "x": 32,
-    "y": 274,
+    "x": 47.999999999999993,
+    "y": 312,
     "z": 8000,
-    "height": 30,
-    "width": 1216,
-    "tabOrder": 20000
+    "height": 120,
+    "width": 336,
+    "tabOrder": 21000
   },
   "visual": {
     "visualType": "textbox",
@@ -21,10 +21,8 @@
                   {
                     "value": "Transport Mode Guide: Stadtbahn / Tram = urban light rail; S-Bahn = suburban rail; Regional Express (RE) = faster regional rail; Regional Bahn (RB) = regional stopping rail; Urban Bus (KVB) = city bus; Regional / Other Bus = regional or non-KVB bus; Rail Replacement Bus (SEV) = rail replacement service.",
                     "textStyle": {
-                      "fontWeight": "normal",
-                      "fontFamily": "'''Segoe UI'', wf_segoe-ui_normal, helvetica, arial, sans-serif'",
                       "fontSize": "7.5pt",
-                      "color": "#52667A"
+                      "color": "#52667a"
                     }
                   }
                 ]

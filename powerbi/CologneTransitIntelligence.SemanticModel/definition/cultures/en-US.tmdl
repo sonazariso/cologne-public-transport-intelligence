@@ -260,16 +260,6 @@ cultureInfo en-US
 			      "State": "Generated",
 			      "Terms": [
 			        {
-			          "Observed Stop Positions": {
-			            "State": "Suggested",
-			            "Source": {
-			              "Type": "External",
-			              "Agent": "PowerBI.VisualColumnRename"
-			            },
-			            "Weight": 0.9
-			          }
-			        },
-			        {
 			          "Stop positions within monitored scope": {
 			            "State": "Suggested",
 			            "Source": {
@@ -297,19 +287,7 @@ cultureInfo en-US
 			          "ConceptualProperty": "Network Parent Stations"
 			        }
 			      },
-			      "State": "Generated",
-			      "Terms": [
-			        {
-			          "Network Stations": {
-			            "State": "Suggested",
-			            "Source": {
-			              "Type": "External",
-			              "Agent": "PowerBI.VisualColumnRename"
-			            },
-			            "Weight": 0.9
-			          }
-			        }
-			      ]
+			      "State": "Generated"
 			    },
 			    "table_measures.realtime_monitored_stations": {
 			      "Definition": {
@@ -400,19 +378,7 @@ cultureInfo en-US
 			          "ConceptualProperty": "Delay Threshold (Minutes)"
 			        }
 			      },
-			      "State": "Generated",
-			      "Terms": [
-			        {
-			          "Selected threshold": {
-			            "State": "Suggested",
-			            "Source": {
-			              "Type": "External",
-			              "Agent": "PowerBI.VisualColumnRename"
-			            },
-			            "Weight": 0.9
-			          }
-			        }
-			      ]
+			      "State": "Generated"
 			    },
 			    "parentstation.parentstationname": {
 			      "Definition": {
@@ -589,19 +555,7 @@ cultureInfo en-US
 			          "ConceptualProperty": "Station"
 			        }
 			      },
-			      "State": "Generated",
-			      "Terms": [
-			        {
-			          "Monitored Station": {
-			            "State": "Suggested",
-			            "Source": {
-			              "Type": "External",
-			              "Agent": "PowerBI.VisualColumnRename"
-			            },
-			            "Weight": 0.9
-			          }
-			        }
-			      ]
+			      "State": "Generated"
 			    },
 			    "table_measures.m01_timing_unavailable_display": {
 			      "Definition": {
@@ -824,6 +778,69 @@ cultureInfo en-US
 			      "Terms": [
 			        {
 			          "Effective threshold": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "table_measures.m02_network_station_coverage_status": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_Measures",
+			          "ConceptualProperty": "M02 Network Station Coverage Status"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Coverage status": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "table_measures.m02_network_stations": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_Measures",
+			          "ConceptualProperty": "M02 Network Stations"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Network Stations": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "table_measures.station_observed_stop_positions": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_Measures",
+			          "ConceptualProperty": "Station Observed Stop Positions"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Observed Stop Positions": {
 			            "State": "Suggested",
 			            "Source": {
 			              "Type": "External",

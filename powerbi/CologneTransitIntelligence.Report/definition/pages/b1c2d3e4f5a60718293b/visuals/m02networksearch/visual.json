@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m02networksearch",
   "position": {
-    "x": 344,
-    "y": 726,
+    "x": 360,
+    "y": 720,
     "z": 18000,
-    "height": 80,
-    "width": 300,
+    "height": 168,
+    "width": 360,
     "tabOrder": 16000
   },
   "visual": {

@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m02subtitle",
   "position": {
-    "x": 32,
-    "y": 44,
+    "x": 23.999999999999996,
+    "y": 47.999999999999993,
     "z": 1000,
-    "height": 23,
-    "width": 1216,
+    "height": 47.999999999999993,
+    "width": 1224,
     "tabOrder": 1000
   },
   "visual": {
@@ -21,10 +21,8 @@
                   {
                     "value": "Performance and realtime coverage across monitored Cologne stations",
                     "textStyle": {
-                      "fontWeight": "normal",
-                      "fontFamily": "'''Segoe UI'', wf_segoe-ui_normal, helvetica, arial, sans-serif'",
                       "fontSize": "11pt",
-                      "color": "#DCEAF7"
+                      "color": "#dceaf7"
                     }
                   }
                 ]

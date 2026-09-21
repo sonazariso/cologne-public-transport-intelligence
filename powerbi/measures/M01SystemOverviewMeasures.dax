@@ -251,44 +251,94 @@ RETURN
     )
 
 Station Comparable Trips =
-DISTINCTCOUNT ( ManagementTripStation[ManagementTripKey] )
+VAR MonitoredStations =
+    VALUES ( ManagementMonitoredStation[MonitoredStationName] )
+RETURN
+    CALCULATE (
+        DISTINCTCOUNT ( ManagementTripStation[ManagementTripKey] ),
+        KEEPFILTERS (
+            TREATAS ( MonitoredStations, ManagementTripStation[Station] )
+        )
+    )
 
 Station Observed Realtime Trips =
-CALCULATE (
-    DISTINCTCOUNT ( ManagementTripStation[ManagementTripKey] ),
-    ManagementTripStation[HasValidRealtimeObservation] = TRUE ()
-)
+VAR MonitoredStations =
+    VALUES ( ManagementMonitoredStation[MonitoredStationName] )
+RETURN
+    COALESCE (
+        CALCULATE (
+            DISTINCTCOUNT ( ManagementTripStation[ManagementTripKey] ),
+            KEEPFILTERS (
+                TREATAS ( MonitoredStations, ManagementTripStation[Station] )
+            ),
+            ManagementTripStation[HasValidRealtimeObservation] = TRUE ()
+        ),
+        0
+    )
 
 Station Observed Matched Trips =
 [Station Observed Realtime Trips]
 
 Station On-Time Trips =
-CALCULATE (
-    DISTINCTCOUNT ( ManagementTripStation[ManagementTripKey] ),
-    FILTER (
-        ManagementTripStation,
-        ManagementTripStation[HasValidRealtimeObservation] = TRUE ()
-            && ABS ( ManagementTripStation[FinalObservedEstimatedDelayMinutes] )
-                <= [Delay Threshold (Minutes)]
+VAR MonitoredStations =
+    VALUES ( ManagementMonitoredStation[MonitoredStationName] )
+RETURN
+    COALESCE (
+        CALCULATE (
+            DISTINCTCOUNT ( ManagementTripStation[ManagementTripKey] ),
+            KEEPFILTERS (
+                TREATAS ( MonitoredStations, ManagementTripStation[Station] )
+            ),
+            ManagementTripStation[HasValidRealtimeObservation] = TRUE (),
+            FILTER (
+                ALL ( ManagementTripStation[FinalObservedEstimatedDelayMinutes] ),
+                ABS ( ManagementTripStation[FinalObservedEstimatedDelayMinutes] )
+                    <= [Delay Threshold (Minutes)]
+            )
+        ),
+        0
     )
-)
 
 Station On-Time % =
 DIVIDE ( [Station On-Time Trips], [Station Observed Realtime Trips] )
 
 Station Delayed Trips =
-CALCULATE (
-    DISTINCTCOUNT ( ManagementTripStation[ManagementTripKey] ),
-    FILTER (
-        ManagementTripStation,
-        ManagementTripStation[HasValidRealtimeObservation] = TRUE ()
-            && ManagementTripStation[FinalObservedEstimatedDelayMinutes]
-                > [Delay Threshold (Minutes)]
+VAR MonitoredStations =
+    VALUES ( ManagementMonitoredStation[MonitoredStationName] )
+RETURN
+    COALESCE (
+        CALCULATE (
+            DISTINCTCOUNT ( ManagementTripStation[ManagementTripKey] ),
+            KEEPFILTERS (
+                TREATAS ( MonitoredStations, ManagementTripStation[Station] )
+            ),
+            ManagementTripStation[HasValidRealtimeObservation] = TRUE (),
+            FILTER (
+                ALL ( ManagementTripStation[FinalObservedEstimatedDelayMinutes] ),
+                ManagementTripStation[FinalObservedEstimatedDelayMinutes]
+                    > [Delay Threshold (Minutes)]
+            )
+        ),
+        0
     )
-)
 
 Station Delayed % =
 DIVIDE ( [Station Delayed Trips], [Station Observed Realtime Trips] )
+
+Station Observed Stop Positions =
+VAR MonitoredStations =
+    VALUES ( ManagementMonitoredStation[MonitoredStationName] )
+RETURN
+    COALESCE (
+        CALCULATE (
+            DISTINCTCOUNT ( ManagementTripStation[StopKey] ),
+            KEEPFILTERS (
+                TREATAS ( MonitoredStations, ManagementTripStation[Station] )
+            ),
+            ManagementTripStation[HasValidRealtimeObservation] = TRUE ()
+        ),
+        0
+    )
 
 Station Average Absolute Schedule Gap Minutes =
 AVERAGEX (
@@ -400,7 +450,7 @@ RETURN
 Best Performing Monitored Station Name =
 VAR StationRows =
     ADDCOLUMNS (
-        ALLSELECTED ( ManagementTripStation[Station] ),
+        ALLSELECTED ( ManagementMonitoredStation[MonitoredStationName] ),
         "__OnTime", CALCULATE ( [Station On-Time %] ),
         "__Observed", CALCULATE ( [Station Observed Realtime Trips] )
     )
@@ -409,15 +459,15 @@ VAR TopStation =
         1,
         FILTER ( StationRows, [__Observed] > 0 && NOT ISBLANK ( [__OnTime] ) ),
         [__OnTime], DESC,
-        ManagementTripStation[Station], ASC
+        ManagementMonitoredStation[MonitoredStationName], ASC
     )
 RETURN
-    MAXX ( TopStation, ManagementTripStation[Station] )
+    MAXX ( TopStation, ManagementMonitoredStation[MonitoredStationName] )
 
 Worst Performing Monitored Station Name =
 VAR StationRows =
     ADDCOLUMNS (
-        ALLSELECTED ( ManagementTripStation[Station] ),
+        ALLSELECTED ( ManagementMonitoredStation[MonitoredStationName] ),
         "__OnTime", CALCULATE ( [Station On-Time %] ),
         "__Observed", CALCULATE ( [Station Observed Realtime Trips] )
     )
@@ -426,15 +476,15 @@ VAR BottomStation =
         1,
         FILTER ( StationRows, [__Observed] > 0 && NOT ISBLANK ( [__OnTime] ) ),
         [__OnTime], ASC,
-        ManagementTripStation[Station], ASC
+        ManagementMonitoredStation[MonitoredStationName], ASC
     )
 RETURN
-    MAXX ( BottomStation, ManagementTripStation[Station] )
+    MAXX ( BottomStation, ManagementMonitoredStation[MonitoredStationName] )
 
 Best Performing Monitored Station =
 VAR StationRows =
     ADDCOLUMNS (
-        ALLSELECTED ( ManagementTripStation[Station] ),
+        ALLSELECTED ( ManagementMonitoredStation[MonitoredStationName] ),
         "__OnTime", CALCULATE ( [Station On-Time %] ),
         "__Observed", CALCULATE ( [Station Observed Realtime Trips] )
     )
@@ -443,9 +493,9 @@ VAR TopStation =
         1,
         FILTER ( StationRows, [__Observed] > 0 && NOT ISBLANK ( [__OnTime] ) ),
         [__OnTime], DESC,
-        ManagementTripStation[Station], ASC
+        ManagementMonitoredStation[MonitoredStationName], ASC
     )
-VAR StationName = MAXX ( TopStation, ManagementTripStation[Station] )
+VAR StationName = MAXX ( TopStation, ManagementMonitoredStation[MonitoredStationName] )
 VAR StationPct = MAXX ( TopStation, [__OnTime] )
 VAR ObservedTrips = MAXX ( TopStation, [__Observed] )
 RETURN
@@ -460,7 +510,7 @@ RETURN
 Worst Performing Monitored Station =
 VAR StationRows =
     ADDCOLUMNS (
-        ALLSELECTED ( ManagementTripStation[Station] ),
+        ALLSELECTED ( ManagementMonitoredStation[MonitoredStationName] ),
         "__OnTime", CALCULATE ( [Station On-Time %] ),
         "__Observed", CALCULATE ( [Station Observed Realtime Trips] )
     )
@@ -469,9 +519,9 @@ VAR BottomStation =
         1,
         FILTER ( StationRows, [__Observed] > 0 && NOT ISBLANK ( [__OnTime] ) ),
         [__OnTime], ASC,
-        ManagementTripStation[Station], ASC
+        ManagementMonitoredStation[MonitoredStationName], ASC
     )
-VAR StationName = MAXX ( BottomStation, ManagementTripStation[Station] )
+VAR StationName = MAXX ( BottomStation, ManagementMonitoredStation[MonitoredStationName] )
 VAR StationPct = MAXX ( BottomStation, [__OnTime] )
 VAR ObservedTrips = MAXX ( BottomStation, [__Observed] )
 RETURN

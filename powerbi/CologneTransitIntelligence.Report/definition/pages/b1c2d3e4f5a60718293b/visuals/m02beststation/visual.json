@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m02beststation",
   "position": {
-    "x": 656,
-    "y": 726,
+    "x": 767.99999999999989,
+    "y": 720,
     "z": 19000,
-    "height": 110,
-    "width": 288,
+    "height": 72,
+    "width": 480,
     "tabOrder": 17000
   },
   "visual": {

@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m02thresholdvalue",
   "position": {
-    "x": 1048,
-    "y": 76,
+    "x": 1056,
+    "y": 95.999999999999986,
     "z": 5000,
-    "height": 64,
-    "width": 200,
+    "height": 72,
+    "width": 191.99999999999997,
     "tabOrder": 5000
   },
   "visual": {
