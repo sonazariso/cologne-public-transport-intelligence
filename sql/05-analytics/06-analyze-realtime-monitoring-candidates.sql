@@ -283,7 +283,7 @@ FROM GeographicBands AS geographic_bands;
 CREATE UNIQUE CLUSTERED INDEX UX_RankedGeoStations_Key
     ON #RankedGeoStations (ParentStationKey);
 
-/* One anchor per occupied cell, only when its service-volume percentile is >= 0.25. */
+/* One anchor per occupied cell, only when it clears both anchor thresholds. */
 WITH AnchorCandidates AS
 (
     SELECT
@@ -300,6 +300,7 @@ WITH AnchorCandidates AS
         ) AS CellAnchorRank
     FROM #RankedGeoStations AS ranked_geo
     WHERE ranked_geo.ServiceVolumePercentile >= CONVERT(DECIMAL(12, 8), 0.25)
+      AND ranked_geo.RawImportanceRank <= 100
 )
 SELECT *
 INTO #AnchorCandidates
@@ -524,6 +525,11 @@ SELECT
             THEN N'High mode diversity'
         ELSE N'High composite importance score'
     END) AS SelectionReason,
+    CASE
+        WHEN balanced.IsGeographicAnchor = 1
+            THEN N'Eligible geographic anchor'
+        ELSE N'Not anchor - importance fill'
+    END AS AnchorEligibility,
     balanced.RawImportanceRank,
     balanced.ServiceVolumePercentile,
     balanced.RouteDiversityPercentile,
@@ -538,6 +544,50 @@ ORDER BY
     balanced.BaseImportanceScore DESC,
     balanced.ParentStationName ASC,
     balanced.ParentStationKey ASC;
+
+-- O5_RESULT GeographicAnchorAudit
+WITH GeographicCells AS
+(
+    SELECT DISTINCT
+        ranked_geo.GeographicCell
+    FROM #RankedGeoStations AS ranked_geo
+),
+EligibleAnchorCounts AS
+(
+    SELECT
+        cells.GeographicCell,
+        COUNT_BIG(anchor_candidate.ParentStationKey) AS EligibleAnchorCount
+    FROM GeographicCells AS cells
+    LEFT JOIN #AnchorCandidates AS anchor_candidate
+        ON anchor_candidate.GeographicCell = cells.GeographicCell
+    GROUP BY cells.GeographicCell
+)
+SELECT
+    balanced.ParentStationId,
+    balanced.ParentStationName,
+    balanced.GeographicCell,
+    balanced.BaseImportanceScore,
+    balanced.RawImportanceRank,
+    balanced.ServiceVolumePercentile,
+    balanced.RecommendedRank,
+    eligible_counts.EligibleAnchorCount
+FROM #PanelFinal AS balanced
+INNER JOIN EligibleAnchorCounts AS eligible_counts
+    ON eligible_counts.GeographicCell = balanced.GeographicCell
+WHERE balanced.IsGeographicAnchor = 1
+UNION ALL
+SELECT
+    NULL AS ParentStationId,
+    NULL AS ParentStationName,
+    eligible_counts.GeographicCell,
+    NULL AS BaseImportanceScore,
+    NULL AS RawImportanceRank,
+    NULL AS ServiceVolumePercentile,
+    NULL AS RecommendedRank,
+    eligible_counts.EligibleAnchorCount
+FROM EligibleAnchorCounts AS eligible_counts
+WHERE eligible_counts.EligibleAnchorCount = 0
+ORDER BY GeographicCell, RawImportanceRank;
 
 -- O5_RESULT Top100ReviewBuffer
 SELECT
@@ -732,6 +782,7 @@ SELECT
     (SELECT COUNT_BIG(DISTINCT ParentStationKey) FROM #RankedGeoStations)
         AS DistinctEligibleParentStationKeyCount,
     (SELECT COUNT_BIG(*) FROM #PanelFinal) AS FinalRecommendedCount,
+    (SELECT COUNT_BIG(*) FROM #PanelFinal) AS FinalPanelCount,
     (SELECT COUNT_BIG(DISTINCT ParentStationKey) FROM #PanelFinal)
         AS FinalDistinctParentStationKeyCount,
     (SELECT COUNT_BIG(*) FROM #PanelFinal WHERE ProposedTier = N'Tier A')
@@ -749,6 +800,12 @@ SELECT
          GROUP BY ParentStationId
          HAVING COUNT_BIG(*) > 1) AS duplicate_ids)
         AS FinalDuplicateParentStationIdValueCount,
+    (SELECT COUNT_BIG(*) FROM
+        (SELECT ParentStationKey
+         FROM #PanelFinal
+         GROUP BY ParentStationKey
+         HAVING COUNT_BIG(*) > 1) AS duplicate_keys)
+        AS FinalDuplicateParentStationKeyValueCount,
     (SELECT COUNT_BIG(*) FROM #PanelFinal AS panel
      WHERE NOT EXISTS
      (
@@ -759,6 +816,19 @@ SELECT
      )) AS FinalUnusedScheduleViolationCount,
     (SELECT COUNT_BIG(*) FROM #PanelFinal
      WHERE Latitude IS NULL OR Longitude IS NULL) AS FinalMissingCoordinateCount,
+    (SELECT COUNT_BIG(*) FROM #PanelFinal AS panel
+     WHERE panel.IsGeographicAnchor = 1
+       AND (panel.RawImportanceRank > 100
+            OR panel.ServiceVolumePercentile < CONVERT(DECIMAL(12, 8), 0.25)))
+        AS InvalidGeographicAnchorCount,
+    (SELECT COUNT_BIG(*) FROM #PanelFinal AS panel
+     WHERE panel.IsGeographicAnchor = 1
+       AND panel.RawImportanceRank > 100)
+        AS GeographicAnchorsOutsideRawTop100Count,
+    (SELECT COUNT_BIG(*) FROM #PanelFinal AS panel
+     WHERE panel.IsGeographicAnchor = 1
+       AND panel.ServiceVolumePercentile < CONVERT(DECIMAL(12, 8), 0.25))
+        AS GeographicAnchorsBelowServiceVolumeThresholdCount,
     (SELECT COUNT_BIG(*) FROM #RankedGeoStations
      WHERE BaseImportanceScore < 0 OR BaseImportanceScore > 100)
         AS ScoreOutsideZeroTo100Count,
@@ -774,8 +844,18 @@ SELECT
         AS MutationScope,
     CASE WHEN (SELECT COUNT_BIG(*) FROM #PanelFinal) = @PanelSize
            AND (SELECT COUNT_BIG(DISTINCT ParentStationKey) FROM #PanelFinal) = @PanelSize
+           AND (SELECT COUNT_BIG(*) FROM
+                (SELECT ParentStationKey
+                 FROM #PanelFinal
+                 GROUP BY ParentStationKey
+                 HAVING COUNT_BIG(*) > 1) AS duplicate_keys) = 0
            AND (SELECT COUNT_BIG(*) FROM #PanelFinal
                 WHERE NULLIF(LTRIM(RTRIM(ParentStationId)), N'') IS NULL) = 0
+           AND (SELECT COUNT_BIG(*) FROM
+                (SELECT ParentStationId
+                 FROM #PanelFinal
+                 GROUP BY ParentStationId
+                 HAVING COUNT_BIG(*) > 1) AS duplicate_ids) = 0
            AND (SELECT COUNT_BIG(*) FROM #PanelFinal
                 WHERE ProposedTier = N'Tier A') = 10
            AND (SELECT COUNT_BIG(*) FROM #PanelFinal
@@ -787,8 +867,20 @@ SELECT
                  FROM #PanelFinal
                  GROUP BY ParentStationId
                  HAVING COUNT_BIG(*) > 1) AS duplicate_ids) = 0
+           AND (SELECT COUNT_BIG(*) FROM #PanelFinal AS panel
+                WHERE NOT EXISTS
+                (
+                    SELECT 1
+                    FROM analytics.vwParentStationScheduleProfile AS schedule_profile
+                    WHERE schedule_profile.ParentStationKey = panel.ParentStationKey
+                      AND schedule_profile.IsUsedInCurrentSchedule = 1
+                )) = 0
            AND (SELECT COUNT_BIG(*) FROM #PanelFinal
                 WHERE Latitude IS NULL OR Longitude IS NULL) = 0
+           AND (SELECT COUNT_BIG(*) FROM #PanelFinal AS panel
+                WHERE panel.IsGeographicAnchor = 1
+                  AND (panel.RawImportanceRank > 100
+                       OR panel.ServiceVolumePercentile < CONVERT(DECIMAL(12, 8), 0.25))) = 0
            AND (SELECT COUNT_BIG(*) FROM #RankedGeoStations
                 WHERE BaseImportanceScore < 0 OR BaseImportanceScore > 100) = 0
          THEN N'PASS' ELSE N'REVIEW' END AS ValidationStatus;
