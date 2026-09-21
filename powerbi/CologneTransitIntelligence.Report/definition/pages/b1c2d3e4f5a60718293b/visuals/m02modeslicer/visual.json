@@ -2,10 +2,10 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m02modeslicer",
   "position": {
-    "x": 24,
-    "y": 96,
+    "x": 23.999999999999996,
+    "y": 95.999999999999986,
     "z": 2000,
-    "height": 64,
+    "height": 168,
     "width": 360,
     "tabOrder": 2000
   },

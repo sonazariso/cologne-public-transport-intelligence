@@ -2,10 +2,10 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m02stationnames",
   "position": {
-    "x": 316,
-    "y": 736,
+    "x": 264,
+    "y": 720,
     "z": 17000,
-    "height": 152,
+    "height": 168,
     "width": 240,
     "tabOrder": 15000
   },

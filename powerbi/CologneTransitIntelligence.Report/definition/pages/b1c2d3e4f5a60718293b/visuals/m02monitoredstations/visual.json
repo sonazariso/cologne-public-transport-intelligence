@@ -2,7 +2,7 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m02monitoredstations",
   "position": {
-    "x": 230,
+    "x": 1056,
     "y": 168,
     "z": 9000,
     "height": 88,
