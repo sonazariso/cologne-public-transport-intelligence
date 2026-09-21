@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m02monitoredstations",
   "position": {
-    "x": 216,
+    "x": 230,
     "y": 168,
     "z": 9000,
-    "height": 95.999999999999986,
-    "width": 191.99999999999997,
+    "height": 88,
+    "width": 194,
     "tabOrder": 7000
   },
   "visual": {

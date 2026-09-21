@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m02scopefooter",
   "position": {
-    "x": 32,
+    "x": 24,
     "y": 896,
     "z": 21000,
     "height": 40,
-    "width": 1216,
+    "width": 1224,
     "tabOrder": 22000
   },
   "visual": {

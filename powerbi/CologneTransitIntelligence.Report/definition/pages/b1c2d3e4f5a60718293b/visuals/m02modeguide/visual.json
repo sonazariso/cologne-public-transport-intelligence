@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m02modeguide",
   "position": {
-    "x": 47.999999999999993,
-    "y": 312,
+    "x": 24,
+    "y": 736,
     "z": 8000,
-    "height": 120,
-    "width": 336,
+    "height": 152,
+    "width": 280,
     "tabOrder": 21000
   },
   "visual": {

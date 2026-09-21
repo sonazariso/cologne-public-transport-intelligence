@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m02networkstatus",
   "position": {
-    "x": 72,
-    "y": 432,
+    "x": 568,
+    "y": 820,
     "z": 19500,
-    "height": 72,
-    "width": 312,
+    "height": 68,
+    "width": 300,
     "tabOrder": 20000
   },
   "visual": {

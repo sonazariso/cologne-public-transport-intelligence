@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m02dateslicer",
   "position": {
-    "x": 408,
-    "y": 95.999999999999986,
+    "x": 400,
+    "y": 96,
     "z": 3000,
     "height": 64,
-    "width": 400,
+    "width": 432,
     "tabOrder": 3000
   },
   "visual": {
