@@ -4,7 +4,7 @@ Status: DESIGN ONLY — NOT ACTIVE
 
 Roadmap scope: future tiered realtime sampling dispatcher
 
-Repository baseline: v125 / Roadmap Items 1–3 complete
+Repository baseline: v126 / Roadmap Items 1–3 complete
 
 This document defines the future runtime architecture for the approved
 50-station realtime-monitoring panel. It does not activate that panel and does
@@ -303,8 +303,11 @@ at its next normal interval/phase bucket.
 
 The target audit may remain `Started`, matching current behavior when the
 process is terminated before the completion update. A target claim already
-consumed for the old bucket is not replayed. The target is collected again at
-the next normal due bucket; no catch-up queue is created.
+consumed for the old bucket is not replayed. Under the future claim/audit
+contract, that `Started` state must still identify or be durably associated
+with the claimed target, logical due bucket, and StopPointRef even though no
+completion update was reached. The target is collected again at the next
+normal due bucket; no catch-up queue is created.
 
 ## 10. Failure and retry behavior
 
@@ -398,10 +401,38 @@ work, but lease expiry must not silently authorize a second collection of the
 same target/bucket when the contract is strict at-most-once. An interrupted
 target may remain `Started` and wait for its next regular bucket.
 
-The claim and target-audit start must be ordered so that a claimed target is
-accountable even if the process terminates before HTTP completion. The exact
-claim table/procedure, locking primitive, lease representation, and physical
-uniqueness enforcement are deferred. This design does not implement
+### Required claim/audit ordering invariant
+
+For a future automatic target execution, the resolved target identity and
+logical due bucket must be known before, or atomically associated with, the
+durable target-execution claim/audit state. After a successful automatic
+claim, an interrupted execution must remain traceable to at least:
+
+- `SamplingTargetId`;
+- `LogicalDueBucket`; and
+- `StopPointRef`.
+
+`SamplingTargetName` should also remain available whenever possible. This
+traceability must exist even when the process terminates before HTTP
+completion. The future implementation must not depend on
+`ctl.uspCompleteMddCollectorRun` being reached in order to establish target
+or bucket identity.
+
+The conceptual sequence is:
+
+1. resolve the automatic target identity and logical due bucket;
+2. durably claim the `(SamplingTargetId, LogicalDueBucket)` key and create or
+   associate the target-level `Started` audit state;
+3. execute the target's HTTP request and persistence work;
+4. finish the target-level audit as `Succeeded` or `Failed`.
+
+The claim, `Started` audit state, HTTP execution, and final completion must
+remain operationally correlated throughout that sequence. The physical SQL
+mechanism is intentionally not prescribed here. Extending the audit-start
+contract, associating a claim with `CollectorRunId`, or another atomic
+database-backed design belongs to later roadmap work. The exact claim
+table/procedure, locking primitive, lease representation, and physical
+uniqueness enforcement remain deferred. This design does not implement
 `sp_getapplock`, a claim table, a lease, or a constraint.
 
 ## 13. Target-level audit semantics
@@ -421,6 +452,12 @@ Each future automatic target execution must remain attributable to:
 - success/failure and failure stage;
 - returned source counts; and
 - persistence counts.
+
+For automatic executions, target identity, StopPointRef, and logical due
+bucket must be present in or durably associated with the target-level
+`Started` state before HTTP work begins. Completion updates enrich and close
+that state; they are not the first point at which target/bucket identity is
+established.
 
 The existing `Started`, `Succeeded`, and `Failed` lifecycle is retained. A
 target-level row may remain `Started` if the process is killed before the
@@ -594,19 +631,31 @@ target audit grain. Logging changes are deferred.
    through that public path would incorrectly audit the run as Manual.
 2. `ctl.uspGetMddRealtimeSamplingTarget` returns one target by slot ordinal;
    it cannot be reused unchanged as an all-due target selector.
-3. The current audit has target and bucket context but no future dispatcher
-   claim identity or explicit at-most-once target/bucket enforcement. That
-   protection must be designed before activation.
-4. The current health diagnostics use global five-minute snapshot assumptions
+3. The current audit-start contract is insufficient for the future
+   dispatcher. `ctl.uspStartMddCollectorRun` accepts only `StartedAtUtc`,
+   `SamplingMode`, `StopPointRef`, and `NumberOfResults`; it does not persist
+   `SamplingTargetId`, `SamplingTargetName`, or `SamplingBucketUtc`. In the
+   current automatic flow, `Start-MddCollectorRun` is called before
+   `ctl.uspGetMddRealtimeSamplingTarget` resolves the automatic target, and
+   those target/bucket fields are populated only later through
+   `ctl.uspCompleteMddCollectorRun`. A process termination before completion
+   can therefore leave a `Started` row without enough identity to correlate it
+   to the automatic `(SamplingTargetId, LogicalDueBucket)` claim. This
+   current incompatibility must be resolved in the future design; it is not
+   changed here.
+4. The current audit has no future dispatcher claim identity or explicit
+   at-most-once target/bucket enforcement. That protection must be designed
+   before activation.
+5. The current health diagnostics use global five-minute snapshot assumptions
    and legacy slot frequency. They will need a target-aware migration before
    tiered activation.
-5. The current wrapper log is invocation-oriented while future work is
+6. The current wrapper log is invocation-oriented while future work is
    target-oriented. A dispatcher summary is needed, but it must not replace
    target-level audit rows.
-6. The current 240-second assertion is safe for one Collector invocation but
+7. The current 240-second assertion is safe for one Collector invocation but
    cannot be applied to a future multi-target dispatcher as a single batch
    budget.
-7. Task Scheduler's observed non-overlap is not an application-level
+8. Task Scheduler's observed non-overlap is not an application-level
    duplicate guarantee. The future database-backed claim contract must remain
    authoritative if two invocations overlap.
 
@@ -619,10 +668,10 @@ The following work remains outside this architecture-only change:
 
 | Roadmap item | Deferred work |
 | --- | --- |
-| Item 5 | Physical configuration and claim/audit schema design, including the eventual representation of interval, stable phase, due bucket, and ownership/idempotency state. |
-| Item 6 | Exact due-target SQL, logical bucket selection, atomic claim behavior, restart handling, and dispatcher execution mechanics. |
+| Item 5 | Physical configuration and claim/audit schema design, including the eventual representation of interval, stable phase, due bucket, ownership/idempotency state, automatic target identity at audit start, and logical due-bucket identity at audit start or claim association. It must also define correlation between the durable claim and `ctl.MddCollectorRun`, including interrupted `Started`-row traceability. |
+| Item 6 | Exact due-target SQL, logical bucket selection, atomic claim behavior, claim/audit ordering, restart handling, and dispatcher execution mechanics. The physical design must preserve automatic target and bucket identity when a claimed execution terminates before completion. |
 | Item 7 | Quota enforcement, capacity policy, retry-attempt budgeting, and any admission/defer behavior. |
-| Item 8 | Collector internal automatic-target contract, multi-target orchestration, target isolation implementation, and dispatcher logging. |
+| Item 8 | Collector internal automatic-target contract, multi-target orchestration, target isolation implementation, and dispatcher logging. The execution contract must carry or associate automatic target identity and logical due bucket with the target audit state before HTTP work, and must not rely on completion to establish them. |
 | Item 9 | Seeding and controlled activation of the approved 50 stations. |
 | Downstream validation | Target-aware health SQL, analytics/reporting changes, Power BI changes, and operational rollout validation. |
 
@@ -670,7 +719,11 @@ demonstrated without changing historical data:
    alter automatic scheduling state.
 9. There is one target-level audit row per target collection execution,
    including logical due bucket, outcome, HTTP attempts, source counts, and
-   persistence counts. Interrupted work can remain `Started`.
+   persistence counts. If an automatic target process terminates after its
+   target/bucket claim but before completion, operations can still determine
+   the claimed `SamplingTargetId`, its `LogicalDueBucket`, the associated
+   `StopPointRef`, and the target execution/audit state without requiring a
+   successful completion update. Interrupted work can remain `Started`.
 10. The per-target 240-second execution constraint is preserved without being
     applied to the complete multi-target dispatcher lifetime.
 11. Actual HTTP attempts, including retry attempts, are observable separately
