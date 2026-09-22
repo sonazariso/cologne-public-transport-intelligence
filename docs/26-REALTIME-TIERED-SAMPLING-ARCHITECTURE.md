@@ -24,6 +24,28 @@ health-query change, an analytics change, or a Power BI change. The active
 seven-target / ten-slot configuration remains the production configuration
 until a later controlled rollout.
 
+## Pre-rollout data-quality baseline gate
+
+Before activating tiered 50-station sampling, the project must record a
+read-only baseline for:
+
+- `StaticCoverageMissingRate`;
+- `UnresolvedRate`;
+- `UsableStaticMatchRate`;
+- `TimingUnavailableTrips`;
+- `TimingUnavailableRate`; and
+- the `Timing Unavailable` root-cause distribution.
+
+`StaticCoverageMissing` and `Timing Unavailable` are separate concepts.
+`StaticCoverageMissing` is a realtime matching/data-coverage state. `Timing
+Unavailable` is evaluated only after a usable static match has entered the
+operational-outcome path. Absolute `TimingUnavailableTrips` should therefore
+not be compared between the seven-station and future 50-station panels without
+also comparing the denominator and rate. The same analysis must be repeated
+after the future 50-station pilot, including the static-match rates and the
+root-cause distribution. This gate does not define an arbitrary acceptable
+percentage threshold.
+
 ## 1. Current architecture
 
 The source and repository documentation describe the current runtime as:
