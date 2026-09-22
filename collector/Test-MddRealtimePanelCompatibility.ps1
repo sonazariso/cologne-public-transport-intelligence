@@ -615,53 +615,122 @@ function Compare-DatabaseSnapshots {
         $After
     )
 
-    if ($null -eq $Before -or $null -eq $After) {
-        return [PSCustomObject][ordered]@{
-            Status                         = "Unknown"
-            SamplingConfigurationUnchanged = $null
-            PersistenceTablesUnchanged     = $null
-            CollectorAuditRowsUnchanged    = $null
-            EnabledTargetCountUnchanged    = $null
+    $metricNames = @(
+        "SamplingTargetCount",
+        "SamplingSlotCount",
+        "EnabledSamplingTargetCount",
+        "StopObservationCount",
+        "SituationObservationCount",
+        "StopSituationLinkCount",
+        "CollectorRunCount"
+    )
+    $countDeltas = [System.Collections.Generic.List[object]]::new()
+
+    foreach ($metricName in $metricNames) {
+        $beforeValue = $null
+        $afterValue = $null
+        $delta = $null
+
+        if ($null -ne $Before -and $Before.PSObject.Properties.Name -contains $metricName) {
+            $beforeValue = $Before.$metricName
         }
+        if ($null -ne $After -and $After.PSObject.Properties.Name -contains $metricName) {
+            $afterValue = $After.$metricName
+        }
+        if ($null -ne $beforeValue -and $null -ne $afterValue) {
+            $delta = [int64]$afterValue - [int64]$beforeValue
+        }
+
+        $countDeltas.Add([PSCustomObject][ordered]@{
+                Metric = $metricName
+                Before = $beforeValue
+                After  = $afterValue
+                Delta  = $delta
+            }) | Out-Null
     }
 
-    $samplingTargetUnchanged = (
-        [int64]$Before.SamplingTargetCount -eq [int64]$After.SamplingTargetCount
-    )
-    $samplingSlotUnchanged = (
-        [int64]$Before.SamplingSlotCount -eq [int64]$After.SamplingSlotCount
-    )
-    $enabledTargetUnchanged = (
-        [int64]$Before.EnabledSamplingTargetCount -eq [int64]$After.EnabledSamplingTargetCount
-    )
-    $stopObservationUnchanged = (
-        [int64]$Before.StopObservationCount -eq [int64]$After.StopObservationCount
-    )
-    $situationObservationUnchanged = (
-        [int64]$Before.SituationObservationCount -eq [int64]$After.SituationObservationCount
-    )
-    $linkUnchanged = (
-        [int64]$Before.StopSituationLinkCount -eq [int64]$After.StopSituationLinkCount
-    )
-    $collectorRunUnchanged = (
-        [int64]$Before.CollectorRunCount -eq [int64]$After.CollectorRunCount
-    )
-
-    $databaseStatus = if ($samplingTargetUnchanged -and
-                          $samplingSlotUnchanged -and
-                          $enabledTargetUnchanged -and
-                          $stopObservationUnchanged -and
-                          $situationObservationUnchanged -and
-                          $linkUnchanged -and
-                          $collectorRunUnchanged) { "Unchanged" } else { "Changed" }
-
-    return [PSCustomObject][ordered]@{
-        Status                         = $databaseStatus
-        SamplingConfigurationUnchanged = ($samplingTargetUnchanged -and $samplingSlotUnchanged)
-        PersistenceTablesUnchanged     = ($stopObservationUnchanged -and $situationObservationUnchanged -and $linkUnchanged)
-        CollectorAuditRowsUnchanged    = $collectorRunUnchanged
-        EnabledTargetCountUnchanged    = $enabledTargetUnchanged
+    $countDeltaRows = $countDeltas.ToArray()
+    $baseResult = [ordered]@{
+        Status                             = "Unknown"
+        DatabaseSafetyStatus               = "Unknown"
+        SamplingConfigurationUnchanged     = $null
+        PersistenceTablesUnchanged         = $null
+        CollectorAuditRowsUnchanged        = $null
+        EnabledTargetCountUnchanged        = $null
+        BackgroundCollectorActivityDetected = $null
+        PersistenceCountValidationMessage  = "Before and after database snapshots were not both available; count-based database safety validation was unavailable."
+        CountDeltas                        = $countDeltaRows
     }
+
+    if ($null -eq $Before -or $null -eq $After) {
+        return [PSCustomObject]$baseResult
+    }
+
+    $missingDeltas = @(
+        $countDeltaRows | Where-Object {
+            $null -eq $_.Before -or $null -eq $_.After -or $null -eq $_.Delta
+        }
+    )
+    if ($missingDeltas.Count -gt 0) {
+        return [PSCustomObject]$baseResult
+    }
+
+    $samplingTargetDelta = [int64]$After.SamplingTargetCount - [int64]$Before.SamplingTargetCount
+    $samplingSlotDelta = [int64]$After.SamplingSlotCount - [int64]$Before.SamplingSlotCount
+    $enabledTargetDelta = [int64]$After.EnabledSamplingTargetCount - [int64]$Before.EnabledSamplingTargetCount
+    $stopObservationDelta = [int64]$After.StopObservationCount - [int64]$Before.StopObservationCount
+    $situationObservationDelta = [int64]$After.SituationObservationCount - [int64]$Before.SituationObservationCount
+    $linkDelta = [int64]$After.StopSituationLinkCount - [int64]$Before.StopSituationLinkCount
+    $collectorRunDelta = [int64]$After.CollectorRunCount - [int64]$Before.CollectorRunCount
+
+    $samplingConfigurationUnchanged = (
+        $samplingTargetDelta -eq 0 -and
+        $samplingSlotDelta -eq 0 -and
+        $enabledTargetDelta -eq 0
+    )
+    $persistenceTablesUnchanged = (
+        $stopObservationDelta -eq 0 -and
+        $situationObservationDelta -eq 0 -and
+        $linkDelta -eq 0
+    )
+    $collectorAuditRowsUnchanged = $collectorRunDelta -eq 0
+    $backgroundCollectorActivityDetected = $collectorRunDelta -gt 0
+
+    if (-not $samplingConfigurationUnchanged) {
+        $databaseSafetyStatus = "UnexpectedDatabaseChange"
+        $interpretation = "Sampling configuration changed during the validation window; this is a strict safety failure and is not treated as background Collector activity."
+    }
+    elseif (-not $persistenceTablesUnchanged -and $backgroundCollectorActivityDetected) {
+        $databaseSafetyStatus = "InconclusiveBackgroundCollectorActivity"
+        $interpretation = "The scheduled Collector ran during the validation window, so before/after shared-table counts cannot prove that no other process wrote data or that any change was caused by this compatibility test."
+    }
+    elseif (-not $persistenceTablesUnchanged) {
+        $databaseSafetyStatus = "UnexpectedDatabaseChange"
+        $interpretation = "Realtime persistence-table counts changed without a corresponding increase in ctl.MddCollectorRun; the source of the change requires investigation and is not automatically attributed to this compatibility test."
+    }
+    elseif ($backgroundCollectorActivityDetected) {
+        $databaseSafetyStatus = "InconclusiveBackgroundCollectorActivity"
+        $interpretation = "The scheduled Collector ran during the validation window; before/after shared-table counts cannot prove that no other process wrote data, even though the monitored staging-table counts were unchanged."
+    }
+    elseif (-not $collectorAuditRowsUnchanged) {
+        $databaseSafetyStatus = "UnexpectedDatabaseChange"
+        $interpretation = "ctl.MddCollectorRun changed without an increase; the source of the audit-count change requires investigation."
+    }
+    else {
+        $databaseSafetyStatus = "Unchanged"
+        $interpretation = "All monitored database counts remained unchanged during the validation window."
+    }
+
+    $baseResult["Status"] = $databaseSafetyStatus
+    $baseResult["DatabaseSafetyStatus"] = $databaseSafetyStatus
+    $baseResult["SamplingConfigurationUnchanged"] = $samplingConfigurationUnchanged
+    $baseResult["PersistenceTablesUnchanged"] = $persistenceTablesUnchanged
+    $baseResult["CollectorAuditRowsUnchanged"] = $collectorAuditRowsUnchanged
+    $baseResult["EnabledTargetCountUnchanged"] = ($enabledTargetDelta -eq 0)
+    $baseResult["BackgroundCollectorActivityDetected"] = $backgroundCollectorActivityDetected
+    $baseResult["PersistenceCountValidationMessage"] = $interpretation
+
+    return [PSCustomObject]$baseResult
 }
 
 function Write-MddCompatibilityReport {
@@ -803,30 +872,25 @@ function Write-MddCompatibilityReport {
     $lines.Add("") | Out-Null
     $lines.Add("## Database read-only safety validation") | Out-Null
     $lines.Add("") | Out-Null
+    $lines.Add("DatabaseSafetyStatus: $(ConvertTo-MarkdownCell $DatabaseSafety.DatabaseSafetyStatus)") | Out-Null
     $lines.Add("Sampling configuration unchanged: $(Format-ReportBoolean $DatabaseSafety.SamplingConfigurationUnchanged)") | Out-Null
     $lines.Add("Enabled-target count unchanged: $(Format-ReportBoolean $DatabaseSafety.EnabledTargetCountUnchanged)") | Out-Null
     $lines.Add("Realtime persistence tables unchanged: $(Format-ReportBoolean $DatabaseSafety.PersistenceTablesUnchanged)") | Out-Null
     $lines.Add("Collector-run audit rows unchanged: $(Format-ReportBoolean $DatabaseSafety.CollectorAuditRowsUnchanged)") | Out-Null
+    $lines.Add("Background scheduled Collector activity detected: $(Format-ReportBoolean $DatabaseSafety.BackgroundCollectorActivityDetected)") | Out-Null
+    $lines.Add("Persistence-count validation interpretation: $(ConvertTo-MarkdownCell $DatabaseSafety.PersistenceCountValidationMessage)") | Out-Null
     if (-not [string]::IsNullOrWhiteSpace($DatabaseSafetyError)) {
         $lines.Add("Database safety count validation was unavailable: $(ConvertTo-MarkdownCell $DatabaseSafetyError)") | Out-Null
     }
-    if ($null -ne $DatabaseBefore -and $null -ne $DatabaseAfter) {
-        $lines.Add("") | Out-Null
-        $lines.Add("| Read-only count | Before | After |") | Out-Null
-        $lines.Add("| --- | ---: | ---: |") | Out-Null
-        foreach ($propertyName in @(
-            "SamplingTargetCount",
-            "SamplingSlotCount",
-            "EnabledSamplingTargetCount",
-            "StopObservationCount",
-            "SituationObservationCount",
-            "StopSituationLinkCount",
-            "CollectorRunCount"
-        )) {
-            $lines.Add(
-                "| $propertyName | $($DatabaseBefore.$propertyName) | $($DatabaseAfter.$propertyName) |"
-            ) | Out-Null
-        }
+    $lines.Add("") | Out-Null
+    $lines.Add('The compatibility-test code path did not call realtime persistence functions and performed no realtime persistence.') | Out-Null
+    $lines.Add("") | Out-Null
+    $lines.Add("| Metric | Before | After | Delta |") | Out-Null
+    $lines.Add("| --- | ---: | ---: | ---: |") | Out-Null
+    foreach ($deltaRow in $DatabaseSafety.CountDeltas) {
+        $lines.Add(
+            "| $($deltaRow.Metric) | $(ConvertTo-MarkdownCell $deltaRow.Before) | $(ConvertTo-MarkdownCell $deltaRow.After) | $(ConvertTo-MarkdownCell $deltaRow.Delta) |"
+        ) | Out-Null
     }
 
     $lines.Add("") | Out-Null
