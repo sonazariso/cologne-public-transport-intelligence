@@ -124,7 +124,13 @@ SELECT
         WHEN IsRailReplacementService = 0 THEN ModeKey END)
         AS RegularModeCount,
     COUNT_BIG(DISTINCT AgencyKey) AS AgencyCount,
-    COUNT_BIG(DISTINCT StopKey) AS UsedStopPositionCount
+    COUNT_BIG(DISTINCT CASE
+        WHEN IsRailReplacementService = 0 THEN AgencyKey END)
+        AS RegularAgencyCount,
+    COUNT_BIG(DISTINCT StopKey) AS UsedStopPositionCount,
+    COUNT_BIG(DISTINCT CASE
+        WHEN IsRailReplacementService = 0 THEN StopKey END)
+        AS RegularUsedStopPositionCount
 INTO #PatternStats
 FROM #StationEventPattern
 GROUP BY ParentStationKey;
@@ -164,6 +170,8 @@ SELECT
     pattern_stats.ModeCount,
     pattern_stats.RegularModeCount,
     pattern_stats.AgencyCount,
+    pattern_stats.RegularAgencyCount,
+    pattern_stats.RegularUsedStopPositionCount,
     occurrence_stats.ScheduledStopEventOccurrenceCount,
     occurrence_stats.RegularScheduledStopEventOccurrenceCount,
     occurrence_stats.ActiveServiceDateCount,
@@ -224,17 +232,17 @@ SELECT
         (ORDER BY RegularModeCount))
         AS ModeDiversityPercentile,
     CONVERT(DECIMAL(12, 8), PERCENT_RANK() OVER
-        (ORDER BY AgencyCount))
+        (ORDER BY RegularAgencyCount))
         AS AgencyDiversityPercentile,
     CONVERT(DECIMAL(12, 8), PERCENT_RANK() OVER
-        (ORDER BY UsedStopPositionCount))
+        (ORDER BY RegularUsedStopPositionCount))
         AS StopPositionPercentile,
     CONVERT(DECIMAL(10, 2), ROUND(
           40.0 * PERCENT_RANK() OVER (ORDER BY RegularScheduledStopEventOccurrenceCount)
         + 25.0 * PERCENT_RANK() OVER (ORDER BY RegularServedRouteCount)
         + 15.0 * PERCENT_RANK() OVER (ORDER BY RegularModeCount)
-        + 10.0 * PERCENT_RANK() OVER (ORDER BY AgencyCount)
-        + 10.0 * PERCENT_RANK() OVER (ORDER BY UsedStopPositionCount), 2))
+        + 10.0 * PERCENT_RANK() OVER (ORDER BY RegularAgencyCount)
+        + 10.0 * PERCENT_RANK() OVER (ORDER BY RegularUsedStopPositionCount), 2))
         AS BaseImportanceScore
 INTO #ScoredStations
 FROM #EligibleWithTargets AS eligible;
@@ -437,6 +445,8 @@ SELECT
     ranked.SevRouteCount,
     ranked.ModeCount,
     ranked.RegularModeCount,
+    ranked.RegularAgencyCount,
+    ranked.RegularUsedStopPositionCount,
     ranked.ModeNames,
     ranked.RegularModeNames,
     ranked.SevModeNames,
@@ -474,6 +484,8 @@ SELECT
     ranked.AverageScheduledStopEventsPerActiveDay,
     ranked.RegularServedRouteCount,
     ranked.RegularModeCount,
+    ranked.RegularAgencyCount,
+    ranked.RegularUsedStopPositionCount,
     ranked.ModeNames,
     ranked.AgencyCount,
     ranked.UsedStopPositionCount,
@@ -504,6 +516,8 @@ SELECT
     balanced.AverageScheduledStopEventsPerActiveDay,
     balanced.RegularServedRouteCount,
     balanced.RegularModeCount,
+    balanced.RegularAgencyCount,
+    balanced.RegularUsedStopPositionCount,
     balanced.ModeNames,
     balanced.AgencyCount,
     balanced.UsedStopPositionCount,
@@ -540,10 +554,7 @@ SELECT
     balanced.LongitudeBand
 FROM #PanelFinal AS balanced
 ORDER BY
-    balanced.ProposedTier,
-    balanced.BaseImportanceScore DESC,
-    balanced.ParentStationName ASC,
-    balanced.ParentStationKey ASC;
+    balanced.RecommendedRank ASC;
 
 -- O5_RESULT GeographicAnchorAudit
 WITH GeographicCells AS
@@ -599,6 +610,8 @@ SELECT
     ranked.RegularScheduledStopEventOccurrenceCount,
     ranked.RegularServedRouteCount,
     ranked.RegularModeCount,
+    ranked.RegularAgencyCount,
+    ranked.RegularUsedStopPositionCount,
     ranked.ModeNames,
     ranked.AgencyCount,
     ranked.UsedStopPositionCount,
@@ -687,16 +700,22 @@ ORDER BY membership.PanelName;
 
 -- O5_RESULT CurrentEnabledTargetRankings
 SELECT
-    sampling_target.SamplingTargetId AS ExistingSamplingTargetId,
-    sampling_target.StopPointRef AS ParentStationId,
+    sampling_target.SamplingTargetId,
+    sampling_target.StopPointRef,
+    sampling_target.TargetName,
     COALESCE(ranked.ParentStationName, sampling_target.TargetName)
         AS ParentStationName,
-    ranked.BaseImportanceScore,
     ranked.RawImportanceRank,
+    panel.RecommendedRank,
+    ranked.BaseImportanceScore,
     CONVERT(BIT, CASE WHEN panel.ParentStationKey IS NULL
                       THEN 0 ELSE 1 END) AS IsInRecommendedTop50,
+    sampling_target.SamplingTargetId AS ExistingSamplingTargetId,
+    sampling_target.StopPointRef AS ParentStationId,
     ranked.RegularServedRouteCount,
     ranked.RegularModeCount,
+    ranked.RegularAgencyCount,
+    ranked.RegularUsedStopPositionCount,
     ranked.RegularScheduledStopEventOccurrenceCount,
     sampling_target.TargetName AS ExistingSamplingTargetName
 FROM ctl.MddRealtimeSamplingTarget AS sampling_target
@@ -706,6 +725,30 @@ LEFT JOIN #PanelFinal AS panel
     ON panel.ParentStationKey = ranked.ParentStationKey
 WHERE sampling_target.IsEnabled = 1
 ORDER BY sampling_target.SamplingTargetId;
+
+-- O5_RESULT CurrentEnabledRealtimeTargetSummary
+SELECT
+    (SELECT COUNT_BIG(*)
+     FROM ctl.MddRealtimeSamplingTarget
+     WHERE IsEnabled = 1) AS CurrentEnabledRealtimeTargetCount,
+    (SELECT COUNT_BIG(*)
+     FROM ctl.MddRealtimeSamplingTarget AS sampling_target
+     WHERE sampling_target.IsEnabled = 1
+       AND EXISTS
+       (
+           SELECT 1
+           FROM #PanelFinal AS panel
+           WHERE panel.ParentStationId = sampling_target.StopPointRef
+       )) AS ExistingRealtimeTargetsInFinal50,
+    (SELECT COUNT_BIG(*)
+     FROM ctl.MddRealtimeSamplingTarget AS sampling_target
+     WHERE sampling_target.IsEnabled = 1
+       AND NOT EXISTS
+       (
+           SELECT 1
+           FROM #PanelFinal AS panel
+           WHERE panel.ParentStationId = sampling_target.StopPointRef
+       )) AS EnabledRealtimeTargetsMissingFromFinal50;
 
 -- O5_RESULT QuotaProjection
 WITH TierInputs AS
@@ -784,13 +827,26 @@ SELECT
     (SELECT COUNT_BIG(*) FROM #PanelFinal) AS FinalRecommendedCount,
     (SELECT COUNT_BIG(*) FROM #PanelFinal) AS FinalPanelCount,
     (SELECT COUNT_BIG(DISTINCT ParentStationKey) FROM #PanelFinal)
+        AS DistinctParentStationKeyCount,
+    (SELECT COUNT_BIG(DISTINCT ParentStationId) FROM #PanelFinal)
+        AS DistinctParentStationIdCount,
+    (SELECT COUNT_BIG(DISTINCT ParentStationKey) FROM #PanelFinal)
         AS FinalDistinctParentStationKeyCount,
+    (SELECT COUNT_BIG(*) FROM #PanelFinal WHERE ProposedTier = N'Tier A')
+        AS TierACount,
     (SELECT COUNT_BIG(*) FROM #PanelFinal WHERE ProposedTier = N'Tier A')
         AS TierAStationCount,
     (SELECT COUNT_BIG(*) FROM #PanelFinal WHERE ProposedTier = N'Tier B')
+        AS TierBCount,
+    (SELECT COUNT_BIG(*) FROM #PanelFinal WHERE ProposedTier = N'Tier B')
         AS TierBStationCount,
     (SELECT COUNT_BIG(*) FROM #PanelFinal WHERE ProposedTier = N'Tier C')
+        AS TierCCount,
+    (SELECT COUNT_BIG(*) FROM #PanelFinal WHERE ProposedTier = N'Tier C')
         AS TierCStationCount,
+    (SELECT COUNT_BIG(*) FROM #PanelFinal
+     WHERE NULLIF(LTRIM(RTRIM(ParentStationId)), N'') IS NULL)
+        AS InvalidParentStationIdCount,
     (SELECT COUNT_BIG(*) FROM #PanelFinal
      WHERE NULLIF(LTRIM(RTRIM(ParentStationId)), N'') IS NULL)
         AS FinalNullOrBlankParentStationIdCount,
@@ -799,7 +855,19 @@ SELECT
          FROM #PanelFinal
          GROUP BY ParentStationId
          HAVING COUNT_BIG(*) > 1) AS duplicate_ids)
+        AS DuplicateParentStationIdCount,
+    (SELECT COUNT_BIG(*) FROM
+        (SELECT ParentStationId
+         FROM #PanelFinal
+         GROUP BY ParentStationId
+         HAVING COUNT_BIG(*) > 1) AS duplicate_ids)
         AS FinalDuplicateParentStationIdValueCount,
+    (SELECT COUNT_BIG(*) FROM
+        (SELECT ParentStationKey
+         FROM #PanelFinal
+         GROUP BY ParentStationKey
+         HAVING COUNT_BIG(*) > 1) AS duplicate_keys)
+        AS DuplicateParentStationKeyCount,
     (SELECT COUNT_BIG(*) FROM
         (SELECT ParentStationKey
          FROM #PanelFinal
@@ -813,14 +881,37 @@ SELECT
          FROM analytics.vwParentStationScheduleProfile AS schedule_profile
          WHERE schedule_profile.ParentStationKey = panel.ParentStationKey
            AND schedule_profile.IsUsedInCurrentSchedule = 1
+     )) AS InvalidScheduleActiveStationCount,
+    (SELECT COUNT_BIG(*) FROM #PanelFinal AS panel
+     WHERE NOT EXISTS
+     (
+         SELECT 1
+         FROM analytics.vwParentStationScheduleProfile AS schedule_profile
+         WHERE schedule_profile.ParentStationKey = panel.ParentStationKey
+           AND schedule_profile.IsUsedInCurrentSchedule = 1
      )) AS FinalUnusedScheduleViolationCount,
     (SELECT COUNT_BIG(*) FROM #PanelFinal
+     WHERE RegularScheduledStopEventOccurrenceCount IS NULL
+        OR RegularScheduledStopEventOccurrenceCount <= 0)
+        AS InvalidRegularScheduledServiceCount,
+    (SELECT COUNT_BIG(*) FROM #PanelFinal
      WHERE Latitude IS NULL OR Longitude IS NULL) AS FinalMissingCoordinateCount,
+    (SELECT COUNT_BIG(*) FROM #PanelFinal
+     WHERE Latitude IS NULL OR Longitude IS NULL) AS InvalidCoordinateCount,
+    (SELECT MIN(BaseImportanceScore) FROM #PanelFinal)
+        AS MinFinalBaseImportanceScore,
+    (SELECT MAX(BaseImportanceScore) FROM #PanelFinal)
+        AS MaxFinalBaseImportanceScore,
+    (SELECT COUNT_BIG(*) FROM #PanelFinal
+     WHERE BaseImportanceScore < 0 OR BaseImportanceScore > 100
+        OR BaseImportanceScore IS NULL) AS InvalidFinalScoreCount,
     (SELECT COUNT_BIG(*) FROM #PanelFinal AS panel
      WHERE panel.IsGeographicAnchor = 1
        AND (panel.RawImportanceRank > 100
             OR panel.ServiceVolumePercentile < CONVERT(DECIMAL(12, 8), 0.25)))
         AS InvalidGeographicAnchorCount,
+    (SELECT COUNT_BIG(*) FROM #PanelFinal
+     WHERE IsGeographicAnchor = 1) AS GeographicAnchorCount,
     (SELECT COUNT_BIG(*) FROM #PanelFinal AS panel
      WHERE panel.IsGeographicAnchor = 1
        AND panel.RawImportanceRank > 100)
@@ -832,18 +923,40 @@ SELECT
     (SELECT COUNT_BIG(*) FROM #RankedGeoStations
      WHERE BaseImportanceScore < 0 OR BaseImportanceScore > 100)
         AS ScoreOutsideZeroTo100Count,
+    (SELECT COUNT_BIG(*)
+     FROM ctl.MddRealtimeSamplingTarget
+     WHERE IsEnabled = 1) AS CurrentEnabledRealtimeTargetCount,
+    (SELECT COUNT_BIG(*)
+     FROM ctl.MddRealtimeSamplingTarget AS sampling_target
+     WHERE sampling_target.IsEnabled = 1
+       AND EXISTS
+       (
+           SELECT 1
+           FROM #PanelFinal AS panel
+           WHERE panel.ParentStationId = sampling_target.StopPointRef
+       )) AS ExistingRealtimeTargetsInFinal50,
+    (SELECT COUNT_BIG(*)
+     FROM ctl.MddRealtimeSamplingTarget AS sampling_target
+     WHERE sampling_target.IsEnabled = 1
+       AND NOT EXISTS
+       (
+           SELECT 1
+           FROM #PanelFinal AS panel
+           WHERE panel.ParentStationId = sampling_target.StopPointRef
+       )) AS EnabledRealtimeTargetsMissingFromFinal50,
     (SELECT COUNT_BIG(*) FROM #RankedStations)
       - (SELECT COUNT_BIG(DISTINCT RawImportanceRank) FROM #RankedStations)
         AS RawRankingDuplicateCount,
     (SELECT COUNT_BIG(*) FROM #PanelFinal)
       - (SELECT COUNT_BIG(DISTINCT RecommendedRank) FROM #PanelFinal)
         AS BalancedRankingDuplicateCount,
-    N'Yes — score inputs are RegularScheduledStopEventOccurrenceCount, RegularServedRouteCount, RegularModeCount, AgencyCount, and UsedStopPositionCount; SEV metrics are diagnostic only'
+    N'Yes — score inputs are RegularScheduledStopEventOccurrenceCount, RegularServedRouteCount, RegularModeCount, RegularAgencyCount, and RegularUsedStopPositionCount; SEV-influenced all-service metrics are diagnostic only'
         AS SevExclusionConfirmation,
     N'Read-only analysis: permanent database objects, warehouse/staging/working data, and sampling configuration were not modified'
         AS MutationScope,
     CASE WHEN (SELECT COUNT_BIG(*) FROM #PanelFinal) = @PanelSize
            AND (SELECT COUNT_BIG(DISTINCT ParentStationKey) FROM #PanelFinal) = @PanelSize
+           AND (SELECT COUNT_BIG(DISTINCT ParentStationId) FROM #PanelFinal) = @PanelSize
            AND (SELECT COUNT_BIG(*) FROM
                 (SELECT ParentStationKey
                  FROM #PanelFinal
@@ -856,6 +969,9 @@ SELECT
                  FROM #PanelFinal
                  GROUP BY ParentStationId
                  HAVING COUNT_BIG(*) > 1) AS duplicate_ids) = 0
+           AND (SELECT COUNT_BIG(*) FROM #PanelFinal
+                WHERE RegularScheduledStopEventOccurrenceCount IS NULL
+                   OR RegularScheduledStopEventOccurrenceCount <= 0) = 0
            AND (SELECT COUNT_BIG(*) FROM #PanelFinal
                 WHERE ProposedTier = N'Tier A') = 10
            AND (SELECT COUNT_BIG(*) FROM #PanelFinal
@@ -877,10 +993,192 @@ SELECT
                 )) = 0
            AND (SELECT COUNT_BIG(*) FROM #PanelFinal
                 WHERE Latitude IS NULL OR Longitude IS NULL) = 0
+           AND (SELECT COUNT_BIG(*) FROM #PanelFinal
+                WHERE BaseImportanceScore < 0 OR BaseImportanceScore > 100
+                   OR BaseImportanceScore IS NULL) = 0
            AND (SELECT COUNT_BIG(*) FROM #PanelFinal AS panel
                 WHERE panel.IsGeographicAnchor = 1
                   AND (panel.RawImportanceRank > 100
                        OR panel.ServiceVolumePercentile < CONVERT(DECIMAL(12, 8), 0.25))) = 0
            AND (SELECT COUNT_BIG(*) FROM #RankedGeoStations
                 WHERE BaseImportanceScore < 0 OR BaseImportanceScore > 100) = 0
+           AND NOT EXISTS
+           (
+               SELECT 1
+               FROM ctl.MddRealtimeSamplingTarget AS sampling_target
+               WHERE sampling_target.IsEnabled = 1
+                 AND NOT EXISTS
+                 (
+                     SELECT 1
+                     FROM #PanelFinal AS panel
+                     WHERE panel.ParentStationId = sampling_target.StopPointRef
+                 )
+           )
          THEN N'PASS' ELSE N'REVIEW' END AS ValidationStatus;
+
+-- O5_RESULT BadischeAlleeValidation
+SELECT
+    CONVERT(BIT, CASE WHEN badische.ParentStationKey IS NULL
+                      THEN 0 ELSE 1 END) AS IsBadischeAlleeInFinal50,
+    badische.ParentStationName,
+    badische.RawImportanceRank,
+    badische.BaseImportanceScore,
+    badische.IsGeographicAnchor,
+    CASE
+        WHEN badische.ParentStationKey IS NULL
+            THEN N'Not present in Final 50'
+        WHEN badische.IsGeographicAnchor = 1
+            THEN N'Geographic coverage anchor'
+        WHEN badische.ServiceVolumePercentile >= CONVERT(DECIMAL(12, 8), 0.75)
+             AND badische.RegularModeCount >= 2
+            THEN N'High service volume / multimodal'
+        WHEN badische.ServiceVolumePercentile >= CONVERT(DECIMAL(12, 8), 0.75)
+            THEN N'High service volume'
+        WHEN badische.RouteDiversityPercentile >= CONVERT(DECIMAL(12, 8), 0.75)
+            THEN N'High route diversity'
+        WHEN badische.ModeDiversityPercentile >= CONVERT(DECIMAL(12, 8), 0.75)
+            THEN N'High mode diversity'
+        ELSE N'High composite importance score'
+    END AS SelectionReason,
+    CASE
+        WHEN badische.ParentStationKey IS NULL
+            THEN N'Not selected'
+        WHEN badische.IsGeographicAnchor = 1
+            THEN N'Present as a geographic anchor under ServiceVolumePercentile >= 0.25 and RawImportanceRank <= 100'
+        ELSE N'Present through deterministic importance-fill selection, not as a geographic anchor'
+    END AS PresenceExplanation
+FROM (VALUES (1)) AS one_row(Dummy)
+OUTER APPLY
+(
+    SELECT TOP (1)
+        panel.ParentStationKey,
+        panel.ParentStationName,
+        panel.RawImportanceRank,
+        panel.BaseImportanceScore,
+        panel.IsGeographicAnchor,
+        panel.ServiceVolumePercentile,
+        panel.RegularModeCount,
+        panel.RouteDiversityPercentile,
+        panel.ModeDiversityPercentile
+    FROM #PanelFinal AS panel
+    WHERE panel.ParentStationName = N'Köln Badische Allee'
+    ORDER BY panel.RecommendedRank
+) AS badische;
+
+-- O5_RESULT FinalPanelValidationOffenders
+;WITH DuplicateKeys AS
+(
+    SELECT ParentStationKey
+    FROM #PanelFinal
+    GROUP BY ParentStationKey
+    HAVING COUNT_BIG(*) > 1
+),
+DuplicateIds AS
+(
+    SELECT ParentStationId
+    FROM #PanelFinal
+    GROUP BY ParentStationId
+    HAVING COUNT_BIG(*) > 1
+)
+SELECT
+    CONVERT(NVARCHAR(64), N'InvalidScheduleActiveStation') AS ValidationIssue,
+    CONVERT(NVARCHAR(100), panel.ParentStationKey) AS ParentStationKey,
+    CONVERT(NVARCHAR(200), panel.ParentStationId) AS ParentStationId,
+    CONVERT(NVARCHAR(200), panel.ParentStationName) AS ParentStationName,
+    CONVERT(NVARCHAR(100), panel.RawImportanceRank) AS RawImportanceRank,
+    CONVERT(NVARCHAR(100), panel.BaseImportanceScore) AS BaseImportanceScore,
+    CONVERT(NVARCHAR(300), N'Not used in current schedule') AS Details
+FROM #PanelFinal AS panel
+WHERE NOT EXISTS
+(
+    SELECT 1
+    FROM analytics.vwParentStationScheduleProfile AS schedule_profile
+    WHERE schedule_profile.ParentStationKey = panel.ParentStationKey
+      AND schedule_profile.IsUsedInCurrentSchedule = 1
+)
+UNION ALL
+SELECT
+    CONVERT(NVARCHAR(64), N'InvalidRegularScheduledService'),
+    CONVERT(NVARCHAR(100), panel.ParentStationKey),
+    CONVERT(NVARCHAR(200), panel.ParentStationId),
+    CONVERT(NVARCHAR(200), panel.ParentStationName),
+    CONVERT(NVARCHAR(100), panel.RawImportanceRank),
+    CONVERT(NVARCHAR(100), panel.BaseImportanceScore),
+    CONVERT(NVARCHAR(300), N'RegularScheduledStopEventOccurrenceCount <= 0 or NULL')
+FROM #PanelFinal AS panel
+WHERE panel.RegularScheduledStopEventOccurrenceCount IS NULL
+   OR panel.RegularScheduledStopEventOccurrenceCount <= 0
+UNION ALL
+SELECT
+    CONVERT(NVARCHAR(64), N'InvalidParentStationId'),
+    CONVERT(NVARCHAR(100), panel.ParentStationKey),
+    CONVERT(NVARCHAR(200), panel.ParentStationId),
+    CONVERT(NVARCHAR(200), panel.ParentStationName),
+    CONVERT(NVARCHAR(100), panel.RawImportanceRank),
+    CONVERT(NVARCHAR(100), panel.BaseImportanceScore),
+    CONVERT(NVARCHAR(300), N'ParentStationId is NULL or blank')
+FROM #PanelFinal AS panel
+WHERE NULLIF(LTRIM(RTRIM(panel.ParentStationId)), N'') IS NULL
+UNION ALL
+SELECT
+    CONVERT(NVARCHAR(64), N'InvalidCoordinate'),
+    CONVERT(NVARCHAR(100), panel.ParentStationKey),
+    CONVERT(NVARCHAR(200), panel.ParentStationId),
+    CONVERT(NVARCHAR(200), panel.ParentStationName),
+    CONVERT(NVARCHAR(100), panel.RawImportanceRank),
+    CONVERT(NVARCHAR(100), panel.BaseImportanceScore),
+    CONVERT(NVARCHAR(300), N'Latitude or Longitude is NULL')
+FROM #PanelFinal AS panel
+WHERE panel.Latitude IS NULL OR panel.Longitude IS NULL
+UNION ALL
+SELECT
+    CONVERT(NVARCHAR(64), N'InvalidFinalScore'),
+    CONVERT(NVARCHAR(100), panel.ParentStationKey),
+    CONVERT(NVARCHAR(200), panel.ParentStationId),
+    CONVERT(NVARCHAR(200), panel.ParentStationName),
+    CONVERT(NVARCHAR(100), panel.RawImportanceRank),
+    CONVERT(NVARCHAR(100), panel.BaseImportanceScore),
+    CONVERT(NVARCHAR(300), N'BaseImportanceScore is outside 0-100 or NULL')
+FROM #PanelFinal AS panel
+WHERE panel.BaseImportanceScore < 0
+   OR panel.BaseImportanceScore > 100
+   OR panel.BaseImportanceScore IS NULL
+UNION ALL
+SELECT
+    CONVERT(NVARCHAR(64), N'InvalidGeographicAnchor'),
+    CONVERT(NVARCHAR(100), panel.ParentStationKey),
+    CONVERT(NVARCHAR(200), panel.ParentStationId),
+    CONVERT(NVARCHAR(200), panel.ParentStationName),
+    CONVERT(NVARCHAR(100), panel.RawImportanceRank),
+    CONVERT(NVARCHAR(100), panel.BaseImportanceScore),
+    CONVERT(NVARCHAR(300), N'Anchor is outside Raw Top 100 or below ServiceVolumePercentile 0.25')
+FROM #PanelFinal AS panel
+WHERE panel.IsGeographicAnchor = 1
+  AND (panel.RawImportanceRank > 100
+       OR panel.ServiceVolumePercentile < CONVERT(DECIMAL(12, 8), 0.25))
+UNION ALL
+SELECT
+    CONVERT(NVARCHAR(64), N'DuplicateParentStationKey'),
+    CONVERT(NVARCHAR(100), panel.ParentStationKey),
+    CONVERT(NVARCHAR(200), panel.ParentStationId),
+    CONVERT(NVARCHAR(200), panel.ParentStationName),
+    CONVERT(NVARCHAR(100), panel.RawImportanceRank),
+    CONVERT(NVARCHAR(100), panel.BaseImportanceScore),
+    CONVERT(NVARCHAR(300), N'ParentStationKey occurs more than once')
+FROM #PanelFinal AS panel
+INNER JOIN DuplicateKeys AS duplicate_key
+    ON duplicate_key.ParentStationKey = panel.ParentStationKey
+UNION ALL
+SELECT
+    CONVERT(NVARCHAR(64), N'DuplicateParentStationId'),
+    CONVERT(NVARCHAR(100), panel.ParentStationKey),
+    CONVERT(NVARCHAR(200), panel.ParentStationId),
+    CONVERT(NVARCHAR(200), panel.ParentStationName),
+    CONVERT(NVARCHAR(100), panel.RawImportanceRank),
+    CONVERT(NVARCHAR(100), panel.BaseImportanceScore),
+    CONVERT(NVARCHAR(300), N'ParentStationId occurs more than once')
+FROM #PanelFinal AS panel
+INNER JOIN DuplicateIds AS duplicate_id
+    ON duplicate_id.ParentStationId = panel.ParentStationId
+    OR (duplicate_id.ParentStationId IS NULL AND panel.ParentStationId IS NULL)
+ORDER BY ValidationIssue, ParentStationName, ParentStationKey;
