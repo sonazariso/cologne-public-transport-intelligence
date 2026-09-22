@@ -194,7 +194,10 @@ function Read-ApprovedBaseline {
         throw "Approved baseline changed and must be reviewed first. Expected SHA256 $ExpectedSha256 but found $actualSha256. No MDD/TRIAS request was made."
     }
 
-    $content = Get-Content -LiteralPath $Path -Raw
+    $content = [System.IO.File]::ReadAllText(
+        $Path,
+        [System.Text.Encoding]::UTF8
+    )
     $rowPattern = '(?m)^\|\s*(\d+)\s*\|\s*([^|\r\n]+)\s*\|\s*([^|\r\n]+)\s*\|\s*(Tier\s+[ABC])\s*\|\s*([^|\r\n]+)\s*\|\s*$'
     $rowMatches = [System.Text.RegularExpressions.Regex]::Matches($content, $rowPattern)
 
