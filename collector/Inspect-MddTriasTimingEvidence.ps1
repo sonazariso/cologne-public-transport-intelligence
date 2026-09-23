@@ -360,6 +360,7 @@ function Add-JsonInventoryObservation {
         $projection = Get-ParserProjectionForPath -Path $Path
         $Inventory[$Path] = [ordered]@{
             JsonPath                 = $Path
+            EvidenceClass            = Get-FocusEvidenceClass -Path $Path
             ObservedValueType        = @()
             NonNullOccurrenceCount   = 0
             NullOccurrenceCount      = 0
@@ -454,8 +455,15 @@ function Get-FocusEvidenceClass {
         return "ActualOrRecordedTiming"
     }
 
+    # A property name is not sufficient to establish cancellation semantics.
+    # Keep service/request status and event-level status/cancellation names
+    # neutral until the raw value and structure establish their meaning.
+    if ($Path -match '(?i)serviceDelivery\.status$') {
+        return "ServiceOrRequestStatusNamedField"
+    }
+
     if ($Path -match '(?i)(cancel|cancelled|cancellation|status)') {
-        return "DeterministicStatusOrCancellation"
+        return "StatusOrCancellationNamedField"
     }
 
     if ($Path -match '(?i)delay') {
@@ -520,6 +528,37 @@ function Get-EventRelatedLeafEvidence {
     return @($evidence.ToArray())
 }
 
+function Test-ClearAlternativeArrivalTimingEvidence {
+    param(
+        [Parameter(Mandatory = $true)]
+        $Evidence
+    )
+
+    if ($Evidence.CurrentParserPersists -ne "NO" -or $Evidence.EvidenceClass -ne "ActualOrRecordedTiming") {
+        return $false
+    }
+
+    return $Evidence.JsonPath -match '(?i)(actual|recorded|measured).*arrival.*(time|timestamp)|arrival.*(actual|recorded|measured).*(time|timestamp)'
+}
+
+function Test-AmbiguousNonPersistedTimingEvidence {
+    param(
+        [Parameter(Mandatory = $true)]
+        $Evidence
+    )
+
+    if ($Evidence.CurrentParserPersists -ne "NO" -or
+        $Evidence.EvidenceClass -notin @("ActualOrRecordedTiming", "DelayEvidence")) {
+        return $false
+    }
+
+    if ($Evidence.JsonPath -match '(?i)departure') {
+        return $false
+    }
+
+    return -not (Test-ClearAlternativeArrivalTimingEvidence -Evidence $Evidence)
+}
+
 function Get-MissingArrivalEvents {
     param(
         $RawJson,
@@ -559,15 +598,24 @@ function Get-MissingArrivalEvents {
         $journeyState = Get-JsonPropertyState -Object $serviceState.Value -PropertyName "journeyRef"
         $eventPath = "$.serviceDelivery.deliveryPayload.stopEventResponse.stopEventResult[*].stopEvent"
         $eventEvidence = @(Get-EventRelatedLeafEvidence -Value $event -Path $eventPath)
-        $additionalEvidence = @(
+        $additionalNonPersistedTimingEvidence = @(
             $eventEvidence | Where-Object {
                 $_.CurrentParserPersists -eq "NO" -and
                 $_.EvidenceClass -in @(
                     "DepartureTiming",
                     "ActualOrRecordedTiming",
-                    "DeterministicStatusOrCancellation",
                     "DelayEvidence"
                 )
+            }
+        )
+        $potentialAlternativeArrivalTimingEvidence = @(
+            $eventEvidence | Where-Object {
+                Test-ClearAlternativeArrivalTimingEvidence -Evidence $_
+            }
+        )
+        $ambiguousNonPersistedTimingEvidence = @(
+            $eventEvidence | Where-Object {
+                Test-AmbiguousNonPersistedTimingEvidence -Evidence $_
             }
         )
 
@@ -579,16 +627,20 @@ function Get-MissingArrivalEvents {
             ReturnedStopPointRef                      = Get-SanitizedJsonValue -Value (Get-SourceScalarValue $stopPointState.Value) -Path "stopPointRef"
             JourneyRef                                = Get-SanitizedJsonValue -Value (Get-SourceScalarValue $journeyState.Value) -Path "journeyRef"
             ArrivalEstimatePresence                  = if (-not $estimateState.Exists) { "ABSENT" } else { "NULL" }
-            AdditionalRelevantTimingStatusFieldCount = $additionalEvidence.Count
+            AdditionalNonPersistedTimingEvidenceCount = $additionalNonPersistedTimingEvidence.Count
             DepartureTimingEvidence                  = @($eventEvidence | Where-Object { $_.EvidenceClass -eq "DepartureTiming" })
             ActualOrRecordedTimingEvidence           = @($eventEvidence | Where-Object { $_.EvidenceClass -eq "ActualOrRecordedTiming" })
-            DeterministicStatusOrCancellationEvidence = @($eventEvidence | Where-Object { $_.EvidenceClass -eq "DeterministicStatusOrCancellation" })
+            StatusOrCancellationNamedFieldEvidence   = @($eventEvidence | Where-Object { $_.EvidenceClass -eq "StatusOrCancellationNamedField" })
+            ServiceOrRequestStatusNamedFieldEvidence = @($eventEvidence | Where-Object { $_.EvidenceClass -eq "ServiceOrRequestStatusNamedField" })
             DelayEvidence                            = @($eventEvidence | Where-Object { $_.EvidenceClass -eq "DelayEvidence" })
+            PotentialAlternativeArrivalTimingEvidence = @($potentialAlternativeArrivalTimingEvidence)
+            AmbiguousNonPersistedTimingEvidenceCount = $ambiguousNonPersistedTimingEvidence.Count
+            AmbiguousNonPersistedTimingEvidence       = @($ambiguousNonPersistedTimingEvidence)
             OtherRelatedFieldEvidence                = @($eventEvidence | Where-Object { $_.EvidenceClass -eq "OtherRelatedField" })
             ParserMatched                            = $false
             ParserEstimatedArrivalUtc                = "<not compared>"
-            ParserDiscardedRelevantTimingStatusFieldCount = 0
-            ParserDiscardedRelevantTimingStatusFields = @()
+            ParserDiscardedRelevantTimingFieldCount  = 0
+            ParserDiscardedRelevantTimingFields      = @()
             ScheduledStopPosition                    = "NOT_DETERMINED"
             ScheduledStopPositionEvidence            = "The raw probe does not establish a dated static GTFS trip/stop sequence; no First/Intermediate/Last inference was made."
         }) | Out-Null
@@ -782,20 +834,14 @@ try {
                     $rawEstimateState = Get-JsonPropertyState -Object $eventArrival -PropertyName "estimatedTime"
                     if ((-not $rawEstimateState.Exists) -or ($null -eq $rawEstimateState.Value)) {
                         $discarded = @($rawEvidence | Where-Object {
-                            $_.CurrentParserPersists -eq "NO" -and
-                            $_.EvidenceClass -in @(
-                                "DepartureTiming",
-                                "ActualOrRecordedTiming",
-                                "DeterministicStatusOrCancellation",
-                                "DelayEvidence"
-                            )
+                            Test-ClearAlternativeArrivalTimingEvidence -Evidence $_
                         })
 
                         foreach ($finding in @($missingArrivalEvents | Where-Object { $_.ResultIndex -eq $resultIndex -and $_.TargetStopPointRef -eq $target.StopPointRef })) {
                             $finding.ParserMatched = $true
                             $finding.ParserEstimatedArrivalUtc = Get-SanitizedJsonValue -Value $parserStop.EstimatedArrivalUtc -Path "EstimatedArrivalUtc"
-                            $finding.ParserDiscardedRelevantTimingStatusFieldCount = $discarded.Count
-                            $finding.ParserDiscardedRelevantTimingStatusFields = @($discarded)
+                            $finding.ParserDiscardedRelevantTimingFieldCount = $discarded.Count
+                            $finding.ParserDiscardedRelevantTimingFields = @($discarded)
                         }
                     }
                 }
@@ -842,14 +888,27 @@ $tableComparison = Compare-InspectionTableCounts -Before $databaseBefore -After 
 $missingEventCount = $missingArrivalEvents.Count
 $missingEventWithDiscardedEvidenceCount = @(
     $missingArrivalEvents | Where-Object {
-        $_.ParserDiscardedRelevantTimingStatusFieldCount -gt 0
+        $_.ParserDiscardedRelevantTimingFieldCount -gt 0
+    }
+).Count
+$missingEventWithAmbiguousEvidenceCount = @(
+    $missingArrivalEvents | Where-Object {
+        $_.AmbiguousNonPersistedTimingEvidenceCount -gt 0
+    }
+).Count
+$missingEventWithUnmatchedAlternativeEvidenceCount = @(
+    $missingArrivalEvents | Where-Object {
+        $_.PotentialAlternativeArrivalTimingEvidence.Count -gt 0 -and -not $_.ParserMatched
     }
 ).Count
 
 $parserDiscardsConclusion = if ($missingEventCount -eq 0) {
     "INCONCLUSIVE"
 }
-elseif ($parserFailureCount -gt 0 -and $missingEventWithDiscardedEvidenceCount -eq 0) {
+elseif ($parserFailureCount -gt 0 -or $missingEventWithUnmatchedAlternativeEvidenceCount -gt 0) {
+    "INCONCLUSIVE"
+}
+elseif ($missingEventWithDiscardedEvidenceCount -eq 0 -and $missingEventWithAmbiguousEvidenceCount -gt 0) {
     "INCONCLUSIVE"
 }
 elseif ($missingEventWithDiscardedEvidenceCount -eq 0) {
@@ -887,8 +946,10 @@ $report = [ordered]@{
     SafetyNotes                                = @(
         "Raw response content was inspected in memory only; no raw response file was written.",
         "No collector persistence function, collector-run audit insertion, sampling configuration write, or application-table write was called.",
-        "EvidenceClass labels are property-path inventory labels only; no timing, cancellation, or status semantics are inferred from similar names.",
+        "StatusOrCancellationNamedField and ServiceOrRequestStatusNamedField labels are property-path inventory labels only; no cancellation semantics are inferred from a field name or generic service/request status.",
+        "Status/cancellation-named fields are reported separately and cannot by themselves establish CollectorParserDiscardsRelevantTiming.",
         "Departure timing is reported separately and is not treated as arrival timing.",
+        "Only clearly identified non-persisted actual/recorded/measured arrival timing can establish parser-discarded relevant timing; ambiguous non-persisted timing evidence yields INCONCLUSIVE.",
         "Actual/recorded fields, if present, are evidence only and are not integrated into delay semantics."
     )
 }
