@@ -1,11 +1,12 @@
 # StaticCoverageMissing Root-Cause Investigation
 
-Status: DIAGNOSTIC COMPLETE
+Status: DIAGNOSTIC COMPLETE; REMEDIATION VALIDATED
 
 This document records the read-only investigation requested by
 prompts/05-OptimSql/o4-7.md. Instructions in that prompt were treated as the
-analysis specification; this document does not authorize a production matching
-change.
+analysis specification; that original investigation did not authorize a
+production matching change. The separate remediation and validation sections
+below record the subsequent v132 work.
 
 ## Execution record
 
@@ -25,6 +26,8 @@ objects, MatchStatus logic, Power BI logic, sampling, or timing logic.
 
 Timing Unavailable was intentionally outside this investigation. No conclusion
 below should be read as a Timing Unavailable analysis.
+
+## Original v131 root-cause investigation
 
 ## Current matching chain
 
@@ -444,6 +447,11 @@ This section records the production matching correction separately from the
 completed v131 investigation above. The historical findings and their original
 counts are preserved unchanged.
 
+The v131 investigation diagnosed the RouteShortName-only defect. The v132
+remediation changed the production matching view, and the focused frozen-scope
+validator below measures that semantic change independently of the later
+append-only live population.
+
 ### Execution record
 
 | Field | Value |
@@ -455,6 +463,7 @@ counts are preserved unchanged.
 | Focused validator | `sql/03-working/05-validate-static-coverage-route-long-fallback.sql` |
 | Validator execution | 2026-09-23 09:30:48–09:31:28 UTC |
 | Root-cause rerun | 2026-09-23 09:36:17.6027703 UTC |
+| v132 probe validation rerun | 2026-09-23 10:11:16.1611203 UTC; current status reconciliation `PASS` over 7,737 rows |
 | Operational fact refresh | Not executed |
 
 ### Exact matching change
@@ -490,11 +499,27 @@ No LineRef/RouteId, JourneyRef/TripId, OperatorRef/AgencyId, DirectionRef,
 PtMode, RailSubmode, TripHeadsign, manual alias, SEV-prefix, ICE/IC, or other
 unproven identifier strategy was added.
 
+## Post-remediation validation
+
+The focused validator is the authoritative causal measurement of the v132
+matching change. The later root-cause rerun is a separate live snapshot over
+an append-only observation population.
+
 ### Frozen-scope status migration and validation
 
 The focused validator froze 7,697 observation keys for both implementations.
 The v131 short-name-only baseline and the deployed implementation reconciled as
 follows:
+
+The primary remediation metric is the frozen-scope comparison, not the
+cross-time live snapshot below:
+
+| Frozen-scope metric | Count / rate |
+| --- | ---: |
+| Legacy short-name-only `StaticCoverageMissing` | 1,742 |
+| New validated `StaticCoverageMissing` | 999 |
+| Frozen-scope reduction | 743 |
+| Frozen-scope reduction rate | 42.652124% |
 
 | Legacy v131 status | New status | ObservationCount |
 | --- | --- | ---: |
@@ -543,15 +568,30 @@ Fallback-covered rows that remained unresolved were grouped as:
 
 These names are reported outcomes, not hardcoded acceptance criteria.
 
+### RouteName consistency check
+
+The fallback-selected `RouteKey` is the existing warehouse `RouteKey` from
+`FactScheduledStopEvent`; the analytics `RouteLabels` logic consumes that same
+key from `dw.DimRoute`, so no identifier remapping is introduced. The current
+analytics rule uses populated `RouteShortName`, then `RouteLongName` when the
+short name is empty, and `RouteId` only as the final fallback. Accordingly, the
+validated fallback RouteKeys resolve to the canonical analytics names `RE1
+(RRX)`, `RE5 (RRX)`, and `RE6 (RRX)` for the corresponding fallback RouteIds
+`de:nrw:re1:`, `de:nrw:re5:`, and `de:nrw:re6:`. No RouteName logic or analytics
+view was changed.
+
 ### Root-cause rerun results
 
 The required root-cause script was rerun after deployment. Its status
-reconciliation was `PASS` and it completed with no SQL errors. Because the
-realtime source is append-only, five observations arrived between the frozen
-validator and this rerun; therefore the live rerun total is 7,702 rather than
-7,697.
+reconciliation was `PASS` and it completed with no SQL errors. The table below
+preserves the earlier 09:36 UTC live snapshot used for the remediation impact
+record. The later 10:11 UTC validation-only rerun also returned `PASS`, with
+7,737 current observations: 6,499 exact, 143 parent-station, 1,005
+`StaticCoverageMissing`, and 90 unresolved. Because the realtime source is
+append-only, these live populations are not expected to equal the frozen 7,697
+observations.
 
-| Metric | v131 diagnostic baseline | Post-remediation rerun |
+| Metric | v131 live diagnostic snapshot | Recorded post-remediation live snapshot |
 | --- | ---: | ---: |
 | Total observations | 7,622 | 7,702 |
 | ExactStopMatch | 5,693 | 6,470 |
@@ -560,16 +600,17 @@ validator and this rerun; therefore the live rerun total is 7,702 rather than
 | StaticCoverageMissing rate | 22.658095% | 12.970657% |
 | Unresolved | 81 | 90 |
 
-StaticCoverageMissing therefore fell by 728 observations, a 42.154024%
-reduction against the v131 diagnostic baseline. The diagnostic's legacy
-single-branch condition probe reports `REVIEW` after this change because it is
-looking for the old expression; the result-set population reconciliation and
-the focused validator are the acceptance checks for this semantic fix.
+This separate cross-time live snapshot comparison shows a reduction of 728
+observations, or 42.154024%; it is not the exact causal measurement of the
+matching change. The frozen validator above is the primary remediation metric:
+1,742 legacy frozen `StaticCoverageMissing` observations became 999, a
+743-observation / 42.652124% reduction.
 
 ### High-volume line results
 
-The before values are the v131 affected-population counts. The after values
-are the current root-cause rerun counts; small ICE/IC increases reflect the
+The before values are the v131 live affected-population counts. The after
+values are the later live root-cause rerun counts; this is a cross-time view,
+not the frozen causal measurement. Small ICE/IC increases reflect the
 append-only observations noted above.
 
 | LineName | StaticCoverageMissing before | StaticCoverageMissing after |
@@ -607,12 +648,19 @@ execution was changed in this remediation.
 
 ## Changed files
 
-This investigation adds only:
+### Original diagnostic investigation
 
 - sql/05-analytics/08-analyze-static-coverage-missing-root-cause.sql
 - docs/28-STATIC-COVERAGE-MISSING-ROOT-CAUSE.md
 
-The SQL is reusable and read-only: it uses SELECT statements, CTEs,
-session-scoped temporary tables, and temporary indexes. No permanent DML,
-permanent DDL, stored procedure, collector, warehouse, Power BI, sampling, or
-timing change was made.
+### Production remediation
+
+- sql/03-working/03-create-cologne-realtime-working-layer.sql
+- sql/03-working/05-validate-static-coverage-route-long-fallback.sql
+- docs/28-STATIC-COVERAGE-MISSING-ROOT-CAUSE.md
+
+The original diagnostic SQL remains reusable and read-only: it uses SELECT
+statements, CTEs, session-scoped temporary tables, and temporary indexes. The
+remediation changed the working-layer matching view as documented above; no
+collector, warehouse data/procedure, Power BI, sampling, or timing behavior
+was changed.

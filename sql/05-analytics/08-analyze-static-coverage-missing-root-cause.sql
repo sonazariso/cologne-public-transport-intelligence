@@ -736,6 +736,79 @@ DECLARE @CurrentMatchViewDefinition NVARCHAR(MAX) = OBJECT_DEFINITION
     OBJECT_ID(N'wrk.vwCologneRealtimeTripMatch', N'V')
 );
 
+/*
+    The remediation replaced the former single-branch route-coverage check
+    with an explicit primary/fallback architecture. Inspect a few stable
+    architecture markers instead of depending on one complete SQL fragment.
+*/
+DECLARE @CurrentMatchViewDefinitionSearch NVARCHAR(MAX) = UPPER
+(
+    REPLACE
+    (
+        REPLACE
+        (
+            REPLACE
+            (
+                REPLACE
+                (
+                    ISNULL(@CurrentMatchViewDefinition, N''),
+                    NCHAR(13),
+                    N''
+                ),
+                NCHAR(10),
+                N''
+            ),
+            NCHAR(9),
+            N''
+        ),
+        N' ',
+        N''
+    )
+);
+
+DECLARE @HasRouteShortNamePrimaryCoverage BIT =
+    CASE
+        WHEN CHARINDEX(N'SHORTNAMECOVERAGE', @CurrentMatchViewDefinitionSearch) > 0
+         AND CHARINDEX(N'SHORTNAMECANDIDATE', @CurrentMatchViewDefinitionSearch) > 0
+         AND CHARINDEX(N'ROUTESHORTNAME', @CurrentMatchViewDefinitionSearch) > 0
+            THEN 1
+        ELSE 0
+    END;
+
+DECLARE @HasRouteLongNameFallbackCoverage BIT =
+    CASE
+        WHEN CHARINDEX(N'LONGNAMECOVERAGE', @CurrentMatchViewDefinitionSearch) > 0
+         AND CHARINDEX(N'LONGNAMEFALLBACKCANDIDATE', @CurrentMatchViewDefinitionSearch) > 0
+         AND CHARINDEX(N'ROUTELONGNAME', @CurrentMatchViewDefinitionSearch) > 0
+            THEN 1
+        ELSE 0
+    END;
+
+DECLARE @HasFallbackShortNameGate BIT =
+    CASE
+        WHEN CHARINDEX(N'HASSHORTNAMECOVERAGE=0', @CurrentMatchViewDefinitionSearch) > 0
+         AND CHARINDEX(N'HASLONGNAMECOVERAGE=1', @CurrentMatchViewDefinitionSearch) > 0
+            THEN 1
+        ELSE 0
+    END;
+
+DECLARE @HasStaticMissingBothCoverageGate BIT =
+    CASE
+        WHEN CHARINDEX
+             (
+                 N'ISNULL(ROUTE_PATH.HASSHORTNAMECOVERAGE,0)=0',
+                 @CurrentMatchViewDefinitionSearch
+             ) > 0
+         AND CHARINDEX
+             (
+                 N'ISNULL(ROUTE_PATH.HASLONGNAMECOVERAGE,0)=0',
+                 @CurrentMatchViewDefinitionSearch
+             ) > 0
+         AND CHARINDEX(N'STATICCOVERAGEMISSING', @CurrentMatchViewDefinitionSearch) > 0
+            THEN 1
+        ELSE 0
+    END;
+
 SELECT
     SYSUTCDATETIME() AS AnalysisRunAtUtc,
     MIN(observation.ObservedAtUtc) AS ObservationDateTimeMinUtc,
@@ -792,8 +865,23 @@ SELECT
         AS SourceObject,
     CASE WHEN @CurrentMatchViewDefinition IS NOT NULL THEN N'PASS' ELSE N'REVIEW' END
         AS ViewDefinitionAvailable,
-    CASE WHEN CHARINDEX(N'WHEN rc.NormalizedRouteName IS NULL', @CurrentMatchViewDefinition) > 0
-         THEN N'PASS' ELSE N'REVIEW' END AS StaticCoverageMissingConditionFound,
+    CASE WHEN @HasRouteShortNamePrimaryCoverage = 1
+         THEN N'PASS' ELSE N'REVIEW' END AS RouteShortNamePrimaryCoverageFound,
+    CASE WHEN @HasRouteLongNameFallbackCoverage = 1
+         THEN N'PASS' ELSE N'REVIEW' END AS RouteLongNameFallbackCoverageFound,
+    CASE WHEN @HasFallbackShortNameGate = 1
+         THEN N'PASS' ELSE N'REVIEW' END AS FallbackRequiresNoRouteShortNameCoverage,
+    CASE WHEN @HasStaticMissingBothCoverageGate = 1
+         THEN N'PASS' ELSE N'REVIEW' END
+        AS StaticCoverageMissingRequiresNeitherCoverage,
+    CASE
+        WHEN @HasRouteShortNamePrimaryCoverage = 1
+         AND @HasRouteLongNameFallbackCoverage = 1
+         AND @HasFallbackShortNameGate = 1
+         AND @HasStaticMissingBothCoverageGate = 1
+            THEN N'PASS'
+        ELSE N'REVIEW'
+    END AS ValidatedPrimaryFallbackArchitecture,
     CASE WHEN CHARINDEX(N'REPLACE(r.LineName, N'' '', N'''')', @CurrentMatchViewDefinition) > 0
          THEN N'PASS' ELSE N'REVIEW' END AS RouteNameNormalizationFound,
     SUBSTRING
@@ -802,7 +890,7 @@ SELECT
         NULLIF(CHARINDEX(N'CASE', @CurrentMatchViewDefinition), 0),
         1200
     ) AS CurrentMatchConditionExcerpt,
-    N'RouteCoverage is sourced from wrk.vwCologneServingRoute; the production branch is WHEN rc.NormalizedRouteName IS NULL THEN StaticCoverageMissing.'
+    N'Validated architecture: RouteShortName is primary; RouteLongName is fallback only when no RouteShortName coverage exists; StaticCoverageMissing requires neither supported coverage path.'
         AS VerifiedCondition
 ;
 
