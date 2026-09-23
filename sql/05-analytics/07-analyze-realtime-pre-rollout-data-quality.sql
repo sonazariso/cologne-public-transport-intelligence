@@ -511,10 +511,15 @@ SELECT
     SUM(CONVERT(BIGINT, CASE WHEN observation.MatchStatus IN
                              (N'ExactStopMatch', N'ParentStationFallback')
                              THEN 1 ELSE 0 END)) AS UsableStaticMatchCount,
-    COUNT_BIG
     (
-        DISTINCT CASE WHEN observation.MatchStatus = N'StaticCoverageMissing'
-                      THEN observation.LineName END
+        SELECT COUNT_BIG(*)
+        FROM
+        (
+            SELECT DISTINCT
+                affected_line.LineName
+            FROM #MatchObservation AS affected_line
+            WHERE affected_line.MatchStatus = N'StaticCoverageMissing'
+        ) AS distinct_affected_line
     ) AS StaticCoverageMissingDistinctLineNameCount,
     COUNT_BIG
     (
@@ -579,7 +584,44 @@ SELECT
                 source_observation.ObservedAtUtc = fact_boundary.LastObservedAtUtc
                 AND source_observation.ObservationKey > fact_boundary.LastObservationKey
            )
-    ) AS LiveUsableObservationsBeyondFactBoundaryCount,
+    ) AS LiveUsableObservationsBeyondExistingFactBoundaryCount,
+    (
+        SELECT COUNT_BIG(*)
+        FROM #UsableMatchObservation AS source_observation
+        LEFT JOIN #FactBoundary AS fact_boundary
+            ON fact_boundary.ServiceDate = source_observation.ServiceDate
+           AND fact_boundary.ScheduledStopEventKey
+                = source_observation.ScheduledStopEventKey
+        WHERE fact_boundary.ServiceDate IS NULL
+          AND fact_boundary.ScheduledStopEventKey IS NULL
+    ) AS LiveUsableObservationsWithoutFactBoundaryCount,
+    (
+        (
+            SELECT COUNT_BIG(*)
+            FROM #UsableMatchObservation AS source_observation
+            INNER JOIN #FactBoundary AS fact_boundary
+                ON fact_boundary.ServiceDate = source_observation.ServiceDate
+               AND fact_boundary.ScheduledStopEventKey
+                    = source_observation.ScheduledStopEventKey
+            WHERE source_observation.ObservedAtUtc > fact_boundary.LastObservedAtUtc
+               OR
+               (
+                    source_observation.ObservedAtUtc = fact_boundary.LastObservedAtUtc
+                    AND source_observation.ObservationKey > fact_boundary.LastObservationKey
+               )
+        )
+        +
+        (
+            SELECT COUNT_BIG(*)
+            FROM #UsableMatchObservation AS source_observation
+            LEFT JOIN #FactBoundary AS fact_boundary
+                ON fact_boundary.ServiceDate = source_observation.ServiceDate
+               AND fact_boundary.ScheduledStopEventKey
+                    = source_observation.ScheduledStopEventKey
+            WHERE fact_boundary.ServiceDate IS NULL
+              AND fact_boundary.ScheduledStopEventKey IS NULL
+        )
+    ) AS LiveUsableObservationsNotRepresentedInFactCount,
     N'Root-cause and observation-density source aggregates use only usable observations at or before the matching fact row boundary ordered by ObservedAtUtc, ObservationKey.'
         AS BoundaryRule;
 
@@ -900,6 +942,38 @@ CROSS APPLY
 CREATE UNIQUE CLUSTERED INDEX UX_StaticCoverageMissingLineClassification
     ON #StaticCoverageMissingLineClassification (RealtimeLineName);
 
+/* 8.1 Reconcile the complete distinct affected-line classification. */
+SELECT
+    (
+        SELECT COUNT_BIG(*)
+        FROM
+        (
+            SELECT DISTINCT
+                observation.LineName
+            FROM #MatchObservation AS observation
+            WHERE observation.MatchStatus = N'StaticCoverageMissing'
+        ) AS distinct_affected_line
+    ) AS StaticCoverageMissingDistinctLineNameCount,
+    COUNT_BIG(*) AS CompleteDistinctAffectedLineClassificationCount,
+    CASE
+        WHEN
+        (
+            SELECT COUNT_BIG(*)
+            FROM
+            (
+                SELECT DISTINCT
+                    observation.LineName
+                FROM #MatchObservation AS observation
+                WHERE observation.MatchStatus = N'StaticCoverageMissing'
+            ) AS distinct_affected_line
+        ) = COUNT_BIG(*)
+            THEN N'PASS'
+        ELSE N'REVIEW'
+    END AS StaticCoverageMissingDistinctLineClassificationReconciliationStatus,
+    N'Complete classification is one row per distinct realtime LineName, including one NULL group when NULL LineName observations exist.'
+        AS ReconciliationDefinition
+FROM #StaticCoverageMissingLineClassification AS classification;
+
 /* 8. Full distinct affected-line classification and category counts. */
 SELECT
     classification.RealtimeLineName,
@@ -931,23 +1005,41 @@ WITH Categories AS
             (2, N'NotFoundInLoadedGtfsUnderCurrentRule'),
             (3, N'UnexpectedCurrentRuleInconsistency')
     ) AS category(CategoryOrder, CategoryName)
-), Counts AS
+), LineCounts AS
 (
     SELECT
         classification.DiagnosticCategory,
         COUNT_BIG(*) AS DistinctRealtimeLineCount,
         SUM(classification.StaticCoverageMissingObservationCount)
-            AS StaticCoverageMissingObservationCount,
-        SUM(classification.AffectedStopPointCount) AS AffectedStopPointCount
+            AS StaticCoverageMissingObservationCount
     FROM #StaticCoverageMissingLineClassification AS classification
+    GROUP BY classification.DiagnosticCategory
+), StopCounts AS
+(
+    SELECT
+        classification.DiagnosticCategory,
+        COUNT_BIG(DISTINCT observation.StopPointRef)
+            AS AffectedStopPointCount
+    FROM #StaticCoverageMissingLineClassification AS classification
+    INNER JOIN #MatchObservation AS observation
+        ON observation.MatchStatus = N'StaticCoverageMissing'
+       AND
+       (
+            classification.RealtimeLineName = observation.LineName
+            OR
+            (
+                classification.RealtimeLineName IS NULL
+                AND observation.LineName IS NULL
+            )
+       )
     GROUP BY classification.DiagnosticCategory
 )
 SELECT
     categories.CategoryName AS DiagnosticCategory,
-    ISNULL(counts.DistinctRealtimeLineCount, 0) AS DistinctRealtimeLineCount,
-    ISNULL(counts.StaticCoverageMissingObservationCount, 0)
+    ISNULL(line_counts.DistinctRealtimeLineCount, 0) AS DistinctRealtimeLineCount,
+    ISNULL(line_counts.StaticCoverageMissingObservationCount, 0)
         AS StaticCoverageMissingObservationCount,
-    ISNULL(counts.AffectedStopPointCount, 0) AS AffectedStopPointCount,
+    ISNULL(stop_counts.AffectedStopPointCount, 0) AS AffectedStopPointCount,
     CASE
         WHEN
         (
@@ -955,15 +1047,17 @@ SELECT
             FROM #StaticCoverageMissingLineClassification
         ) =
         (
-            SELECT ISNULL(SUM(counts_inner.DistinctRealtimeLineCount), 0)
-            FROM Counts AS counts_inner
+            SELECT ISNULL(SUM(line_counts_inner.DistinctRealtimeLineCount), 0)
+            FROM LineCounts AS line_counts_inner
         )
         THEN N'PASS'
         ELSE N'REVIEW'
     END AS CategoryReconciliationStatus
 FROM Categories AS categories
-LEFT JOIN Counts AS counts
-    ON counts.DiagnosticCategory = categories.CategoryName
+LEFT JOIN LineCounts AS line_counts
+    ON line_counts.DiagnosticCategory = categories.CategoryName
+LEFT JOIN StopCounts AS stop_counts
+    ON stop_counts.DiagnosticCategory = categories.CategoryName
 ORDER BY categories.CategoryOrder;
 
 /* Top affected lines, retained separately from the complete classification. */
