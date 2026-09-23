@@ -5,10 +5,12 @@
       Diagnose the current production matching chain without changing
       MatchStatus, Collector behavior, warehouse semantics, or sampling.
 
-    The current production condition is preserved as evidence:
-      wrk.vwCologneRealtimeTripMatch returns StaticCoverageMissing when the
-      normalized realtime line name is not present in the normalized
-      RouteShortName set derived from wrk.vwCologneServingRoute.
+    The historical baseline condition is preserved as evidence:
+      before the v135 residual correction, wrk.vwCologneRealtimeTripMatch
+      returned StaticCoverageMissing when the normalized realtime line name
+      was not present in the normalized RouteShortName set derived from
+      wrk.vwCologneServingRoute. The focused section below separately
+      audits the deterministic SEV replacement path now present in production.
 
     All tables in this script are session-scoped temporary tables.  The
     schedule-independent candidate tests deliberately do not join LineName
@@ -34,6 +36,8 @@ DROP TABLE IF EXISTS #IdentifierEvidence;
 DROP TABLE IF EXISTS #DiagnosticObservation;
 DROP TABLE IF EXISTS #RootCause;
 DROP TABLE IF EXISTS #StrategyObservation;
+DROP TABLE IF EXISTS #O4_11_FrozenResidual;
+DROP TABLE IF EXISTS #O4_11_FocusedRootCause;
 
 /* 1. Materialize the current production match view once. */
 SELECT
@@ -86,6 +90,26 @@ CREATE UNIQUE CLUSTERED INDEX UX_Observation_ObservationKey
 CREATE INDEX IX_Observation_Status_Stop_Time
     ON #Observation (MatchStatus, StopPointRef, ScheduledArrivalSecondsLocal, ServiceDateLocal)
     INCLUDE (LineName, LineRef, JourneyRef, StaticParentStationId, TimetabledArrivalUtc);
+
+/*
+    Focused v135 freeze. The historical #StaticCoverageMissing population
+    below intentionally remains broad for the preserved v131/v132 report.
+    The #O4_11_FrozenResidual population is the authoritative task-scoped
+    residual and must be captured before a production matching correction is
+    deployed.
+*/
+DECLARE @O4_11_FrozenAtUtc DATETIME2(7) = SYSUTCDATETIME();
+
+SELECT
+    observation.*,
+    @O4_11_FrozenAtUtc AS FrozenAtUtc
+INTO #O4_11_FrozenResidual
+FROM #Observation AS observation
+WHERE observation.IsInAnalyticalTransportScope = 1
+  AND observation.MatchStatus = N'StaticCoverageMissing';
+
+CREATE UNIQUE CLUSTERED INDEX UX_O4_11_FrozenResidual_ObservationKey
+    ON #O4_11_FrozenResidual (ObservationKey);
 
 SELECT
     observation.*
@@ -1843,6 +1867,270 @@ LEFT JOIN LineRefList AS ref_list
    AND ref_list.RootCauseCategory = root_cause.RootCauseCategory
 GROUP BY root_cause.LineName, ref_list.LineRefs, root_cause.RootCauseCategory
 ORDER BY root_cause.LineName, root_cause.RootCauseCategory;
+
+/*
+    30. Focused v135 residual analysis.
+
+    The result sets below are authoritative for the residual task. They use
+    the frozen in-scope population captured near the beginning of this batch,
+    while the historical broad technical analysis above is preserved for
+    comparison. A unique route-independent schedule candidate is not promoted
+    to a recoverable root cause unless the observed SEV suffix also maps to a
+    curated Cologne-serving replacement route and exactly one active candidate
+    remains on that route.
+*/
+;WITH O4_11_Normalized AS
+(
+    SELECT
+        frozen.ObservationKey,
+        frozen.LineName,
+        CASE
+            WHEN UPPER(LTRIM(RTRIM(COALESCE(frozen.LineName, N''))))
+                     LIKE N'SEV%'
+            THEN NULLIF
+                 (
+                     UPPER
+                     (
+                         REPLACE
+                         (
+                             SUBSTRING
+                             (
+                                 LTRIM(RTRIM(frozen.LineName)),
+                                 4,
+                                 4000
+                             ),
+                             N' ',
+                             N''
+                         )
+                     ),
+                     N''
+                 )
+        END AS ServiceReplacementLineName
+    FROM #O4_11_FrozenResidual AS frozen
+),
+O4_11_RouteEvidence AS
+(
+    SELECT DISTINCT
+        normalized.ObservationKey,
+        serving_route.RouteId
+    FROM O4_11_Normalized AS normalized
+    INNER JOIN #ServingRoute AS serving_route
+        ON UPPER(REPLACE(serving_route.RouteShortName, N' ', N'')) =
+           normalized.ServiceReplacementLineName
+       AND serving_route.ModeGroup = N'Replacement Service'
+       AND serving_route.ModeDetail = N'Rail Replacement Bus (SEV)'
+    WHERE normalized.ServiceReplacementLineName IS NOT NULL
+),
+O4_11_CandidateEvidence AS
+(
+    SELECT DISTINCT
+        normalized.ObservationKey,
+        candidate.ScheduledStopEventKey,
+        candidate.RouteId
+    FROM O4_11_Normalized AS normalized
+    INNER JOIN #ScheduleCandidate AS candidate
+        ON candidate.ObservationKey = normalized.ObservationKey
+    INNER JOIN #ServingRoute AS serving_route
+        ON serving_route.RouteId COLLATE DATABASE_DEFAULT =
+           candidate.RouteId COLLATE DATABASE_DEFAULT
+       AND UPPER(REPLACE(serving_route.RouteShortName, N' ', N'')) =
+           normalized.ServiceReplacementLineName
+       AND serving_route.ModeGroup = N'Replacement Service'
+       AND serving_route.ModeDetail = N'Rail Replacement Bus (SEV)'
+    WHERE normalized.ServiceReplacementLineName IS NOT NULL
+),
+O4_11_RouteSummary AS
+(
+    SELECT
+        evidence.ObservationKey,
+        COUNT_BIG(DISTINCT evidence.RouteId) AS ReplacementRouteCount
+    FROM O4_11_RouteEvidence AS evidence
+    GROUP BY evidence.ObservationKey
+),
+O4_11_CandidateSummary AS
+(
+    SELECT
+        evidence.ObservationKey,
+        COUNT_BIG(DISTINCT evidence.ScheduledStopEventKey)
+            AS ReplacementCandidateCount
+    FROM O4_11_CandidateEvidence AS evidence
+    GROUP BY evidence.ObservationKey
+)
+SELECT
+    frozen.ObservationKey,
+    frozen.LineName,
+    frozen.LineRef,
+    frozen.JourneyRef,
+    frozen.OperatorRef,
+    frozen.StopPointRef,
+    frozen.StopName,
+    frozen.AnalyticalParentStationId,
+    frozen.AnalyticalParentStationName,
+    frozen.TimetabledArrivalUtc,
+    frozen.EstimatedArrivalUtc,
+    frozen.PtMode,
+    frozen.RailSubmode,
+    frozen.MatchStatus,
+    COALESCE(schedule_summary.ScheduleCandidateCount, 0)
+        AS ScheduleCandidateCount,
+    COALESCE(route_summary.ReplacementRouteCount, 0)
+        AS ReplacementRouteCount,
+    COALESCE(candidate_summary.ReplacementCandidateCount, 0)
+        AS ReplacementCandidateCount,
+    CASE
+        WHEN frozen.LineName = N'885'
+            THEN N'StaticRouteOutsideCologneButRealtimeIdentityContradictory'
+        WHEN frozen.LineName = N'188'
+            THEN N'GenuineStaticFeedCoverageGap'
+        WHEN frozen.LineName = N'885E'
+         AND COALESCE(schedule_summary.ScheduleCandidateCount, 0) > 1
+            THEN N'AmbiguousStaticCandidate'
+        WHEN frozen.LineName LIKE N'SEV%'
+          OR frozen.LineName LIKE N'BSV%'
+        THEN
+            CASE
+                WHEN COALESCE(candidate_summary.ReplacementCandidateCount, 0) = 1
+                    THEN N'DeterministicallyRecoverableMatchingDefect'
+                WHEN COALESCE(route_summary.ReplacementRouteCount, 0) > 0
+                    THEN N'StaticCoverageExistsButNoUniqueActiveEvent'
+                ELSE N'InsufficientEvidence_ExternalStaticFeedIdentityRequired'
+            END
+        WHEN COALESCE(schedule_summary.ScheduleCandidateCount, 0) > 1
+            THEN N'AmbiguousStaticCandidate'
+        WHEN COALESCE(schedule_summary.ScheduleCandidateCount, 0) = 0
+            THEN N'GenuineStaticFeedCoverageGap'
+        ELSE N'InsufficientEvidence'
+    END AS RootCauseCategory
+INTO #O4_11_FocusedRootCause
+FROM #O4_11_FrozenResidual AS frozen
+LEFT JOIN #ScheduleSummary AS schedule_summary
+    ON schedule_summary.ObservationKey = frozen.ObservationKey
+LEFT JOIN O4_11_RouteSummary AS route_summary
+    ON route_summary.ObservationKey = frozen.ObservationKey
+LEFT JOIN O4_11_CandidateSummary AS candidate_summary
+    ON candidate_summary.ObservationKey = frozen.ObservationKey;
+
+CREATE UNIQUE CLUSTERED INDEX UX_O4_11_FocusedRootCause_ObservationKey
+    ON #O4_11_FocusedRootCause (ObservationKey);
+
+SELECT
+    MIN(FrozenAtUtc) AS FrozenBaselineAtUtc,
+    COUNT_BIG(*) AS FrozenInScopeStaticCoverageMissingCount,
+    COUNT_BIG(DISTINCT LineName) AS DistinctLineNameCount,
+    COUNT_BIG(DISTINCT LineRef) AS DistinctLineRefCount,
+    COUNT_BIG(DISTINCT StopPointRef) AS DistinctStopPointRefCount,
+    COUNT_BIG(DISTINCT AnalyticalParentStationId)
+        AS DistinctParentStationCount,
+    MIN(ObservedAtUtc) AS ObservedAtUtcMin,
+    MAX(ObservedAtUtc) AS ObservedAtUtcMax,
+    MIN(TimetabledArrivalUtc) AS TimetabledArrivalUtcMin,
+    MAX(TimetabledArrivalUtc) AS TimetabledArrivalUtcMax
+FROM #O4_11_FrozenResidual;
+
+/* Every observed SEV/BSV label with its tested replacement relation. */
+SELECT
+    focused.LineName,
+    COUNT_BIG(*) AS CandidateObservationCount,
+    SUM
+    (
+        CASE WHEN focused.ReplacementCandidateCount = 1
+             THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END
+    ) AS UniqueCorrectCandidateCount,
+    SUM
+    (
+        CASE WHEN focused.ReplacementCandidateCount > 1
+             THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END
+    ) AS AmbiguousCandidateCount,
+    SUM
+    (
+        CASE WHEN focused.ReplacementCandidateCount = 0
+             THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END
+    ) AS NoCandidateCount,
+    MAX(focused.ReplacementRouteCount) AS ReplacementRouteEvidenceCount
+FROM #O4_11_FocusedRootCause AS focused
+WHERE UPPER(LTRIM(RTRIM(COALESCE(focused.LineName, N'')))) LIKE N'SEV%'
+   OR UPPER(LTRIM(RTRIM(COALESCE(focused.LineName, N'')))) LIKE N'BSV%'
+GROUP BY focused.LineName
+ORDER BY focused.LineName;
+
+/* Stronger final root-cause distribution for the frozen residual. */
+SELECT
+    RootCauseCategory,
+    COUNT_BIG(*) AS ObservationCount,
+    COUNT_BIG(DISTINCT LineName) AS DistinctLineNameCount,
+    COUNT_BIG(DISTINCT StopPointRef) AS DistinctStopPointRefCount
+FROM #O4_11_FocusedRootCause
+GROUP BY RootCauseCategory
+ORDER BY RootCauseCategory;
+
+/* Required special-population conclusions and schedule/identity evidence. */
+SELECT
+    LineName,
+    RootCauseCategory,
+    COUNT_BIG(*) AS ObservationCount,
+    COUNT_BIG(DISTINCT LineRef) AS DistinctLineRefCount,
+    COUNT_BIG(DISTINCT JourneyRef) AS DistinctJourneyRefCount,
+    COUNT_BIG(DISTINCT OperatorRef) AS DistinctOperatorRefCount,
+    COUNT_BIG(DISTINCT StopPointRef) AS DistinctStopPointRefCount,
+    SUM(CONVERT(BIGINT, ScheduleCandidateCount))
+        AS RouteIndependentScheduleCandidateRows,
+    SUM(CONVERT(BIGINT, ReplacementRouteCount))
+        AS ReplacementRouteEvidenceRows,
+    SUM(CONVERT(BIGINT, ReplacementCandidateCount))
+        AS ReplacementCandidateRows
+FROM #O4_11_FocusedRootCause
+WHERE LineName IN (N'885', N'885E', N'188')
+   OR LineName LIKE N'SEV%'
+   OR LineName LIKE N'BSV%'
+GROUP BY LineName, RootCauseCategory
+ORDER BY LineName, RootCauseCategory;
+
+/* Identifier completeness for the frozen residual, not the moving live set. */
+SELECT
+    metric.FieldName,
+    metric.TotalRowCount,
+    metric.NonNullCount,
+    metric.NullCount,
+    metric.DistinctNonNullCount
+FROM
+(
+    SELECT N'LineName' AS FieldName, COUNT_BIG(*) AS TotalRowCount,
+           COUNT_BIG(LineName) AS NonNullCount,
+           SUM(CASE WHEN LineName IS NULL THEN CONVERT(BIGINT, 1) ELSE 0 END) AS NullCount,
+           COUNT_BIG(DISTINCT LineName) AS DistinctNonNullCount
+    FROM #O4_11_FrozenResidual
+    UNION ALL
+    SELECT N'LineRef', COUNT_BIG(*), COUNT_BIG(LineRef),
+           SUM(CASE WHEN LineRef IS NULL THEN CONVERT(BIGINT, 1) ELSE 0 END),
+           COUNT_BIG(DISTINCT LineRef)
+    FROM #O4_11_FrozenResidual
+    UNION ALL
+    SELECT N'JourneyRef', COUNT_BIG(*), COUNT_BIG(JourneyRef),
+           SUM(CASE WHEN JourneyRef IS NULL THEN CONVERT(BIGINT, 1) ELSE 0 END),
+           COUNT_BIG(DISTINCT JourneyRef)
+    FROM #O4_11_FrozenResidual
+    UNION ALL
+    SELECT N'DirectionRef', COUNT_BIG(*), COUNT_BIG(DirectionRef),
+           SUM(CASE WHEN DirectionRef IS NULL THEN CONVERT(BIGINT, 1) ELSE 0 END),
+           COUNT_BIG(DISTINCT DirectionRef)
+    FROM #O4_11_FrozenResidual
+    UNION ALL
+    SELECT N'OperatorRef', COUNT_BIG(*), COUNT_BIG(OperatorRef),
+           SUM(CASE WHEN OperatorRef IS NULL THEN CONVERT(BIGINT, 1) ELSE 0 END),
+           COUNT_BIG(DISTINCT OperatorRef)
+    FROM #O4_11_FrozenResidual
+    UNION ALL
+    SELECT N'StopPointRef', COUNT_BIG(*), COUNT_BIG(StopPointRef),
+           SUM(CASE WHEN StopPointRef IS NULL THEN CONVERT(BIGINT, 1) ELSE 0 END),
+           COUNT_BIG(DISTINCT StopPointRef)
+    FROM #O4_11_FrozenResidual
+    UNION ALL
+    SELECT N'TimetabledArrivalUtc', COUNT_BIG(*), COUNT_BIG(TimetabledArrivalUtc),
+           SUM(CASE WHEN TimetabledArrivalUtc IS NULL THEN CONVERT(BIGINT, 1) ELSE 0 END),
+           COUNT_BIG(DISTINCT TimetabledArrivalUtc)
+    FROM #O4_11_FrozenResidual
+) AS metric
+ORDER BY metric.FieldName;
 
 /* 22. Evidence-based answer to whether the current route-name rule is material. */
 SELECT

@@ -186,6 +186,36 @@ CologneServingWarehouseRoute AS
     WHERE NULLIF(LTRIM(RTRIM(warehouse_route.RouteLongName)), N'') IS NOT NULL
 ),
 
+ServiceReplacementWarehouseRoute AS
+(
+    /*
+        SEV labels are an operational prefix, not a static RouteShortName.
+        Only expose the explicitly curated Cologne-serving replacement routes
+        as a candidate path; this prevents broad SEV text normalization from
+        matching regular rail or unrelated bus routes.
+    */
+    SELECT DISTINCT
+        warehouse_route.RouteKey,
+        warehouse_route.RouteId,
+        warehouse_route.RouteShortName,
+        warehouse_route.RouteLongName
+    FROM dw.DimRoute AS warehouse_route
+    INNER JOIN wrk.vwCologneServingRoute AS serving_route
+        ON serving_route.RouteId COLLATE Latin1_General_100_BIN2
+         = warehouse_route.RouteId COLLATE Latin1_General_100_BIN2
+    WHERE serving_route.ModeGroup = N'Replacement Service'
+      AND serving_route.ModeDetail = N'Rail Replacement Bus (SEV)'
+      AND NULLIF(LTRIM(RTRIM(warehouse_route.RouteShortName)), N'') IS NOT NULL
+),
+
+ServiceReplacementNameCoverage AS
+(
+    SELECT DISTINCT
+        UPPER(REPLACE(LTRIM(RTRIM(RouteShortName)), N' ', N''))
+            AS NormalizedRouteName
+    FROM ServiceReplacementWarehouseRoute
+),
+
 LongNameCoverage AS
 (
     SELECT DISTINCT
@@ -209,7 +239,31 @@ ObservationRoutePath AS
             WHEN long_name.NormalizedRouteName IS NOT NULL
             THEN 1
             ELSE 0
-        END AS HasLongNameCoverage
+        END AS HasLongNameCoverage,
+
+        CASE
+            WHEN UPPER(LTRIM(RTRIM(COALESCE(r.LineName, N'')))) LIKE N'SEV%'
+             AND service_replacement.NormalizedRouteName IS NOT NULL
+            THEN 1
+            ELSE 0
+        END AS HasServiceReplacementCoverage,
+
+        CASE
+            WHEN UPPER(LTRIM(RTRIM(COALESCE(r.LineName, N'')))) LIKE N'SEV%'
+            THEN NULLIF
+            (
+                UPPER
+                (
+                    REPLACE
+                    (
+                        SUBSTRING(LTRIM(RTRIM(r.LineName)), 4, 4000),
+                        N' ',
+                        N''
+                    )
+                ),
+                N''
+            )
+        END AS ServiceReplacementLineName
 
     FROM wrk.vwCologneRealtimeTripMatchKey AS r
 
@@ -220,6 +274,25 @@ ObservationRoutePath AS
     LEFT JOIN LongNameCoverage AS long_name
         ON long_name.NormalizedRouteName =
            REPLACE(LTRIM(RTRIM(r.LineName)), N' ', N'')
+
+    LEFT JOIN ServiceReplacementNameCoverage AS service_replacement
+        ON service_replacement.NormalizedRouteName =
+           CASE
+               WHEN UPPER(LTRIM(RTRIM(COALESCE(r.LineName, N'')))) LIKE N'SEV%'
+               THEN NULLIF
+               (
+                   UPPER
+                   (
+                       REPLACE
+                       (
+                           SUBSTRING(LTRIM(RTRIM(r.LineName)), 4, 4000),
+                           N' ',
+                           N''
+                       )
+                   ),
+                   N''
+               )
+           END
 ),
 
 ShortNameCandidate AS
@@ -376,6 +449,86 @@ LongNameFallbackCandidate AS
            )
 ),
 
+ServiceReplacementCandidate AS
+(
+    SELECT
+        r.ObservationKey,
+
+        N'SEVReplacementRoute' AS CandidatePath,
+
+        trip.TripId,
+        route.RouteId,
+        service.ServiceId,
+        route.RouteShortName,
+        trip.TripHeadsign,
+
+        stop.StopId AS StaticMatchedStopId,
+        stop.StopName AS StaticMatchedStopName,
+        stop.ParentStationId,
+
+        stop_event.ScheduledStopEventKey,
+        trip.TripKey,
+        stop_event.RouteKey,
+        stop_event.StopKey,
+        stop_event.ModeKey,
+        stop_event.ServiceKey,
+        date_dimension.DateKey,
+        date_dimension.DateValue AS ServiceDate,
+
+        CASE
+            WHEN stop.StopId = r.StopPointRef
+            THEN 1
+            ELSE 0
+        END AS IsExactStopMatch,
+
+        CASE
+            WHEN stop.ParentStationId = r.StaticParentStationId
+            THEN 1
+            ELSE 0
+        END AS IsParentStationMatch
+
+    FROM wrk.vwCologneRealtimeTripMatchKey AS r
+
+    INNER JOIN ObservationRoutePath AS route_path
+        ON route_path.ObservationKey = r.ObservationKey
+       AND route_path.HasShortNameCoverage = 0
+       AND route_path.HasLongNameCoverage = 0
+       AND route_path.HasServiceReplacementCoverage = 1
+
+    INNER JOIN ServiceReplacementWarehouseRoute AS route
+        ON UPPER(REPLACE(LTRIM(RTRIM(route.RouteShortName)), N' ', N''))
+         = route_path.ServiceReplacementLineName
+
+    INNER JOIN dw.FactScheduledStopEvent AS stop_event
+        ON stop_event.RouteKey = route.RouteKey
+       AND stop_event.ScheduledArrivalSecondOfDay =
+             r.ScheduledArrivalSecondsLocal
+
+    INNER JOIN dw.FactScheduledTrip AS trip
+        ON trip.TripKey = stop_event.TripKey
+
+    INNER JOIN dw.DimStop AS stop
+        ON stop.StopKey = stop_event.StopKey
+
+    INNER JOIN dw.DimService AS service
+        ON service.ServiceKey = stop_event.ServiceKey
+
+    INNER JOIN dw.BridgeServiceDate AS bridge_service_date
+        ON bridge_service_date.ServiceKey = service.ServiceKey
+
+    INNER JOIN dw.DimDate AS date_dimension
+        ON date_dimension.DateKey = bridge_service_date.DateKey
+
+       AND date_dimension.DateValue =
+           DATEADD(
+               DAY,
+               -stop_event.ArrivalDayOffset,
+               r.ServiceDateLocal
+           )
+
+    WHERE UPPER(LTRIM(RTRIM(COALESCE(r.LineName, N'')))) LIKE N'SEV%'
+),
+
 Candidate AS
 (
     SELECT *
@@ -385,6 +538,11 @@ Candidate AS
 
     SELECT *
     FROM LongNameFallbackCandidate
+
+    UNION ALL
+
+    SELECT *
+    FROM ServiceReplacementCandidate
 ),
 
 CandidateSummary AS
@@ -532,6 +690,7 @@ SELECT
     CASE
         WHEN ISNULL(route_path.HasShortNameCoverage, 0) = 0
          AND ISNULL(route_path.HasLongNameCoverage, 0) = 0
+         AND ISNULL(route_path.HasServiceReplacementCoverage, 0) = 0
             THEN N'StaticCoverageMissing'
 
         WHEN ISNULL(cs.ExactStopCandidateCount, 0) = 1
@@ -663,6 +822,13 @@ LEFT JOIN CandidateSummary AS cs
            route_path.HasShortNameCoverage = 0
            AND route_path.HasLongNameCoverage = 1
            AND cs.CandidatePath = N'RouteLongNameFallback'
+       )
+       OR
+       (
+           route_path.HasShortNameCoverage = 0
+           AND route_path.HasLongNameCoverage = 0
+           AND route_path.HasServiceReplacementCoverage = 1
+           AND cs.CandidatePath = N'SEVReplacementRoute'
        )
    );
 GO

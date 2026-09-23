@@ -860,3 +860,202 @@ separate tasks.
 - `docs/01-PROJECT-DEFINITION.md`
 - `docs/03-COLOGNE-SCOPE-AND-MODE-CLASSIFICATION.md`
 - `docs/28-STATIC-COVERAGE-MISSING-ROOT-CAUSE.md`
+
+## Residual in-scope StaticCoverageMissing resolution
+
+Status: DIAGNOSTICALLY COMPLETE; DETERMINISTIC SEV FIX IMPLEMENTED
+
+This section records the v135 residual task from
+`prompts/05-OptimSql/o4-11.md`. The prompt was treated as the task
+specification; it was not treated as a request to change unrelated collector,
+warehouse, scope, timing, sampling, or reporting behavior.
+
+### Frozen baseline
+
+The task-start freeze was captured on 2026-09-23 at approximately 14:06 CEST
+(the database run emitted `2026-09-23T14:06:16.111995+02:00`). The frozen
+observed-at range was 2026-09-07 21:03:48 through 2026-09-23 11:53:50 UTC.
+
+| Metric | Frozen value |
+| --- | ---: |
+| Frozen in-scope StaticCoverageMissing observations | 177 |
+| Distinct LineName values | 15 |
+| Distinct LineRef values | 16 |
+| Distinct StopPointRef values | 12 |
+| Distinct analytical parents | 4 |
+| Null LineName / LineRef / JourneyRef / DirectionRef / OperatorRef / PtMode / TimetabledArrivalUtc | 0 |
+| Null EstimatedArrivalUtc | 82 |
+| Null RailSubmode | 177 |
+
+The complete frozen labels were `885`, `188`, `885E`, the observed SEV
+variants, and `BSV 11008 8211008`. The production change did not hardcode the
+177-row value; the validator freezes `ObservationKey` values at execution
+time.
+
+### Evidence conclusions
+
+#### Line 885
+
+The 87 realtime rows use two BVR LineRefs (`bvr:88885::H` and
+`bvr:88885::R`), 31 JourneyRefs, one operator reference (`bvr:88`), and three
+Cologne stop-point labels under parent `de:05315:16601`. The realtime stop
+namespace is genuinely Cologne evidence; one observed point was not present
+in the loaded static stop lookup, but it was still a Cologne namespace value.
+
+The only loaded exact short-name route was `de:vrs:885:111`, operated by RVK
+(agency 13), with seven trips and 46 stop-time rows, none serving a Cologne
+stop. No exact equality proved `LineRef = RouteId`, `OperatorRef = AgencyId`,
+or `JourneyRef = TripId`.
+
+Conclusion: `DifferentRouteIdentityDespiteSameLineName`. This is not proof
+that the realtime service is outside Cologne. The 87 rows remain in scope and
+are treated as a static-feed coverage gap/identity contradiction, not excluded
+by a line-name rule.
+
+#### Line 188
+
+All 28 rows use `vrs:01188:B:R`, operator `vrs:`, direction `inward`, and the
+Cologne stop `de:05315:17311:2:22` under `de:05315:17311`. No loaded route has
+short name, long name, or route identity `188`. Ten rows have one
+route-independent parent-station schedule candidate on route `154`; the other
+18 have no candidate. The candidate is a coincidental route-154 parent match,
+not proof that the realtime 188 service is route 154.
+
+Conclusion: `GenuineStaticFeedCoverageGap`. No 188 production match was
+added.
+
+#### Line 885E
+
+The five rows use `bvr:88889::H` and the Cologne Worringen stop
+`de:05315:16601:2:21`. No loaded static route proves that the `E` suffix is an
+express-equivalence or source-label decoration. One row has two parent-station
+schedule candidates (S6 and 980), and four have no candidate.
+
+Conclusion: `AmbiguousStaticCandidate` for one row and
+`GenuineStaticFeedCoverageGap` for four rows. The `E` suffix was not stripped.
+
+#### SEV and BSV residuals
+
+The tested diagnostic normalization removes only a leading `SEV` token and
+spaces, then matches the resulting label only to a Cologne-serving static
+route classified as `Replacement Service / Rail Replacement Bus (SEV)`.
+`BSV` was not normalized. The successful-population conflict check returned
+zero conflicts.
+
+| Realtime label | Frozen rows | Unique exact recoveries | Remain unresolved because no unique active event | Remain static-gap evidence |
+| --- | ---: | ---: | ---: | ---: |
+| `SEV S 6` | 21 | 21 | 0 | 0 |
+| `SEV S6` | 6 | 6 | 0 | 0 |
+| `SEV S 6X` | 5 | 5 | 0 | 0 |
+| `SEV S 11` | 11 | 6 | 5 | 0 |
+| `SEV S11` | 4 | 1 | 3 | 0 |
+| `SEV RB38` | 2 | 0 | 2 | 0 |
+| `SEV RE8` | 1 | 0 | 1 | 0 |
+| `SEV S 19` | 1 | 0 | 1 | 0 |
+| `SEV` | 2 | 0 | 0 | 2 |
+| `SEV RE 1` | 2 | 0 | 0 | 2 |
+| `SEV RE6X` | 1 | 0 | 0 | 1 |
+| `BSV 11008 8211008` | 1 | 0 | 0 | 1 |
+| **Total** | **57** | **39** | **12** | **6** |
+
+The 39 recoveries are all exact-stop matches: 21 on static `S6` replacement
+route `de:nrw:s6:4`, six on the same replacement route, five on replacement
+`S6X` route `de:nrw:s6:3`, six on replacement `S11` route `de:nrw:s11:4`, and
+one more `S11` variant on that same replacement route. The 12 unresolved rows
+have replacement-route coverage but no unique active date/time/stop event.
+The six remaining static-gap labels have no proven route identity under the
+tested normalization.
+
+### Deterministic production correction
+
+`sql/03-working/03-create-cologne-realtime-working-layer.sql` now adds one
+production candidate path, `SEVReplacementRoute`. It is eligible only when:
+
+1. the realtime label begins with `SEV`;
+2. the prefix-stripped, space-normalized suffix matches a curated
+   Cologne-serving replacement route short name;
+3. the ordinary RouteShortName and RouteLongName paths do not cover the
+   original label; and
+4. active service date, scheduled time, exact stop or validated parent, and
+   unique-candidate rules select the event.
+
+No fuzzy matching, schedule-only matching, manual ObservationKey mapping,
+`BSV` stripping, `885E` stripping, or scope exclusion was added. The existing
+RouteShortName-primary / RouteLongName-fallback branches and the analytical
+scope wrapper were preserved.
+
+### Frozen before/after result
+
+The required validator is
+`sql/03-working/07-validate-residual-in-scope-static-coverage.sql`. Its
+frozen semantic migration is:
+
+| Before status | After status | Frozen rows |
+| --- | --- | ---: |
+| StaticCoverageMissing | ExactStopMatch | 39 |
+| StaticCoverageMissing | ParentStationFallback | 0 |
+| StaticCoverageMissing | Unresolved | 12 |
+| StaticCoverageMissing | StaticCoverageMissing | 126 |
+
+No frozen residual row was proven or changed to out of scope. The final root
+cause distribution across the 177 frozen rows is:
+
+| Final category | Rows | Meaning |
+| --- | ---: | --- |
+| SafelyRecoveredExactStopMatch | 39 | Deterministic SEV replacement route/event match |
+| StaticCoverageExistsButNoUniqueActiveEvent | 12 | Replacement route is proven, but no unique active event exists |
+| StaticRouteOutsideCologneButRealtimeIdentityContradictory | 87 | 885 same-name static route is not proven to be the realtime service |
+| GenuineStaticFeedCoverageGap | 32 | 28 rows for 188 and four rows for 885E |
+| AmbiguousStaticCandidate | 1 | One 885E parent-station collision |
+| InsufficientEvidence_ExternalStaticFeedIdentityRequired | 6 | Bare/unsupported SEV/BSV identities |
+| **Total** | **177** | **Fully assigned** |
+
+Therefore the frozen final in-scope `StaticCoverageMissing` count is 126.
+At the frozen baseline in-scope denominator of 7,036, this is 1.790790%.
+A later append-only live snapshot after the change contained 129 residual rows
+out of 7,059 in-scope rows (1.827454%); that moving snapshot is reported only
+as operational context, not as the before/after semantic comparison.
+
+The direct `GenuineStaticFeedCoverageGap` count is 32. Including the separate
+885 identity contradiction, 119 rows remain explained by missing or
+contradictory static-feed coverage; one is ambiguous, 12 are unresolved due to
+missing active events on a proven replacement route, and six require an
+external static source/identity correction. Proven out-of-scope count: zero.
+
+### Regression results
+
+The frozen pre-existing successful population contained 6,768 in-scope
+`ExactStopMatch`/`ParentStationFallback` rows. The full identity comparison
+for `ObservationKey`, status, matched trip/route/service/stop, scheduled
+event, trip/route/stop/mode/service/date keys, and service date returned zero
+differences, zero missing observations, and zero duplicate keys.
+
+The long-distance scope correction remained unchanged. The validation
+snapshot retained all ICE, IC, FlixTrain, NightJet, and Thalys observations
+out of scope, while BUS/TRAM, RB, RE, S-Bahn, and SEV/BSV remained in scope.
+The live post-change scope counts were: ICE 692, IC 151, FlixTrain 1,
+NightJet 1, Thalys 1 out of scope; BUS 2,590, TRAM 1,663, RE 1,155, RB 498,
+S-Bahn 1,096, and SEV/BSV 57 in scope. These are append-only snapshot counts,
+not hardcoded scope rules.
+
+### Completion and non-goals
+
+The residual `StaticCoverageMissing` investigation is fully explained for
+the frozen population: every row is safely recovered, correctly unresolved,
+ambiguous, a proven static-feed gap/identity contradiction, or explicitly
+awaiting external static-feed identity evidence. The 126 remaining technical
+`StaticCoverageMissing` rows are intentional outcomes of that classification,
+not unexplained leftovers.
+
+Files changed for this task:
+
+- `sql/03-working/03-create-cologne-realtime-working-layer.sql`
+- `sql/03-working/07-validate-residual-in-scope-static-coverage.sql`
+- `sql/05-analytics/08-analyze-static-coverage-missing-root-cause.sql`
+- `docs/28-STATIC-COVERAGE-MISSING-ROOT-CAUSE.md`
+
+No Timing Unavailable population, collector behavior, warehouse table or
+procedure, operational fact refresh, Power BI logic, sampling configuration,
+tiered-sampling implementation, or Actual Physical Delay behavior was
+changed. `dw.FactOperationalStopOutcome` was not refreshed, and no raw
+observations were deleted.
