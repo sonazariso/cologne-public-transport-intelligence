@@ -1,6 +1,6 @@
 # Cologne Public Transport Intelligence
 
-**Last updated:** 2026-09-04
+**Last updated:** 2026-09-23
 
 ## 1. Project Goal
 
@@ -48,6 +48,21 @@ The static baseline currently contains seven analytical categories:
 7. Rail Replacement Bus (SEV)
 
 The realtime DELFI/TRIAS source may return services that are not represented in the current static Cologne GTFS scope. The validated example is **ICE**, which is classified as `StaticCoverageMissing` during schedule matching rather than as a failed match.
+
+Long-distance and intercity rail services are outside the current seven-category
+Cologne analytical transport scope. This is an analytical-scope decision, not
+source filtering: raw TRIAS observations remain in `stg.MddRealtimeStopObservation`
+and their technical matching evidence remains queryable. The realtime working
+layer exposes `IsInAnalyticalTransportScope` and
+`AnalyticalTransportScopeReason` separately from `MatchStatus`.
+
+Transport service class, supported by the observed line label, mode, rail
+submode, operator, line reference, and existing static evidence, determines
+scope. Origin or destination outside Cologne is not an exclusion rule; regional
+and suburban services may cross the city boundary. Out-of-scope observations
+remain visible in raw technical counts but do not enter the in-scope
+`StaticCoverageMissingRate`. `Timing Unavailable` remains a separate next
+investigation.
 
 ## 4. Current Data Sources
 
@@ -125,7 +140,7 @@ StaticCoverageMissing
 Unresolved
 ```
 
-`ExactStopMatch` and `ParentStationFallback` are considered usable static matches. `StaticCoverageMissing` means the realtime service is outside current static coverage. `Unresolved` means static coverage exists but the available evidence does not produce one defensible candidate.
+`ExactStopMatch` and `ParentStationFallback` are considered usable static matches. `StaticCoverageMissing` means the technical static route coverage is missing; it may describe an out-of-scope service such as ICE/IC or a remaining in-scope coverage problem. `Unresolved` means static coverage exists but the available evidence does not produce one defensible candidate. Analytical quality metrics retain the raw technical status and separately apply `IsInAnalyticalTransportScope`.
 
 ## 8. Data Architecture
 

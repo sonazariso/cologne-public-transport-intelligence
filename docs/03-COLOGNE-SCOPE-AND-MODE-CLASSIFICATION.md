@@ -1,6 +1,6 @@
 # Cologne Scope and Transport-Mode Classification
 
-**Last updated:** 2026-09-04
+**Last updated:** 2026-09-23
 
 ## 1. Purpose
 
@@ -55,6 +55,18 @@ TRIAS `StopPointRef` values can therefore match GTFS platform-level `StopId` val
 | remaining `route_type = 3` | Regional / Other Bus |
 
 The original GTFS route type is retained next to the analytical category for lineage.
+
+Realtime scope is not inferred from `RailSubmode` alone. The analytical
+working layer keeps `MatchStatus` unchanged and classifies transport scope
+separately. Known regional/suburban rail labels (`S` + number, `RE` + number,
+and `RB` + number) remain in scope. BUS, TRAM, and SEV/BSV replacement-bus
+observations remain in scope. A long-distance rail observation is excluded only
+when current service-class evidence shows a non-empty `LineRef` and either a
+proven long-distance service label (ICE, IC, FlixTrain, NJ, or THA) or a
+long-distance rail submode together with a non-empty `OperatorRef`. Technical
+`MatchStatus` is preserved but is not redefined by, or used as the scope flag.
+Unknown combinations default to in scope for review. Origin or destination is
+not used as the primary scope rule.
 
 ## 5. Validated Static Baseline
 
@@ -116,6 +128,12 @@ Unresolved
 
 A missing static route is a coverage limitation; an unresolved match means static coverage exists but the evidence is insufficient or ambiguous.
 
+The technical status and analytical scope are reported independently. Raw
+observations, including out-of-scope ICE/IC and other intercity services, are
+retained. The in-scope quality KPI uses only rows where
+`IsInAnalyticalTransportScope = 1`; raw technical coverage counts and the
+out-of-scope count remain visible for lineage.
+
 ## 9. Platform-Level vs Parent-Station Matching
 
 Exact platform matching is preferred, but a validated RB27 example demonstrated that realtime and static platform assignments can differ:
@@ -149,4 +167,11 @@ Realtime enrichment/matching:
 - `wrk.vwCologneRealtimeStopEnriched`
 - `wrk.vwCologneRealtimeTripMatchKey`
 - `wrk.vwCologneRealtimeTripMatch`
+- `wrk.vwCologneRealtimeTripMatchScoped`
 - `wrk.vwCologneRealtimeEvidenceSituation`
+
+The read-only scope validator is
+`sql/03-working/06-validate-realtime-analytical-transport-scope.sql`. The
+realtime data-quality view exposes raw technical and in-scope counts/rates
+side by side. Timing Unavailable is intentionally not analyzed by this scope
+correction.

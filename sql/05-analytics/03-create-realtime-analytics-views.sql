@@ -124,6 +124,37 @@ MatchByDate AS
                       (N'ExactStopMatch', N'ParentStationFallback')
                  THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END)
             AS UsableMatchCount,
+        SUM(CASE WHEN match_view.IsInAnalyticalTransportScope = 0
+                 THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END)
+            AS OutOfAnalyticalTransportScopeObservationCount,
+        SUM(CASE WHEN match_view.IsInAnalyticalTransportScope = 1
+                 THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END)
+            AS InAnalyticalTransportScopeObservationCount,
+        SUM(CASE WHEN match_view.IsInAnalyticalTransportScope = 0
+                   AND match_view.MatchStatus = N'StaticCoverageMissing'
+                 THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END)
+            AS OutOfScopeStaticCoverageMissingCount,
+        SUM(CASE WHEN match_view.IsInAnalyticalTransportScope = 1
+                   AND match_view.MatchStatus = N'ExactStopMatch'
+                 THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END)
+            AS InScopeExactStopMatchCount,
+        SUM(CASE WHEN match_view.IsInAnalyticalTransportScope = 1
+                   AND match_view.MatchStatus = N'ParentStationFallback'
+                 THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END)
+            AS InScopeParentStationFallbackCount,
+        SUM(CASE WHEN match_view.IsInAnalyticalTransportScope = 1
+                   AND match_view.MatchStatus = N'StaticCoverageMissing'
+                 THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END)
+            AS InScopeStaticCoverageMissingCount,
+        SUM(CASE WHEN match_view.IsInAnalyticalTransportScope = 1
+                   AND match_view.MatchStatus = N'Unresolved'
+                 THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END)
+            AS InScopeUnresolvedCount,
+        SUM(CASE WHEN match_view.IsInAnalyticalTransportScope = 1
+                   AND match_view.MatchStatus IN
+                       (N'ExactStopMatch', N'ParentStationFallback')
+                 THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END)
+            AS InScopeUsableMatchCount,
         SUM(CASE WHEN NULLIF(LTRIM(RTRIM(match_view.EstimatedBay)), N'') IS NOT NULL
                  THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END)
             AS ObservationsWithEstimatedBayCount,
@@ -131,7 +162,7 @@ MatchByDate AS
                  THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END)
             AS ObservationsWithSituationEvidenceCount,
         SUM(ISNULL(situation.SituationLinkCount, 0)) AS SituationLinkCount
-    FROM wrk.vwCologneRealtimeTripMatch AS match_view
+    FROM wrk.vwCologneRealtimeTripMatchScoped AS match_view
     LEFT JOIN SituationByObservation AS situation
         ON situation.ObservationKey = match_view.ObservationKey
     GROUP BY CONVERT(DATE, match_view.ObservedAtUtc)
@@ -208,6 +239,8 @@ SELECT
     ) AS SamplingPanelParticipationRate,
     COALESCE(source_data.SourceObservationCount, 0)
         AS SourceObservationCount,
+    COALESCE(source_data.SourceObservationCount, 0)
+        AS RawRealtimeObservationCount,
     COALESCE(source_data.SourceSnapshotCount, 0)
         AS SourceSnapshotCount,
     source_data.FirstSourceObservationAtUtc,
@@ -222,6 +255,24 @@ SELECT
         AS StaticCoverageMissingCount,
     COALESCE(match_data.UnresolvedCount, 0) AS UnresolvedCount,
     COALESCE(match_data.UsableMatchCount, 0) AS UsableMatchCount,
+    COALESCE(match_data.StaticCoverageMissingCount, 0)
+        AS RawTechnicalStaticCoverageMissingCount,
+    COALESCE(match_data.OutOfAnalyticalTransportScopeObservationCount, 0)
+        AS OutOfAnalyticalTransportScopeObservationCount,
+    COALESCE(match_data.InAnalyticalTransportScopeObservationCount, 0)
+        AS InAnalyticalTransportScopeObservationCount,
+    COALESCE(match_data.OutOfScopeStaticCoverageMissingCount, 0)
+        AS OutOfScopeStaticCoverageMissingCount,
+    COALESCE(match_data.InScopeExactStopMatchCount, 0)
+        AS InScopeExactStopMatchCount,
+    COALESCE(match_data.InScopeParentStationFallbackCount, 0)
+        AS InScopeParentStationFallbackCount,
+    COALESCE(match_data.InScopeStaticCoverageMissingCount, 0)
+        AS InScopeStaticCoverageMissingCount,
+    COALESCE(match_data.InScopeUnresolvedCount, 0)
+        AS InScopeUnresolvedCount,
+    COALESCE(match_data.InScopeUsableMatchCount, 0)
+        AS InScopeUsableMatchCount,
     CONVERT
     (
         DECIMAL(10, 4),
@@ -243,6 +294,12 @@ SELECT
     CONVERT
     (
         DECIMAL(10, 4),
+        COALESCE(match_data.StaticCoverageMissingCount, 0) * 1.0
+        / NULLIF(match_data.MatchedViewObservationCount, 0)
+    ) AS RawTechnicalStaticCoverageMissingRate,
+    CONVERT
+    (
+        DECIMAL(10, 4),
         COALESCE(match_data.UnresolvedCount, 0) * 1.0
         / NULLIF(match_data.MatchedViewObservationCount, 0)
     ) AS UnresolvedRate,
@@ -252,6 +309,18 @@ SELECT
         COALESCE(match_data.UsableMatchCount, 0) * 1.0
         / NULLIF(match_data.MatchedViewObservationCount, 0)
     ) AS UsableMatchRate,
+    CONVERT
+    (
+        DECIMAL(10, 4),
+        COALESCE(match_data.InScopeStaticCoverageMissingCount, 0) * 1.0
+        / NULLIF(match_data.InAnalyticalTransportScopeObservationCount, 0)
+    ) AS InScopeStaticCoverageMissingRate,
+    CONVERT
+    (
+        DECIMAL(10, 4),
+        COALESCE(match_data.InScopeUsableMatchCount, 0) * 1.0
+        / NULLIF(match_data.InAnalyticalTransportScopeObservationCount, 0)
+    ) AS InScopeUsableMatchRate,
     COALESCE(match_data.ObservationsWithEstimatedBayCount, 0)
         AS ObservationsWithEstimatedBayCount,
     CONVERT

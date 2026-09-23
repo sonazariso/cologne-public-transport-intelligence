@@ -54,6 +54,8 @@ SELECT
     match_view.PlannedBay,
     match_view.EstimatedBay,
     match_view.StaticParentStationId,
+    match_view.AnalyticalParentStationId,
+    match_view.AnalyticalParentStationName,
     match_view.StaticStopMatched,
     match_view.TimetabledArrivalLocal,
     match_view.ServiceDateLocal,
@@ -61,6 +63,8 @@ SELECT
     match_view.ExactStopCandidateCount,
     match_view.ParentStationCandidateCount,
     match_view.MatchStatus,
+    match_view.IsInAnalyticalTransportScope,
+    match_view.AnalyticalTransportScopeReason,
     match_view.MatchedTripId,
     match_view.MatchedRouteId,
     match_view.MatchedServiceId,
@@ -74,7 +78,7 @@ SELECT
     match_view.DateKey,
     match_view.ServiceDate
 INTO #Observation
-FROM wrk.vwCologneRealtimeTripMatch AS match_view;
+FROM wrk.vwCologneRealtimeTripMatchScoped AS match_view;
 
 CREATE UNIQUE CLUSTERED INDEX UX_Observation_ObservationKey
     ON #Observation (ObservationKey);
@@ -2108,3 +2112,188 @@ SELECT
             THEN N'PASS'
         ELSE N'REVIEW'
     END AS RootCauseReconciliationStatus;
+
+/*
+    26. Scope-separated quality results.
+
+    The historical root-cause sections above intentionally continue to
+    describe the raw technical StaticCoverageMissing population.  The result
+    below adds the Cologne analytical view without rewriting those findings.
+*/
+SELECT
+    COUNT_BIG(*) AS RawRealtimeObservationCount,
+    SUM(CASE WHEN observation.IsInAnalyticalTransportScope = 0
+             THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END)
+        AS OutOfAnalyticalTransportScopeObservationCount,
+    SUM(CASE WHEN observation.IsInAnalyticalTransportScope = 1
+             THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END)
+        AS InAnalyticalTransportScopeObservationCount,
+    SUM(CASE WHEN observation.MatchStatus = N'StaticCoverageMissing'
+             THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END)
+        AS RawTechnicalStaticCoverageMissingCount,
+    SUM(CASE WHEN observation.IsInAnalyticalTransportScope = 0
+                  AND observation.MatchStatus = N'StaticCoverageMissing'
+             THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END)
+        AS OutOfScopeStaticCoverageMissingCount,
+    SUM(CASE WHEN observation.IsInAnalyticalTransportScope = 1
+                  AND observation.MatchStatus = N'StaticCoverageMissing'
+             THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END)
+        AS InScopeStaticCoverageMissingCount,
+    SUM(CASE WHEN observation.IsInAnalyticalTransportScope = 1
+                  AND observation.MatchStatus = N'Unresolved'
+             THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END)
+        AS InScopeUnresolvedCount,
+    SUM(CASE WHEN observation.IsInAnalyticalTransportScope = 1
+                  AND observation.MatchStatus = N'ExactStopMatch'
+             THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END)
+        AS InScopeExactStopMatchCount,
+    SUM(CASE WHEN observation.IsInAnalyticalTransportScope = 1
+                  AND observation.MatchStatus = N'ParentStationFallback'
+             THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END)
+        AS InScopeParentStationFallbackCount,
+    SUM(CASE WHEN observation.IsInAnalyticalTransportScope = 1
+                  AND observation.MatchStatus IN
+                      (N'ExactStopMatch', N'ParentStationFallback')
+             THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END)
+        AS InScopeUsableMatchCount,
+    CONVERT
+    (
+        DECIMAL(18, 8),
+        SUM(CASE WHEN observation.IsInAnalyticalTransportScope = 1
+                      AND observation.MatchStatus = N'StaticCoverageMissing'
+                 THEN CONVERT(DECIMAL(28, 8), 1)
+                 ELSE CONVERT(DECIMAL(28, 8), 0) END)
+        / NULLIF
+          (
+              SUM(CASE WHEN observation.IsInAnalyticalTransportScope = 1
+                       THEN CONVERT(DECIMAL(28, 8), 1)
+                       ELSE CONVERT(DECIMAL(28, 8), 0) END),
+              0
+          )
+    ) AS InScopeStaticCoverageMissingRate,
+    CONVERT
+    (
+        DECIMAL(18, 8),
+        SUM(CASE WHEN observation.IsInAnalyticalTransportScope = 1
+                      AND observation.MatchStatus IN
+                          (N'ExactStopMatch', N'ParentStationFallback')
+                 THEN CONVERT(DECIMAL(28, 8), 1)
+                 ELSE CONVERT(DECIMAL(28, 8), 0) END)
+        / NULLIF
+          (
+              SUM(CASE WHEN observation.IsInAnalyticalTransportScope = 1
+                       THEN CONVERT(DECIMAL(28, 8), 1)
+                       ELSE CONVERT(DECIMAL(28, 8), 0) END),
+              0
+          )
+    ) AS InScopeUsableMatchRate,
+    CASE
+        WHEN COUNT_BIG(*) =
+             SUM(CASE WHEN observation.IsInAnalyticalTransportScope = 0
+                      THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END)
+             +
+             SUM(CASE WHEN observation.IsInAnalyticalTransportScope = 1
+                      THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END)
+            THEN N'PASS'
+        ELSE N'REVIEW'
+    END AS ScopeRowReconciliationStatus
+FROM #Observation AS observation;
+
+/* 27. Complete excluded long-distance population with parent-station rollup. */
+SELECT
+    observation.LineName,
+    observation.LineRef,
+    observation.PtMode,
+    observation.RailSubmode,
+    observation.OperatorRef,
+    observation.AnalyticalParentStationId AS ParentStationId,
+    observation.AnalyticalParentStationName AS ParentStationName,
+    COUNT_BIG(*) AS ObservationCount,
+    COUNT_BIG(DISTINCT observation.AnalyticalParentStationId)
+        AS DistinctParentStationCount,
+    COUNT_BIG(DISTINCT observation.StopPointRef)
+        AS DistinctStopPointRefCount
+FROM #Observation AS observation
+WHERE observation.IsInAnalyticalTransportScope = 0
+GROUP BY
+    observation.LineName,
+    observation.LineRef,
+    observation.PtMode,
+    observation.RailSubmode,
+    observation.OperatorRef,
+    observation.AnalyticalParentStationId,
+    observation.AnalyticalParentStationName
+ORDER BY observation.LineName, ObservationCount DESC, ParentStationId;
+
+/* 28. Explicit ICE and IC parent-station distributions. */
+SELECT
+    CASE
+        WHEN observation.LineName LIKE N'ICE%' THEN N'ICE'
+        WHEN observation.LineName = N'IC' THEN N'IC'
+    END AS LongDistanceServiceClass,
+    observation.AnalyticalParentStationId AS ParentStationId,
+    observation.AnalyticalParentStationName AS ParentStationName,
+    COUNT_BIG(*) AS ObservationCount,
+    COUNT_BIG(DISTINCT observation.StopPointRef)
+        AS DistinctStopPointRefCount
+FROM #Observation AS observation
+WHERE observation.IsInAnalyticalTransportScope = 0
+  AND
+  (
+      observation.LineName LIKE N'ICE%'
+      OR observation.LineName = N'IC'
+  )
+GROUP BY
+    CASE
+        WHEN observation.LineName LIKE N'ICE%' THEN N'ICE'
+        WHEN observation.LineName = N'IC' THEN N'IC'
+    END,
+    observation.AnalyticalParentStationId,
+    observation.AnalyticalParentStationName
+ORDER BY LongDistanceServiceClass, ObservationCount DESC, ParentStationId;
+
+/* 29. Final in-scope StaticCoverageMissing worklist with existing root cause. */
+WITH LineRefs AS
+(
+    SELECT DISTINCT
+        root_cause.LineName,
+        root_cause.RootCauseCategory,
+        root_cause.LineRef
+    FROM #RootCause AS root_cause
+    INNER JOIN #Observation AS observation
+        ON observation.ObservationKey = root_cause.ObservationKey
+    WHERE observation.IsInAnalyticalTransportScope = 1
+), LineRefList AS
+(
+    SELECT
+        refs.LineName,
+        refs.RootCauseCategory,
+        STRING_AGG(CONVERT(NVARCHAR(MAX), refs.LineRef), N'; ') AS LineRefs
+    FROM LineRefs AS refs
+    GROUP BY refs.LineName, refs.RootCauseCategory
+)
+SELECT
+    root_cause.LineName,
+    ref_list.LineRefs,
+    COUNT_BIG(*) AS ObservationCount,
+    COUNT_BIG(DISTINCT root_cause.StopPointRef) AS StopPointCount,
+    COUNT_BIG(DISTINCT observation.AnalyticalParentStationId)
+        AS ParentStationCount,
+    root_cause.PtMode,
+    root_cause.RailSubmode,
+    root_cause.RootCauseCategory AS ExistingRootCauseCategory,
+    MAX(root_cause.RootCauseExplanation) AS ExistingRootCauseExplanation
+FROM #RootCause AS root_cause
+INNER JOIN #Observation AS observation
+    ON observation.ObservationKey = root_cause.ObservationKey
+LEFT JOIN LineRefList AS ref_list
+    ON ref_list.LineName = root_cause.LineName
+   AND ref_list.RootCauseCategory = root_cause.RootCauseCategory
+WHERE observation.IsInAnalyticalTransportScope = 1
+GROUP BY
+    root_cause.LineName,
+    ref_list.LineRefs,
+    root_cause.PtMode,
+    root_cause.RailSubmode,
+    root_cause.RootCauseCategory
+ORDER BY root_cause.LineName, root_cause.RootCauseCategory;

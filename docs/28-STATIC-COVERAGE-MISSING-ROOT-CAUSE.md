@@ -664,3 +664,199 @@ statements, CTEs, session-scoped temporary tables, and temporary indexes. The
 remediation changed the working-layer matching view as documented above; no
 collector, warehouse data/procedure, Power BI, sampling, or timing behavior
 was changed.
+
+## v133 analytical transport-scope correction
+
+Status: VALIDATED
+
+This additive section records the follow-up requested in
+`prompts/05-OptimSql/o4-10.md`. The historical v131 investigation and v132
+RouteLongName remediation above are preserved unchanged. This correction
+separates technical static coverage from the defined seven-category Cologne
+analytical transport scope; it does not invent long-distance train matches.
+
+### Execution record
+
+| Field | Value |
+| --- | --- |
+| Branch | `fix/realtime-analytical-transport-scope` |
+| Requested baseline | v133 |
+| Development database | `CologneTransitIntelligence` |
+| Working-layer deployment | `sql/03-working/03-create-cologne-realtime-working-layer.sql` completed successfully |
+| Analytics deployment | `sql/05-analytics/03-create-realtime-analytics-views.sql` completed successfully |
+| Read-only validator | `sql/03-working/06-validate-realtime-analytical-transport-scope.sql` |
+| Root-cause diagnostic | `sql/05-analytics/08-analyze-static-coverage-missing-root-cause.sql` completed with no SQL errors |
+| Fact refresh | Not executed |
+
+### Scope rule
+
+The technical view `wrk.vwCologneRealtimeTripMatch` remains the source of
+`MatchStatus` and all matching keys. The new
+`wrk.vwCologneRealtimeTripMatchScoped` wrapper sets
+`IsInAnalyticalTransportScope = 0` only when all of the following are true:
+
+1. `PtMode = RAIL`;
+2. the normalized label is not a regional/suburban `S`/`RE`/`RB` service;
+3. `LineRef` is present; and
+4. there is either a proven long-distance label (`ICE`, `IC`, `FLIXTRAIN`,
+   `NJ`, or `THA`) or a long-distance rail submode
+   (`HIGH_SPEED_RAIL`, `INTERNATIONAL`, or `INTERREGIONAL_RAIL`) together with
+   a non-empty `OperatorRef`.
+
+`RailSubmode` is not used alone. BUS, TRAM, and SEV/BSV replacement-bus rows
+remain in scope, and unknown combinations default to in scope for review.
+Origin or destination is not used as an exclusion rule. Technical `MatchStatus`
+remains unchanged and is not the scope predicate. Raw observations stay in
+staging and remain traceable; only the analytical KPI denominator uses the
+scope flag.
+
+### Validator snapshot and valid-service evidence
+
+The detailed row-level validator snapshot used for the service-class and
+scope-metric tables contained 7,812 raw observations. Raw, technical-match, and
+scoped-match row counts were all 7,812; the scope split was 6,972 in scope plus
+840 out of scope. The duplicate-ObservationKey result was empty. All three
+row/status reconciliation checks returned `PASS`. A later post-hardening
+validator run saw 7,827 rows, with the same PASS results; the source is
+append-only, so live totals can advance between result sets.
+
+| Current service class | Observations | Out of scope | Result |
+| --- | ---: | ---: | --- |
+| Defined non-rail modes (BUS/TRAM) | 4,250 | 0 | PASS |
+| Rail Replacement Bus (SEV/BSV labels) | 56 | 0 | PASS |
+| Regional Bahn (RB) | 492 | 0 | PASS |
+| Regional Express (RE) | 1,147 | 0 | PASS |
+| S-Bahn | 1,083 | 0 | PASS |
+
+Existing successful matching identity was unchanged in the detailed snapshot:
+6,707 technical `ExactStopMatch`/`ParentStationFallback` rows, 6,707 in-scope
+successful rows, zero out-of-scope successful rows, and zero differences in
+either direction across the full matching identity comparison. The later
+post-hardening run reported 6,720/6,720/0 with the same zero-difference result.
+Both validators returned `PASS`.
+
+### Excluded long-distance population
+
+The detailed validator excluded 840 observations. All are technical
+`StaticCoverageMissing` rail rows. The complete line/ref-level result is
+emitted by validator result set 6; the class roll-up is:
+
+| Service class | Observations | Distinct LineRefs | Distinct StopPoints | Distinct Parents |
+| --- | ---: | ---: | ---: | ---: |
+| ICE (including `ICE 126 ICE International` and `ICE 29 InterCityExpress`) | 688 | 28 | 8 | 2 |
+| IC | 149 | 5 | 5 | 2 |
+| FlixTrain | 1 | 1 | 1 | 1 |
+| NJ 403 NightJet | 1 | 1 | 1 | 1 |
+| THA 9471 Thalys | 1 | 1 | 1 | 1 |
+
+No EC, Eurostar, or other additional long-distance class occurred in this
+current excluded snapshot. The rule is evidence-based and is not a closed
+hardcoded list of today's labels: an unproven rail combination remains in
+scope for review.
+
+### Parent-station distribution
+
+Physical stop points were rolled up through the static stop hierarchy:
+
+| Service class | ParentStationId | ParentStationName | Observations | Distinct StopPoints |
+| --- | --- | --- | ---: | ---: |
+| ICE | `de:05315:11201` | Köln Hbf | 687 | 7 |
+| ICE | `de:05315:14201` | Köln Bf Ehrenfeld | 1 | 1 |
+| IC | `de:05315:11201` | Köln Hbf | 148 | 4 |
+| IC | `de:05315:14201` | Köln Bf Ehrenfeld | 1 | 1 |
+| FlixTrain | `de:05315:11201` | Köln Hbf | 1 | 1 |
+| NJ 403 NightJet | `de:05315:11201` | Köln Hbf | 1 | 1 |
+| THA 9471 Thalys | `de:05315:11201` | Köln Hbf | 1 | 1 |
+
+No excluded observation in this snapshot rolled up to Köln Messe/Deutz or
+Köln/Bonn Flughafen.
+
+### Analytical quality results
+
+The raw technical count remains non-zero by design; the business KPI is the
+in-scope rate. The two observed append-only snapshots were:
+
+| Metric | Detailed validator snapshot | Latest post-hardening validator |
+| --- | ---: | ---: |
+| RawRealtimeObservationCount | 7,812 | 7,827 |
+| OutOfAnalyticalTransportScopeObservationCount | 840 | 841 |
+| InAnalyticalTransportScopeObservationCount | 6,972 | 6,986 |
+| RawTechnicalStaticCoverageMissingCount | 1,015 | 1,017 |
+| OutOfScopeStaticCoverageMissingCount | 840 | 841 |
+| InScopeStaticCoverageMissingCount | 175 | 176 |
+| InScopeStaticCoverageMissingRate | 2.510000% | 2.519324% |
+| InScopeUnresolvedCount | 90 | 90 |
+| InScopeExactStopMatchCount | 6,563 | 6,575 |
+| InScopeParentStationFallbackCount | 144 | 145 |
+| InScopeUsableMatchCount | 6,707 | 6,720 |
+| InScopeUsableMatchRate | 96.127300% | 96.192385% |
+
+The deployed `analytics.vwRealtimeDataQualityCoverage` exposes the same raw,
+out-of-scope, in-scope, status-count, and in-scope-rate fields. Its smoke check
+reconciled the source and match grains; append-only totals are expected to move.
+
+### RouteLongName fallback regression
+
+The existing RouteShortName-primary / RouteLongName-fallback architecture was
+not changed. The validator found all current RRX examples in scope and with
+zero scope conflicts:
+
+| LineName | Observations | Successful | RouteLongName fallback successful | Scope status |
+| --- | ---: | ---: | ---: | --- |
+| RE 1 (RRX) | 440 | 431 | 431 | PASS |
+| RE 5 (RRX) | 162 | 162 | 162 | PASS |
+| RE 6 (RRX) | 143 | 143 | 143 | PASS |
+| RE1 (RRX) | 1 | 1 | 1 | PASS |
+| RE5 (RRX) | 1 | 1 | 1 | PASS |
+| RE6 (RRX) | 1 | 1 | 1 | PASS |
+
+### Remaining in-scope StaticCoverageMissing worklist
+
+The root-cause diagnostic's detailed in-scope worklist contained 175
+`StaticCoverageMissing` observations. Every row below is a BUS/SEV residual;
+`RailSubmode` is NULL. Counts are from the same append-only diagnostic
+snapshot and are grouped by the existing root-cause classification. The later
+validator snapshot contains one additional in-scope residual row; rerunning the
+diagnostic is intentionally a separate append-only snapshot operation.
+
+| LineName | Observations | StopPoints | Parents | PtMode | RailSubmode | Existing root cause |
+| --- | ---: | ---: | ---: | --- | --- | --- |
+| 188 | 10 | 1 | 1 | BUS | — | CurrentRouteNameRuleMissesDeterministicStaticRoute |
+| 188 | 17 | 1 | 1 | BUS | — | NoMatchingRouteInLoadedStaticFeed |
+| 885 | 87 | 3 | 1 | BUS | — | StaticRouteExistsButOutsideCurrentCologneScope |
+| 885E | 4 | 1 | 1 | BUS | — | NoMatchingRouteInLoadedStaticFeed |
+| 885E | 1 | 1 | 1 | BUS | — | StaticScheduleCandidateAmbiguous |
+| BSV 11008 8211008 | 1 | 1 | 1 | BUS | — | CurrentRouteNameRuleMissesDeterministicStaticRoute |
+| SEV | 2 | 1 | 0 | BUS | — | NoMatchingRouteInLoadedStaticFeed |
+| SEV RB38 | 2 | 1 | 1 | BUS | — | NoMatchingRouteInLoadedStaticFeed |
+| SEV RE 1 | 2 | 1 | 1 | BUS | — | NoMatchingRouteInLoadedStaticFeed |
+| SEV RE6X | 1 | 1 | 1 | BUS | — | NoMatchingRouteInLoadedStaticFeed |
+| SEV RE8 | 1 | 1 | 0 | BUS | — | NoMatchingRouteInLoadedStaticFeed |
+| SEV S 11 | 6 | 2 | 2 | BUS | — | CurrentRouteNameRuleMissesDeterministicStaticRoute |
+| SEV S 11 | 5 | 1 | 1 | BUS | — | NoMatchingRouteInLoadedStaticFeed |
+| SEV S 19 | 1 | 1 | 1 | BUS | — | NoMatchingRouteInLoadedStaticFeed |
+| SEV S 6 | 20 | 1 | 1 | BUS | — | CurrentRouteNameRuleMissesDeterministicStaticRoute |
+| SEV S 6X | 5 | 1 | 1 | BUS | — | CurrentRouteNameRuleMissesDeterministicStaticRoute |
+| SEV S11 | 1 | 1 | 1 | BUS | — | CurrentRouteNameRuleMissesDeterministicStaticRoute |
+| SEV S11 | 3 | 2 | 2 | BUS | — | NoMatchingRouteInLoadedStaticFeed |
+| SEV S6 | 6 | 1 | 1 | BUS | — | CurrentRouteNameRuleMissesDeterministicStaticRoute |
+
+No additional matching fallback was added for this residual worklist.
+
+### Scope correction non-goals
+
+This change did not analyze or modify Timing Unavailable, refresh
+`dw.FactOperationalStopOutcome`, change collector parsing/persistence, change
+sampling or tiered scheduling, activate the 50-station panel, change Power BI,
+implement Actual Physical Delay, or delete raw observations. Those remain
+separate tasks.
+
+### v133 changed files
+
+- `sql/03-working/03-create-cologne-realtime-working-layer.sql`
+- `sql/03-working/06-validate-realtime-analytical-transport-scope.sql`
+- `sql/05-analytics/03-create-realtime-analytics-views.sql`
+- `sql/05-analytics/08-analyze-static-coverage-missing-root-cause.sql`
+- `docs/01-PROJECT-DEFINITION.md`
+- `docs/03-COLOGNE-SCOPE-AND-MODE-CLASSIFICATION.md`
+- `docs/28-STATIC-COVERAGE-MISSING-ROOT-CAUSE.md`

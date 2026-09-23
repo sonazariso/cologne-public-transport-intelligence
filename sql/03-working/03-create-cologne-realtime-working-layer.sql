@@ -667,6 +667,172 @@ LEFT JOIN CandidateSummary AS cs
    );
 GO
 
+/*
+    Add analytical transport scope without changing technical matching truth.
+
+    The technical match view above remains the source of MatchStatus and all
+    selected warehouse keys.  This wrapper classifies only the current
+    analytical boundary.  Raw observations, including out-of-scope rail,
+    remain queryable at the same ObservationKey grain.
+
+    Current-data evidence supports two safe rail paths:
+      - S-Bahn / RE / RB labels are regional or suburban rail and remain in
+        scope, independent of origin or destination;
+      - non-regional rail with a proven long-distance label or long-distance
+        rail submode, together with a LineRef and (for the submode-only path)
+        an OperatorRef, is outside the seven-category Cologne analytical scope.
+
+    RailSubmode is therefore never used alone.  Unknown combinations default
+    to in-scope for review until a future data audit proves a safe exclusion.
+*/
+CREATE OR ALTER VIEW wrk.vwCologneRealtimeTripMatchScoped
+AS
+WITH Base AS
+(
+    SELECT
+        technical_match.*,
+        COALESCE
+        (
+            technical_match.StaticParentStationId,
+            static_stop.ParentStationId,
+            CASE
+                WHEN static_stop.LocationTypeCode = 1
+                THEN static_stop.StopId
+            END
+        ) AS AnalyticalParentStationId,
+        COALESCE
+        (
+            parent_stop.StopName,
+            CASE
+                WHEN static_stop.LocationTypeCode = 1
+                THEN static_stop.StopName
+            END
+        ) AS AnalyticalParentStationName
+    FROM wrk.vwCologneRealtimeTripMatch AS technical_match
+    LEFT JOIN dw.DimStop AS static_stop
+        ON static_stop.StopId COLLATE DATABASE_DEFAULT
+         = technical_match.StopPointRef COLLATE DATABASE_DEFAULT
+    LEFT JOIN dw.DimStop AS parent_stop
+        ON parent_stop.StopId COLLATE DATABASE_DEFAULT
+         = COALESCE
+           (
+               technical_match.StaticParentStationId,
+               static_stop.ParentStationId
+           ) COLLATE DATABASE_DEFAULT
+),
+Evidence AS
+(
+    SELECT
+        base.*,
+        normalized.NormalizedPtMode,
+        normalized.NormalizedLineName,
+        normalized.NormalizedRailSubmode,
+        normalized.HasLineRef,
+        normalized.HasOperatorRef,
+        CASE
+            WHEN normalized.NormalizedPtMode = N'RAIL'
+             AND
+             (
+                 normalized.NormalizedLineName LIKE N'S[0-9]%'
+                 OR normalized.NormalizedLineName LIKE N'RE[0-9]%'
+                 OR normalized.NormalizedLineName LIKE N'RB[0-9]%'
+             )
+            THEN 1
+            ELSE 0
+        END AS IsRegionalRailServiceLabel,
+        CASE
+            WHEN normalized.NormalizedLineName LIKE N'ICE%'
+              OR normalized.NormalizedLineName LIKE N'IC%'
+              OR normalized.NormalizedLineName LIKE N'FLIXTRAIN%'
+              OR normalized.NormalizedLineName LIKE N'NJ%'
+              OR normalized.NormalizedLineName LIKE N'THA%'
+            THEN 1
+            ELSE 0
+        END AS HasLongDistanceLineLabelEvidence,
+        CASE
+            WHEN normalized.NormalizedRailSubmode IN
+                 (
+                     N'HIGH_SPEED_RAIL',
+                     N'INTERNATIONAL',
+                     N'INTERREGIONAL_RAIL'
+                 )
+            THEN 1
+            ELSE 0
+        END AS HasLongDistanceRailSubmodeEvidence
+    FROM Base AS base
+    CROSS APPLY
+    (
+        VALUES
+        (
+            UPPER(LTRIM(RTRIM(COALESCE(base.PtMode, N'')))),
+            UPPER(REPLACE(LTRIM(RTRIM(COALESCE(base.LineName, N''))), N' ', N'')),
+            UPPER(LTRIM(RTRIM(COALESCE(base.RailSubmode, N'')))),
+            CASE
+                WHEN NULLIF(LTRIM(RTRIM(base.LineRef)), N'') IS NOT NULL
+                THEN 1 ELSE 0
+            END,
+            CASE
+                WHEN NULLIF(LTRIM(RTRIM(base.OperatorRef)), N'') IS NOT NULL
+                THEN 1 ELSE 0
+            END
+        )
+    ) AS normalized
+    (
+        NormalizedPtMode,
+        NormalizedLineName,
+        NormalizedRailSubmode,
+        HasLineRef,
+        HasOperatorRef
+    )
+)
+SELECT
+    evidence.*,
+    CONVERT
+    (
+        BIT,
+        CASE
+            WHEN evidence.NormalizedPtMode = N'RAIL'
+             AND evidence.IsRegionalRailServiceLabel = 0
+             AND evidence.HasLineRef = 1
+             AND
+             (
+                 evidence.HasLongDistanceLineLabelEvidence = 1
+                 OR
+                 (
+                     evidence.HasLongDistanceRailSubmodeEvidence = 1
+                     AND evidence.HasOperatorRef = 1
+                 )
+             )
+            THEN 0
+            ELSE 1
+        END
+    ) AS IsInAnalyticalTransportScope,
+    CASE
+        WHEN evidence.NormalizedPtMode = N'RAIL'
+         AND evidence.IsRegionalRailServiceLabel = 0
+         AND evidence.HasLineRef = 1
+         AND
+         (
+             evidence.HasLongDistanceLineLabelEvidence = 1
+             OR
+             (
+                 evidence.HasLongDistanceRailSubmodeEvidence = 1
+                 AND evidence.HasOperatorRef = 1
+             )
+         )
+            THEN N'OutOfScopeLongDistanceRailServiceClass'
+        WHEN evidence.IsRegionalRailServiceLabel = 1
+            THEN N'InScopeRegionalOrSuburbanRailServiceClass'
+        WHEN evidence.NormalizedPtMode IN (N'BUS', N'TRAM')
+            THEN N'InScopeDefinedNonRailTransportMode'
+        WHEN evidence.MatchStatus IN
+             (N'ExactStopMatch', N'ParentStationFallback')
+            THEN N'InScopeTechnicallyMatchedService'
+        ELSE N'InScopeDefaultNoProvenExclusion'
+    END AS AnalyticalTransportScopeReason
+FROM Evidence AS evidence;
+GO
+
 CREATE OR ALTER VIEW wrk.vwCologneRealtimeEvidenceSituation
 AS
 SELECT
@@ -678,12 +844,17 @@ SELECT
     o.StopName,
 
     o.StaticParentStationId,
+    o.AnalyticalParentStationId,
+    o.AnalyticalParentStationName,
     o.StaticStopName,
     o.StaticStopMatched,
 
     o.LineName,
     o.LineRef,
     o.JourneyRef,
+    o.OperatorRef,
+    o.PtMode,
+    o.RailSubmode,
 
     o.TimetabledArrivalUtc,
     o.EstimatedArrivalUtc,
@@ -700,6 +871,8 @@ SELECT
     o.ExactStopCandidateCount,
     o.ParentStationCandidateCount,
     o.MatchStatus,
+    o.IsInAnalyticalTransportScope,
+    o.AnalyticalTransportScopeReason,
 
     ISNULL(
         CASE
@@ -739,7 +912,7 @@ SELECT
     s.ValidFromUtc AS SituationValidFromUtc,
     s.ValidToUtc AS SituationValidToUtc
 
-FROM wrk.vwCologneRealtimeTripMatch AS o
+FROM wrk.vwCologneRealtimeTripMatchScoped AS o
 
 LEFT JOIN stg.MddRealtimeStopSituationLink AS l
     ON l.ObservationKey = o.ObservationKey
