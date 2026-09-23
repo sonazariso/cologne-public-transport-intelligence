@@ -158,18 +158,76 @@ GO
 CREATE OR ALTER VIEW wrk.vwCologneRealtimeTripMatch
 AS
 
-WITH RouteCoverage AS
+WITH ShortNameCoverage AS
 (
+    /* Preserve the current RouteShortName coverage semantics exactly. */
     SELECT DISTINCT
         REPLACE(RouteShortName, N' ', N'') AS NormalizedRouteName
     FROM wrk.vwCologneServingRoute
     WHERE RouteShortName IS NOT NULL
 ),
 
-Candidate AS
+CologneServingWarehouseRoute AS
+(
+    /*
+        Restrict fallback evidence to the curated Cologne-serving population
+        and its corresponding warehouse route rows. This prevents a route
+        present only in stg.GtfsRoutes from becoming a valid match.
+    */
+    SELECT DISTINCT
+        warehouse_route.RouteKey,
+        warehouse_route.RouteId,
+        warehouse_route.RouteShortName,
+        warehouse_route.RouteLongName
+    FROM dw.DimRoute AS warehouse_route
+    INNER JOIN wrk.vwCologneServingRoute AS serving_route
+        ON serving_route.RouteId COLLATE Latin1_General_100_BIN2
+         = warehouse_route.RouteId COLLATE Latin1_General_100_BIN2
+    WHERE NULLIF(LTRIM(RTRIM(warehouse_route.RouteLongName)), N'') IS NOT NULL
+),
+
+LongNameCoverage AS
+(
+    SELECT DISTINCT
+        REPLACE(LTRIM(RTRIM(RouteLongName)), N' ', N'')
+            AS NormalizedRouteName
+    FROM CologneServingWarehouseRoute
+),
+
+ObservationRoutePath AS
 (
     SELECT
         r.ObservationKey,
+
+        CASE
+            WHEN short_name.NormalizedRouteName IS NOT NULL
+            THEN 1
+            ELSE 0
+        END AS HasShortNameCoverage,
+
+        CASE
+            WHEN long_name.NormalizedRouteName IS NOT NULL
+            THEN 1
+            ELSE 0
+        END AS HasLongNameCoverage
+
+    FROM wrk.vwCologneRealtimeTripMatchKey AS r
+
+    LEFT JOIN ShortNameCoverage AS short_name
+        ON short_name.NormalizedRouteName =
+           REPLACE(r.LineName, N' ', N'')
+
+    LEFT JOIN LongNameCoverage AS long_name
+        ON long_name.NormalizedRouteName =
+           REPLACE(LTRIM(RTRIM(r.LineName)), N' ', N'')
+),
+
+ShortNameCandidate AS
+(
+    SELECT
+        r.ObservationKey,
+
+        N'RouteShortName' AS CandidatePath,
 
         trip.TripId,
         route.RouteId,
@@ -205,9 +263,9 @@ Candidate AS
     FROM wrk.vwCologneRealtimeTripMatchKey AS r
 
     /*
-        Resolve static candidates directly from the warehouse. The persisted
-        local seconds-of-day value keeps the existing ArrivalDayOffset
-        service-day rule while allowing the realtime-match index to be used.
+        This is the existing RouteShortName candidate path. Keep its joins
+        and schedule/date predicates unchanged so successful legacy matches
+        continue through the same primary semantics.
     */
     INNER JOIN dw.DimRoute AS route
         ON REPLACE(route.RouteShortName, N' ', N'')
@@ -241,10 +299,99 @@ Candidate AS
            )
 ),
 
+LongNameFallbackCandidate AS
+(
+    SELECT
+        r.ObservationKey,
+
+        N'RouteLongNameFallback' AS CandidatePath,
+
+        trip.TripId,
+        route.RouteId,
+        service.ServiceId,
+        route.RouteShortName,
+        trip.TripHeadsign,
+
+        stop.StopId AS StaticMatchedStopId,
+        stop.StopName AS StaticMatchedStopName,
+        stop.ParentStationId,
+
+        stop_event.ScheduledStopEventKey,
+        trip.TripKey,
+        stop_event.RouteKey,
+        stop_event.StopKey,
+        stop_event.ModeKey,
+        stop_event.ServiceKey,
+        date_dimension.DateKey,
+        date_dimension.DateValue AS ServiceDate,
+
+        CASE
+            WHEN stop.StopId = r.StopPointRef
+            THEN 1
+            ELSE 0
+        END AS IsExactStopMatch,
+
+        CASE
+            WHEN stop.ParentStationId = r.StaticParentStationId
+            THEN 1
+            ELSE 0
+        END AS IsParentStationMatch
+
+    FROM wrk.vwCologneRealtimeTripMatchKey AS r
+
+    INNER JOIN ObservationRoutePath AS route_path
+        ON route_path.ObservationKey = r.ObservationKey
+       AND route_path.HasShortNameCoverage = 0
+       AND route_path.HasLongNameCoverage = 1
+
+    INNER JOIN CologneServingWarehouseRoute AS route
+        ON REPLACE(LTRIM(RTRIM(route.RouteLongName)), N' ', N'')
+         = REPLACE(LTRIM(RTRIM(r.LineName)), N' ', N'')
+
+    INNER JOIN dw.FactScheduledStopEvent AS stop_event
+        ON stop_event.RouteKey = route.RouteKey
+       AND stop_event.ScheduledArrivalSecondOfDay =
+             r.ScheduledArrivalSecondsLocal
+
+    INNER JOIN dw.FactScheduledTrip AS trip
+        ON trip.TripKey = stop_event.TripKey
+
+    INNER JOIN dw.DimStop AS stop
+        ON stop.StopKey = stop_event.StopKey
+
+    INNER JOIN dw.DimService AS service
+        ON service.ServiceKey = stop_event.ServiceKey
+
+    INNER JOIN dw.BridgeServiceDate AS bridge_service_date
+        ON bridge_service_date.ServiceKey = service.ServiceKey
+
+    INNER JOIN dw.DimDate AS date_dimension
+        ON date_dimension.DateKey = bridge_service_date.DateKey
+
+       AND date_dimension.DateValue =
+           DATEADD(
+               DAY,
+               -stop_event.ArrivalDayOffset,
+               r.ServiceDateLocal
+           )
+),
+
+Candidate AS
+(
+    SELECT *
+    FROM ShortNameCandidate
+
+    UNION ALL
+
+    SELECT *
+    FROM LongNameFallbackCandidate
+),
+
 CandidateSummary AS
 (
     SELECT
         ObservationKey,
+        CandidatePath,
 
         SUM(IsExactStopMatch) AS ExactStopCandidateCount,
         SUM(IsParentStationMatch) AS ParentStationCandidateCount,
@@ -370,7 +517,7 @@ CandidateSummary AS
         ) AS ParentServiceDate
 
     FROM Candidate
-    GROUP BY ObservationKey
+    GROUP BY ObservationKey, CandidatePath
 )
 
 SELECT
@@ -383,7 +530,8 @@ SELECT
         AS ParentStationCandidateCount,
 
     CASE
-        WHEN rc.NormalizedRouteName IS NULL
+        WHEN ISNULL(route_path.HasShortNameCoverage, 0) = 0
+         AND ISNULL(route_path.HasLongNameCoverage, 0) = 0
             THEN N'StaticCoverageMissing'
 
         WHEN ISNULL(cs.ExactStopCandidateCount, 0) = 1
@@ -499,12 +647,24 @@ SELECT
 
 FROM wrk.vwCologneRealtimeTripMatchKey AS r
 
+LEFT JOIN ObservationRoutePath AS route_path
+    ON route_path.ObservationKey = r.ObservationKey
+
 LEFT JOIN CandidateSummary AS cs
     ON cs.ObservationKey = r.ObservationKey
-
-LEFT JOIN RouteCoverage AS rc
-    ON rc.NormalizedRouteName =
-       REPLACE(r.LineName, N' ', N'');
+   AND
+   (
+       (
+           route_path.HasShortNameCoverage = 1
+           AND cs.CandidatePath = N'RouteShortName'
+       )
+       OR
+       (
+           route_path.HasShortNameCoverage = 0
+           AND route_path.HasLongNameCoverage = 1
+           AND cs.CandidatePath = N'RouteLongNameFallback'
+       )
+   );
 GO
 
 CREATE OR ALTER VIEW wrk.vwCologneRealtimeEvidenceSituation

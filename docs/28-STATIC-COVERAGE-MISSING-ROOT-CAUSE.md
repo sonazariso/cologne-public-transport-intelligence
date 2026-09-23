@@ -433,7 +433,177 @@ The evidence supports future investigation of:
 4. an explicit ambiguity policy that preserves ExactStopMatch and
    ParentStationFallback behavior and rejects unresolved candidates.
 
-These are future design options. This branch does not implement any of them.
+These were future design options at the time of the v131 investigation; that
+diagnostic branch did not implement any of them.
+
+## Production remediation
+
+Status: VALIDATED
+
+This section records the production matching correction separately from the
+completed v131 investigation above. The historical findings and their original
+counts are preserved unchanged.
+
+### Execution record
+
+| Field | Value |
+| --- | --- |
+| Branch | fix/static-coverage-route-long-name-fallback |
+| Implementation timestamp | 2026-09-23 09:12:18 UTC |
+| Development database | CologneTransitIntelligence |
+| Working-layer deployment | `sql/03-working/03-create-cologne-realtime-working-layer.sql` completed successfully |
+| Focused validator | `sql/03-working/05-validate-static-coverage-route-long-fallback.sql` |
+| Validator execution | 2026-09-23 09:30:48–09:31:28 UTC |
+| Root-cause rerun | 2026-09-23 09:36:17.6027703 UTC |
+| Operational fact refresh | Not executed |
+
+### Exact matching change
+
+`wrk.vwCologneRealtimeTripMatch` now has an explicit primary/fallback
+architecture:
+
+1. The existing normalized `LineName -> RouteShortName` candidate path remains
+   primary, with its joins, scheduled-arrival-second predicate, active service
+   date, `ArrivalDayOffset`, exact stop, and parent-station rules unchanged.
+2. Only when no current Cologne-serving `RouteShortName` coverage exists, the
+   view evaluates a secondary `LineName -> RouteLongName` path.
+3. The fallback uses only ordinary-space removal after trim. Punctuation and
+   parentheses remain significant; no fuzzy or regex-like transformation is
+   performed.
+4. Fallback routes are the intersection of `wrk.vwCologneServingRoute` and
+   the corresponding `dw.DimRoute` rows. An arbitrary `stg.GtfsRoutes` row is
+   not eligible.
+5. Candidate selection remains unique exact stop first, then unique
+   parent-station fallback; all other covered cases remain `Unresolved`.
+
+`RouteShortName` was kept primary because changing it to
+`COALESCE(RouteShortName, RouteLongName)` or using a broad `OR` join would
+change successful-match semantics and could introduce ambiguity. The fallback
+is gated so observations with valid short-name coverage never receive
+RouteLongName candidates.
+
+Schedule-only matching was rejected. The v131 regression evidence showed 11
+conflicting routes and 496 ambiguous candidates among currently successful
+observations. No schedule-only production fallback was added.
+
+No LineRef/RouteId, JourneyRef/TripId, OperatorRef/AgencyId, DirectionRef,
+PtMode, RailSubmode, TripHeadsign, manual alias, SEV-prefix, ICE/IC, or other
+unproven identifier strategy was added.
+
+### Frozen-scope status migration and validation
+
+The focused validator froze 7,697 observation keys for both implementations.
+The v131 short-name-only baseline and the deployed implementation reconciled as
+follows:
+
+| Legacy v131 status | New status | ObservationCount |
+| --- | --- | ---: |
+| ExactStopMatch | ExactStopMatch | 5,752 |
+| ParentStationFallback | ParentStationFallback | 122 |
+| StaticCoverageMissing | ExactStopMatch | 713 |
+| StaticCoverageMissing | ParentStationFallback | 21 |
+| StaticCoverageMissing | StaticCoverageMissing | 999 |
+| StaticCoverageMissing | Unresolved | 9 |
+| Unresolved | Unresolved | 81 |
+
+All other cells in the validator's complete 4 x 4 matrix are zero. In
+particular:
+
+- protected `ExactStopMatch` regression: 0;
+- protected `ParentStationFallback` regression: 0;
+- legacy `Unresolved` changes: 0;
+- fallback validation violations: 0;
+- row-grain violations: 0;
+- total and distinct `ObservationKey` counts before/after: 7,697 / 7,697.
+
+The newly matched count is 734: 713 `ExactStopMatch` and 21
+`ParentStationFallback`. The newly `Unresolved` count is 9; these observations
+have qualifying Cologne-serving RouteLongName coverage but do not satisfy a
+unique stop candidate rule. The frozen-scope residual is 999
+`StaticCoverageMissing` observations (12.979083%).
+
+### Fallback result groups
+
+| LineName | NewMatchStatus | MatchedRouteId | ObservationCount | DistinctStopPointRefCount |
+| --- | --- | --- | ---: | ---: |
+| RE 1 (RRX) | ExactStopMatch | de:nrw:re1: | 416 | 6 |
+| RE 1 (RRX) | ParentStationFallback | de:nrw:re1: | 11 | 2 |
+| RE 5 (RRX) | ExactStopMatch | de:nrw:re5: | 162 | 3 |
+| RE 6 (RRX) | ExactStopMatch | de:nrw:re6: | 132 | 2 |
+| RE 6 (RRX) | ParentStationFallback | de:nrw:re6: | 10 | 2 |
+| RE1 (RRX) | ExactStopMatch | de:nrw:re1: | 1 | 1 |
+| RE5 (RRX) | ExactStopMatch | de:nrw:re5: | 1 | 1 |
+| RE6 (RRX) | ExactStopMatch | de:nrw:re6: | 1 | 1 |
+
+Fallback-covered rows that remained unresolved were grouped as:
+
+| LineName | ObservationCount |
+| --- | ---: |
+| RE 1 (RRX) | 9 |
+
+These names are reported outcomes, not hardcoded acceptance criteria.
+
+### Root-cause rerun results
+
+The required root-cause script was rerun after deployment. Its status
+reconciliation was `PASS` and it completed with no SQL errors. Because the
+realtime source is append-only, five observations arrived between the frozen
+validator and this rerun; therefore the live rerun total is 7,702 rather than
+7,697.
+
+| Metric | v131 diagnostic baseline | Post-remediation rerun |
+| --- | ---: | ---: |
+| Total observations | 7,622 | 7,702 |
+| ExactStopMatch | 5,693 | 6,470 |
+| ParentStationFallback | 121 | 143 |
+| StaticCoverageMissing | 1,727 | 999 |
+| StaticCoverageMissing rate | 22.658095% | 12.970657% |
+| Unresolved | 81 | 90 |
+
+StaticCoverageMissing therefore fell by 728 observations, a 42.154024%
+reduction against the v131 diagnostic baseline. The diagnostic's legacy
+single-branch condition probe reports `REVIEW` after this change because it is
+looking for the old expression; the result-set population reconciliation and
+the focused validator are the acceptance checks for this semantic fix.
+
+### High-volume line results
+
+The before values are the v131 affected-population counts. The after values
+are the current root-cause rerun counts; small ICE/IC increases reflect the
+append-only observations noted above.
+
+| LineName | StaticCoverageMissing before | StaticCoverageMissing after |
+| --- | ---: | ---: |
+| ICE | 667 | 672 |
+| IC | 148 | 149 |
+| RE 1 (RRX) | 432 | 0 |
+| RE 5 (RRX) | 161 | 0 |
+| RE 6 (RRX) | 141 | 0 |
+
+The rerun's current affected-line candidate results were ICE 672
+(299 no-candidate, 235 exactly-one, 138 multiple) and IC 149
+(101 no-candidate, 29 exactly-one, 19 multiple). RE 1, RE 5, and RE 6 no
+longer appear in the StaticCoverageMissing affected-line result. ICE and IC
+were not force-matched without qualifying static route evidence.
+
+### Remaining unresolved root causes and explicit non-goals
+
+The post-remediation StaticCoverageMissing population remains expected and is
+distributed by the rerun as 313 current route-name misses with no qualifying
+fallback resolution, 442 with no matching loaded route or active schedule
+evidence, 159 ambiguous schedule candidates, and 85 routes outside the current
+Cologne-serving scope. The fix does not attempt to resolve:
+
+- genuinely missing static routes;
+- routes outside the current Cologne scope, including the proven 885 case;
+- ambiguous static schedules;
+- ICE or IC observations without qualifying Cologne-serving static route
+  evidence;
+- Timing Unavailable or any refreshed operational fact population.
+
+No collector behavior, sampling configuration, tiered sampling, Power BI,
+Actual Physical Delay, warehouse data, or `dw.uspRefreshFactOperationalStopOutcome`
+execution was changed in this remediation.
 
 ## Changed files
 
