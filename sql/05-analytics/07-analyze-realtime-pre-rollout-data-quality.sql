@@ -20,18 +20,22 @@
      5. explicit StaticCoverageMissing lineage conclusion
      6. StaticCoverageMissing observation detail
      7. StaticCoverageMissing grouped diagnostics
-     8. complete loaded-GTFS StaticCoverageMissing classification
-     9. supporting no-current-rule-match label diagnostics
-    10. Timing Unavailable root-cause summary
-    11. every Timing Unavailable trip classification
-    12. OtherOrInconsistent detail (if any)
-    13. latest-observation-null pattern summary
-    14. latest-observation-null sample
-    15. date/mode/route breakdown
-    16. station breakdown (distinct dated-trip grain; not additive overall)
-    17. observation-density reconciliation
-    18. future 50-station comparison rule
-    19. Roadmap Item 3 compatibility-test scope limitation
+     8.1 distinct affected-line classification reconciliation
+     8.2 complete loaded-GTFS classification and refined category counts
+     8.3 refined observation/line/stop reconciliation
+     8.4 top affected lines
+     9. deterministic-evidence diagnostics for current-rule misses
+    10. explicit high-volume line evidence
+    11. Timing Unavailable root-cause summary
+    12. every Timing Unavailable trip classification
+    13. OtherOrInconsistent detail (if any)
+    14. latest-observation-null pattern summary
+    15. latest-observation-null sample
+    16. date/mode/route breakdown
+    17. station breakdown (distinct dated-trip grain; not additive overall)
+    18. observation-density reconciliation
+    19. future 50-station comparison rule
+    20. Roadmap Item 3 compatibility-test scope limitation
 */
 
 USE CologneTransitIntelligence;
@@ -207,8 +211,14 @@ SELECT DISTINCT
     agency.AgencyName,
     route.RouteShortName,
     route.RouteLongName,
+    NULLIF(LTRIM(RTRIM(route.RouteShortName)), N'')
+        AS TrimmedRouteShortName,
+    NULLIF(LTRIM(RTRIM(route.RouteLongName)), N'')
+        AS TrimmedRouteLongName,
     CONVERT(NVARCHAR(50), REPLACE(route.RouteShortName, N' ', N''))
-        AS NormalizedRouteShortName
+        AS NormalizedRouteShortName,
+    CONVERT(NVARCHAR(4000), REPLACE(route.RouteLongName, N' ', N''))
+        AS SpaceNormalizedRouteLongName
 INTO #LoadedGtfsRoute
 FROM stg.GtfsRoutes AS route
 LEFT JOIN stg.GtfsAgency AS agency
@@ -788,10 +798,13 @@ ORDER BY
 /*
     8. Complete StaticCoverageMissing classification.
 
-    The first comparison preserves the exact current production rule.  The
-    second comparison is against all loaded GTFS routes, not only the Cologne
-    serving scope.  No fuzzy or identifier-based comparison is used to alter
-    the source MatchStatus.
+    The production comparison remains the exact current rule:
+        REPLACE(realtime LineName, spaces)
+            = REPLACE(static RouteShortName, spaces)
+
+    The additional checks below are deterministic evidence only.  They are
+    evaluated against the complete currently loaded GTFS route source and do
+    not alter MatchStatus or any production matching object.
 */
 WITH AffectedLines AS
 (
@@ -826,6 +839,16 @@ SELECT
     REPLACE(affected.LineName, N' ', N'') AS NormalizedRealtimeLineName,
     scope_evidence.ExistsInCologneServingScopeUnderCurrentRule,
     gtfs_evidence.ExistsAnywhereInLoadedGtfsUnderCurrentRule,
+    gtfs_evidence.ExistsAnywhereInLoadedGtfsUnderCurrentRule
+        AS CurrentRuleRouteShortNameMatch,
+    exact_route_id_evidence.HasExactRouteIdEvidence,
+    exact_route_id_evidence.ExactRouteIdEvidence,
+    trimmed_route_long_name_evidence.HasTrimmedRouteLongNameEvidence,
+    trimmed_route_long_name_evidence.TrimmedRouteLongNameEvidence,
+    space_normalized_route_long_name_evidence.HasSpaceNormalizedRouteLongNameEvidence,
+    space_normalized_route_long_name_evidence.SpaceNormalizedRouteLongNameEvidence,
+    trimmed_route_short_name_evidence.HasTrimmedRouteShortNameEvidence,
+    trimmed_route_short_name_evidence.TrimmedRouteShortNameEvidence,
     (
         SELECT STRING_AGG
         (
@@ -899,13 +922,19 @@ SELECT
             THEN N'UnexpectedCurrentRuleInconsistency'
         WHEN gtfs_evidence.ExistsAnywhereInLoadedGtfsUnderCurrentRule = 1
             THEN N'PresentInGtfsButOutsideCologneServingScope'
-        ELSE N'NotFoundInLoadedGtfsUnderCurrentRule'
+        WHEN exact_route_id_evidence.HasExactRouteIdEvidence = 1
+          OR trimmed_route_long_name_evidence.HasTrimmedRouteLongNameEvidence = 1
+          OR space_normalized_route_long_name_evidence.HasSpaceNormalizedRouteLongNameEvidence = 1
+          OR trimmed_route_short_name_evidence.HasTrimmedRouteShortNameEvidence = 1
+            THEN N'StaticRouteExistsButCurrentRuleMissesIt'
+        ELSE N'NoDeterministicEvidenceInLoadedGtfs'
     END AS DiagnosticCategory,
     affected.StaticCoverageMissingObservationCount,
     affected.AffectedStopPointCount,
     affected.FirstObservedAtUtc,
     affected.LastObservedAtUtc,
-    N'Current rule: REPLACE(realtime LineName, spaces) must equal REPLACE(static RouteShortName, spaces).' AS RouteCoverageRule
+    N'Current rule: REPLACE(realtime LineName, spaces) must equal REPLACE(static RouteShortName, spaces).' AS RouteCoverageRule,
+    N'Diagnostic alternatives: exact LineRef = RouteId; trimmed LineName = RouteLongName; space-normalized LineName = RouteLongName; trimmed LineName = RouteShortName. No fuzzy or manually guessed aliases.' AS DiagnosticEvidenceRule
 INTO #StaticCoverageMissingLineClassification
 FROM AffectedLines AS affected
 CROSS APPLY
@@ -936,8 +965,242 @@ CROSS APPLY
                 WHERE route.NormalizedRouteShortName =
                       REPLACE(affected.LineName, N' ', N'')
             ) THEN 1 ELSE 0 END
-        ) AS ExistsAnywhereInLoadedGtfsUnderCurrentRule
-) AS gtfs_evidence;
+    ) AS ExistsAnywhereInLoadedGtfsUnderCurrentRule
+) AS gtfs_evidence
+CROSS APPLY
+(
+    SELECT
+        CONVERT
+        (
+            BIT,
+            CASE WHEN EXISTS
+            (
+                SELECT 1
+                FROM #MatchObservation AS observation
+                INNER JOIN #LoadedGtfsRoute AS route
+                    ON route.RouteId COLLATE DATABASE_DEFAULT
+                         = observation.LineRef COLLATE DATABASE_DEFAULT
+                WHERE observation.MatchStatus = N'StaticCoverageMissing'
+                  AND
+                  (
+                      observation.LineName = affected.LineName
+                      OR
+                      (
+                          observation.LineName IS NULL
+                          AND affected.LineName IS NULL
+                      )
+                  )
+            ) THEN 1 ELSE 0 END
+        ) AS HasExactRouteIdEvidence,
+        COALESCE
+        (
+            (
+                SELECT STRING_AGG
+                (
+                    route_evidence.RouteEvidence COLLATE DATABASE_DEFAULT,
+                    N'; ' COLLATE DATABASE_DEFAULT
+                )
+                FROM
+                (
+                    SELECT DISTINCT
+                        CONVERT
+                        (
+                            NVARCHAR(MAX),
+                            CONCAT
+                            (
+                                CONVERT(NVARCHAR(MAX), route.RouteId) COLLATE DATABASE_DEFAULT,
+                                N' | RouteShortName=' COLLATE DATABASE_DEFAULT,
+                                COALESCE
+                                (
+                                    CONVERT(NVARCHAR(MAX), route.RouteShortName) COLLATE DATABASE_DEFAULT,
+                                    N'(NULL)' COLLATE DATABASE_DEFAULT
+                                ),
+                                N' | RouteLongName=' COLLATE DATABASE_DEFAULT,
+                                COALESCE
+                                (
+                                    CONVERT(NVARCHAR(MAX), route.RouteLongName) COLLATE DATABASE_DEFAULT,
+                                    N'(NULL)' COLLATE DATABASE_DEFAULT
+                                )
+                            )
+                        ) AS RouteEvidence
+                    FROM #MatchObservation AS observation
+                    INNER JOIN #LoadedGtfsRoute AS route
+                        ON route.RouteId COLLATE DATABASE_DEFAULT
+                             = observation.LineRef COLLATE DATABASE_DEFAULT
+                    WHERE observation.MatchStatus = N'StaticCoverageMissing'
+                      AND
+                      (
+                          observation.LineName = affected.LineName
+                          OR
+                          (
+                              observation.LineName IS NULL
+                              AND affected.LineName IS NULL
+                          )
+                      )
+                ) AS route_evidence
+            ),
+            N'NONE'
+        ) AS ExactRouteIdEvidence
+) AS exact_route_id_evidence
+CROSS APPLY
+(
+    SELECT
+        CONVERT
+        (
+            BIT,
+            CASE WHEN EXISTS
+            (
+                SELECT 1
+                FROM #LoadedGtfsRoute AS route
+                WHERE NULLIF(LTRIM(RTRIM(affected.LineName)), N'') COLLATE DATABASE_DEFAULT
+                        = route.TrimmedRouteLongName COLLATE DATABASE_DEFAULT
+            ) THEN 1 ELSE 0 END
+        ) AS HasTrimmedRouteLongNameEvidence,
+        COALESCE
+        (
+            (
+                SELECT STRING_AGG
+                (
+                    route_evidence.RouteEvidence COLLATE DATABASE_DEFAULT,
+                    N'; ' COLLATE DATABASE_DEFAULT
+                )
+                FROM
+                (
+                    SELECT DISTINCT
+                        CONVERT
+                        (
+                            NVARCHAR(MAX),
+                            CONCAT
+                            (
+                                CONVERT(NVARCHAR(MAX), route.RouteId) COLLATE DATABASE_DEFAULT,
+                                N' | RouteShortName=' COLLATE DATABASE_DEFAULT,
+                                COALESCE
+                                (
+                                    CONVERT(NVARCHAR(MAX), route.RouteShortName) COLLATE DATABASE_DEFAULT,
+                                    N'(NULL)' COLLATE DATABASE_DEFAULT
+                                ),
+                                N' | RouteLongName=' COLLATE DATABASE_DEFAULT,
+                                COALESCE
+                                (
+                                    CONVERT(NVARCHAR(MAX), route.RouteLongName) COLLATE DATABASE_DEFAULT,
+                                    N'(NULL)' COLLATE DATABASE_DEFAULT
+                                )
+                            )
+                        ) AS RouteEvidence
+                    FROM #LoadedGtfsRoute AS route
+                    WHERE NULLIF(LTRIM(RTRIM(affected.LineName)), N'') COLLATE DATABASE_DEFAULT
+                            = route.TrimmedRouteLongName COLLATE DATABASE_DEFAULT
+                ) AS route_evidence
+            ),
+            N'NONE'
+        ) AS TrimmedRouteLongNameEvidence
+) AS trimmed_route_long_name_evidence
+CROSS APPLY
+(
+    SELECT
+        CONVERT
+        (
+            BIT,
+            CASE WHEN EXISTS
+            (
+                SELECT 1
+                FROM #LoadedGtfsRoute AS route
+                WHERE REPLACE(affected.LineName, N' ', N'') COLLATE DATABASE_DEFAULT
+                        = route.SpaceNormalizedRouteLongName COLLATE DATABASE_DEFAULT
+            ) THEN 1 ELSE 0 END
+        ) AS HasSpaceNormalizedRouteLongNameEvidence,
+        COALESCE
+        (
+            (
+                SELECT STRING_AGG
+                (
+                    route_evidence.RouteEvidence COLLATE DATABASE_DEFAULT,
+                    N'; ' COLLATE DATABASE_DEFAULT
+                )
+                FROM
+                (
+                    SELECT DISTINCT
+                        CONVERT
+                        (
+                            NVARCHAR(MAX),
+                            CONCAT
+                            (
+                                CONVERT(NVARCHAR(MAX), route.RouteId) COLLATE DATABASE_DEFAULT,
+                                N' | RouteShortName=' COLLATE DATABASE_DEFAULT,
+                                COALESCE
+                                (
+                                    CONVERT(NVARCHAR(MAX), route.RouteShortName) COLLATE DATABASE_DEFAULT,
+                                    N'(NULL)' COLLATE DATABASE_DEFAULT
+                                ),
+                                N' | RouteLongName=' COLLATE DATABASE_DEFAULT,
+                                COALESCE
+                                (
+                                    CONVERT(NVARCHAR(MAX), route.RouteLongName) COLLATE DATABASE_DEFAULT,
+                                    N'(NULL)' COLLATE DATABASE_DEFAULT
+                                )
+                            )
+                        ) AS RouteEvidence
+                    FROM #LoadedGtfsRoute AS route
+                    WHERE REPLACE(affected.LineName, N' ', N'') COLLATE DATABASE_DEFAULT
+                            = route.SpaceNormalizedRouteLongName COLLATE DATABASE_DEFAULT
+                ) AS route_evidence
+            ),
+            N'NONE'
+        ) AS SpaceNormalizedRouteLongNameEvidence
+) AS space_normalized_route_long_name_evidence
+CROSS APPLY
+(
+    SELECT
+        CONVERT
+        (
+            BIT,
+            CASE WHEN EXISTS
+            (
+                SELECT 1
+                FROM #LoadedGtfsRoute AS route
+                WHERE NULLIF(LTRIM(RTRIM(affected.LineName)), N'') COLLATE DATABASE_DEFAULT
+                        = route.TrimmedRouteShortName COLLATE DATABASE_DEFAULT
+            ) THEN 1 ELSE 0 END
+        ) AS HasTrimmedRouteShortNameEvidence,
+        COALESCE
+        (
+            (
+                SELECT STRING_AGG
+                (
+                    route_evidence.RouteEvidence COLLATE DATABASE_DEFAULT,
+                    N'; ' COLLATE DATABASE_DEFAULT
+                )
+                FROM
+                (
+                    SELECT DISTINCT
+                        CONVERT
+                        (
+                            NVARCHAR(MAX),
+                            CONCAT
+                            (
+                                CONVERT(NVARCHAR(MAX), route.RouteId) COLLATE DATABASE_DEFAULT,
+                                N' | RouteShortName=' COLLATE DATABASE_DEFAULT,
+                                COALESCE
+                                (
+                                    CONVERT(NVARCHAR(MAX), route.RouteShortName) COLLATE DATABASE_DEFAULT,
+                                    N'(NULL)' COLLATE DATABASE_DEFAULT
+                                ),
+                                N' | RouteLongName=' COLLATE DATABASE_DEFAULT,
+                                COALESCE
+                                (
+                                    CONVERT(NVARCHAR(MAX), route.RouteLongName) COLLATE DATABASE_DEFAULT,
+                                    N'(NULL)' COLLATE DATABASE_DEFAULT
+                                )
+                            )
+                        ) AS RouteEvidence
+                    FROM #LoadedGtfsRoute AS route
+                    WHERE NULLIF(LTRIM(RTRIM(affected.LineName)), N'') COLLATE DATABASE_DEFAULT
+                            = route.TrimmedRouteShortName COLLATE DATABASE_DEFAULT
+                ) AS route_evidence
+            ),
+            N'NONE'
+        ) AS TrimmedRouteShortNameEvidence
+) AS trimmed_route_short_name_evidence;
 
 CREATE UNIQUE CLUSTERED INDEX UX_StaticCoverageMissingLineClassification
     ON #StaticCoverageMissingLineClassification (RealtimeLineName);
@@ -974,7 +1237,7 @@ SELECT
         AS ReconciliationDefinition
 FROM #StaticCoverageMissingLineClassification AS classification;
 
-/* 8. Full distinct affected-line classification and category counts. */
+/* 8.2 Full distinct affected-line classification and category counts. */
 SELECT
     classification.RealtimeLineName,
     classification.RealtimeLineRef,
@@ -983,6 +1246,15 @@ SELECT
     classification.AffectedStopPointCount,
     classification.ExistsInCologneServingScopeUnderCurrentRule,
     classification.ExistsAnywhereInLoadedGtfsUnderCurrentRule,
+    classification.CurrentRuleRouteShortNameMatch,
+    classification.HasExactRouteIdEvidence,
+    classification.ExactRouteIdEvidence,
+    classification.HasTrimmedRouteLongNameEvidence,
+    classification.TrimmedRouteLongNameEvidence,
+    classification.HasSpaceNormalizedRouteLongNameEvidence,
+    classification.SpaceNormalizedRouteLongNameEvidence,
+    classification.HasTrimmedRouteShortNameEvidence,
+    classification.TrimmedRouteShortNameEvidence,
     classification.MatchingGtfsRouteIds,
     classification.MatchingGtfsRouteShortNames,
     classification.MatchingGtfsRouteLongNames,
@@ -990,7 +1262,8 @@ SELECT
     classification.DiagnosticCategory,
     classification.FirstObservedAtUtc,
     classification.LastObservedAtUtc,
-    classification.RouteCoverageRule
+    classification.RouteCoverageRule,
+    classification.DiagnosticEvidenceRule
 FROM #StaticCoverageMissingLineClassification AS classification
 ORDER BY
     classification.RealtimeLineName;
@@ -1002,8 +1275,9 @@ WITH Categories AS
     (
         VALUES
             (1, N'PresentInGtfsButOutsideCologneServingScope'),
-            (2, N'NotFoundInLoadedGtfsUnderCurrentRule'),
-            (3, N'UnexpectedCurrentRuleInconsistency')
+            (2, N'StaticRouteExistsButCurrentRuleMissesIt'),
+            (3, N'NoDeterministicEvidenceInLoadedGtfs'),
+            (4, N'UnexpectedCurrentRuleInconsistency')
     ) AS category(CategoryOrder, CategoryName)
 ), LineCounts AS
 (
@@ -1033,6 +1307,14 @@ WITH Categories AS
             )
        )
     GROUP BY classification.DiagnosticCategory
+), Totals AS
+(
+    SELECT
+        COUNT_BIG(*) AS StaticCoverageMissingCount,
+        COUNT_BIG(DISTINCT observation.StopPointRef)
+            AS StaticCoverageMissingAffectedStopPointCount
+    FROM #MatchObservation AS observation
+    WHERE observation.MatchStatus = N'StaticCoverageMissing'
 )
 SELECT
     categories.CategoryName AS DiagnosticCategory,
@@ -1040,16 +1322,23 @@ SELECT
     ISNULL(line_counts.StaticCoverageMissingObservationCount, 0)
         AS StaticCoverageMissingObservationCount,
     ISNULL(stop_counts.AffectedStopPointCount, 0) AS AffectedStopPointCount,
+    totals.StaticCoverageMissingCount,
+    totals.StaticCoverageMissingAffectedStopPointCount,
     CASE
-        WHEN
-        (
-            SELECT COUNT_BIG(*)
-            FROM #StaticCoverageMissingLineClassification
-        ) =
-        (
-            SELECT ISNULL(SUM(line_counts_inner.DistinctRealtimeLineCount), 0)
-            FROM LineCounts AS line_counts_inner
-        )
+        WHEN totals.StaticCoverageMissingCount =
+             (
+                 SELECT ISNULL(SUM(line_counts_inner.StaticCoverageMissingObservationCount), 0)
+                 FROM LineCounts AS line_counts_inner
+             )
+         AND
+             (
+                 SELECT COUNT_BIG(*)
+                 FROM #StaticCoverageMissingLineClassification
+             ) =
+             (
+                 SELECT ISNULL(SUM(line_counts_inner.DistinctRealtimeLineCount), 0)
+                 FROM LineCounts AS line_counts_inner
+             )
         THEN N'PASS'
         ELSE N'REVIEW'
     END AS CategoryReconciliationStatus
@@ -1058,15 +1347,99 @@ LEFT JOIN LineCounts AS line_counts
     ON line_counts.DiagnosticCategory = categories.CategoryName
 LEFT JOIN StopCounts AS stop_counts
     ON stop_counts.DiagnosticCategory = categories.CategoryName
+CROSS JOIN Totals AS totals
 ORDER BY categories.CategoryOrder;
 
-/* Top affected lines, retained separately from the complete classification. */
+/* 8.3 Reconcile refined observations, distinct lines, and distinct stops. */
+WITH DistinctAffectedLines AS
+(
+    SELECT COUNT_BIG(*) AS DistinctAffectedLineCount
+    FROM
+    (
+        SELECT DISTINCT observation.LineName
+        FROM #MatchObservation AS observation
+        WHERE observation.MatchStatus = N'StaticCoverageMissing'
+    ) AS distinct_line
+), CategoryTotals AS
+(
+    SELECT
+        COUNT_BIG(*) AS RefinedDiagnosticDistinctLineCount,
+        SUM(classification.StaticCoverageMissingObservationCount)
+            AS RefinedDiagnosticObservationCount
+    FROM #StaticCoverageMissingLineClassification AS classification
+), ObservationTotals AS
+(
+    SELECT
+        COUNT_BIG(*) AS StaticCoverageMissingCount,
+        COUNT_BIG(DISTINCT observation.StopPointRef)
+            AS StaticCoverageMissingAffectedStopPointCount
+    FROM #MatchObservation AS observation
+    WHERE observation.MatchStatus = N'StaticCoverageMissing'
+)
+SELECT
+    observation_totals.StaticCoverageMissingCount,
+    category_totals.RefinedDiagnosticObservationCount,
+    line_totals.DistinctAffectedLineCount,
+    category_totals.RefinedDiagnosticDistinctLineCount,
+    observation_totals.StaticCoverageMissingAffectedStopPointCount,
+    (
+        SELECT COUNT_BIG(DISTINCT observation.StopPointRef)
+        FROM #MatchObservation AS observation
+        INNER JOIN #StaticCoverageMissingLineClassification AS classification
+            ON
+            (
+                classification.RealtimeLineName = observation.LineName
+                OR
+                (
+                    classification.RealtimeLineName IS NULL
+                    AND observation.LineName IS NULL
+                )
+            )
+        WHERE observation.MatchStatus = N'StaticCoverageMissing'
+    ) AS RefinedDiagnosticAffectedStopPointCount,
+    N'Direct distinct affected stop-point count is compared to the same direct source count; stop counts are not summed across categories.'
+        AS StopPointReconciliationDefinition,
+    CASE
+        WHEN observation_totals.StaticCoverageMissingCount
+                 = category_totals.RefinedDiagnosticObservationCount
+         AND line_totals.DistinctAffectedLineCount
+                 = category_totals.RefinedDiagnosticDistinctLineCount
+         AND observation_totals.StaticCoverageMissingAffectedStopPointCount
+                 =
+                 (
+                     SELECT COUNT_BIG(DISTINCT observation.StopPointRef)
+                     FROM #MatchObservation AS observation
+                     INNER JOIN #StaticCoverageMissingLineClassification AS classification
+                         ON
+                         (
+                             classification.RealtimeLineName = observation.LineName
+                             OR
+                             (
+                                 classification.RealtimeLineName IS NULL
+                                 AND observation.LineName IS NULL
+                             )
+                         )
+                     WHERE observation.MatchStatus = N'StaticCoverageMissing'
+                 )
+            THEN N'PASS'
+        ELSE N'REVIEW'
+    END AS RefinedStaticCoverageDiagnosticReconciliationStatus
+FROM ObservationTotals AS observation_totals
+CROSS JOIN CategoryTotals AS category_totals
+CROSS JOIN DistinctAffectedLines AS line_totals;
+
+/* 8.4 Top affected lines, retained separately from the complete classification. */
 SELECT TOP (25)
     classification.RealtimeLineName,
     classification.RealtimeLineRef,
     classification.StaticCoverageMissingObservationCount,
     classification.AffectedStopPointCount,
     classification.DiagnosticCategory,
+    classification.CurrentRuleRouteShortNameMatch,
+    classification.ExactRouteIdEvidence,
+    classification.TrimmedRouteLongNameEvidence,
+    classification.SpaceNormalizedRouteLongNameEvidence,
+    classification.TrimmedRouteShortNameEvidence,
     classification.MatchingGtfsRouteIds,
     classification.MatchingGtfsRouteShortNames,
     classification.MatchingGtfsRouteLongNames,
@@ -1076,95 +1449,60 @@ ORDER BY
     classification.StaticCoverageMissingObservationCount DESC,
     classification.RealtimeLineName;
 
-/* 9. Supporting identifiers for lines with no current-rule GTFS match. */
-WITH NotFoundLabels AS
-(
-    SELECT
-        observation.LineName,
-        observation.LineRef,
-        observation.PtMode,
-        observation.RailSubmode,
-        COUNT_BIG(*) AS StaticCoverageMissingObservationCount,
-        COUNT_BIG(DISTINCT observation.StopPointRef) AS AffectedStopPointCount
-    FROM #MatchObservation AS observation
-    INNER JOIN #StaticCoverageMissingLineClassification AS classification
-        ON ISNULL(classification.RealtimeLineName, N'') COLLATE DATABASE_DEFAULT
-             = ISNULL(observation.LineName, N'') COLLATE DATABASE_DEFAULT
-       AND classification.DiagnosticCategory = N'NotFoundInLoadedGtfsUnderCurrentRule'
-    WHERE observation.MatchStatus = N'StaticCoverageMissing'
-    GROUP BY
-        observation.LineName,
-        observation.LineRef,
-        observation.PtMode,
-        observation.RailSubmode
-)
+/* 9. Deterministic evidence for lines the current rule does not recognize. */
 SELECT
-    labels.LineName,
-    labels.LineRef,
-    labels.PtMode,
-    labels.RailSubmode,
-    labels.StaticCoverageMissingObservationCount,
-    labels.AffectedStopPointCount,
-    stop_refs.GroupedStopPointRefs,
-    CONVERT
-    (
-        BIT,
-        CASE WHEN EXISTS
-        (
-            SELECT 1
-            FROM #LoadedGtfsRoute AS route
-            WHERE route.RouteId COLLATE DATABASE_DEFAULT
-                    = labels.LineRef COLLATE DATABASE_DEFAULT
-        ) THEN 1 ELSE 0 END
-    ) AS LineRefExactlyEqualsGtfsRouteId,
-    CONVERT
-    (
-        BIT,
-        CASE WHEN EXISTS
-        (
-            SELECT 1
-            FROM #LoadedGtfsRoute AS route
-            WHERE NULLIF(LTRIM(RTRIM(labels.LineName)), N'') COLLATE DATABASE_DEFAULT =
-                  NULLIF(LTRIM(RTRIM(route.RouteLongName)), N'') COLLATE DATABASE_DEFAULT
-        ) THEN 1 ELSE 0 END
-    ) AS LineNameExactlyEqualsTrimmedGtfsRouteLongName,
-    CONVERT
-    (
-        BIT,
-        CASE WHEN EXISTS
-        (
-            SELECT 1
-            FROM #LoadedGtfsRoute AS route
-            WHERE NULLIF(LTRIM(RTRIM(labels.LineName)), N'') COLLATE DATABASE_DEFAULT =
-                  NULLIF(LTRIM(RTRIM(route.RouteShortName)), N'') COLLATE DATABASE_DEFAULT
-        ) THEN 1 ELSE 0 END
-    ) AS LineNameExactlyEqualsTrimmedGtfsRouteShortName
-FROM NotFoundLabels AS labels
-OUTER APPLY
-(
-    SELECT STRING_AGG
-    (
-        CONVERT(NVARCHAR(MAX), stop_ref.StopPointRef) COLLATE DATABASE_DEFAULT,
-        N', ' COLLATE DATABASE_DEFAULT
-    ) AS GroupedStopPointRefs
-    FROM
-    (
-        SELECT DISTINCT observation.StopPointRef
-        FROM #MatchObservation AS observation
-        WHERE observation.MatchStatus = N'StaticCoverageMissing'
-          AND ISNULL(observation.LineName, N'') = ISNULL(labels.LineName, N'')
-          AND ISNULL(observation.LineRef, N'') = ISNULL(labels.LineRef, N'')
-          AND ISNULL(observation.PtMode, N'') = ISNULL(labels.PtMode, N'')
-          AND ISNULL(observation.RailSubmode, N'') = ISNULL(labels.RailSubmode, N'')
-    ) AS stop_ref
-) AS stop_refs
+    classification.RealtimeLineName,
+    classification.RealtimeLineRef,
+    classification.StaticCoverageMissingObservationCount AS ObservationCount,
+    classification.AffectedStopPointCount,
+    classification.CurrentRuleRouteShortNameMatch,
+    classification.ExactRouteIdEvidence,
+    classification.TrimmedRouteLongNameEvidence,
+    classification.SpaceNormalizedRouteLongNameEvidence,
+    classification.TrimmedRouteShortNameEvidence,
+    classification.DiagnosticCategory AS DiagnosticConclusion
+FROM #StaticCoverageMissingLineClassification AS classification
+WHERE classification.DiagnosticCategory = N'StaticRouteExistsButCurrentRuleMissesIt'
 ORDER BY
-    labels.LineName,
-    labels.LineRef,
-    labels.PtMode,
-    labels.RailSubmode;
+    classification.StaticCoverageMissingObservationCount DESC,
+    classification.RealtimeLineName;
 
-/* 10. Root-cause category counts; percentages use TimingUnavailableTrips. */
+/* 10. Explicit evidence for the five requested high-volume lines. */
+SELECT
+    classification.RealtimeLineName,
+    classification.RealtimeLineRef,
+    classification.StaticCoverageMissingObservationCount AS ObservationCount,
+    classification.AffectedStopPointCount,
+    classification.CurrentRuleRouteShortNameMatch,
+    classification.ExactRouteIdEvidence,
+    classification.TrimmedRouteLongNameEvidence,
+    classification.SpaceNormalizedRouteLongNameEvidence,
+    classification.TrimmedRouteShortNameEvidence,
+    classification.DiagnosticCategory AS DiagnosticConclusion,
+    classification.MatchingGtfsRouteIds,
+    classification.MatchingGtfsRouteShortNames,
+    classification.MatchingGtfsRouteLongNames,
+    classification.MatchingAgencies
+FROM #StaticCoverageMissingLineClassification AS classification
+WHERE classification.RealtimeLineName IN
+(
+    N'ICE',
+    N'RE 1 (RRX)',
+    N'RE 5 (RRX)',
+    N'IC',
+    N'RE 6 (RRX)'
+)
+ORDER BY
+    CASE classification.RealtimeLineName
+        WHEN N'ICE' THEN 1
+        WHEN N'RE 1 (RRX)' THEN 2
+        WHEN N'RE 5 (RRX)' THEN 3
+        WHEN N'IC' THEN 4
+        WHEN N'RE 6 (RRX)' THEN 5
+        ELSE 6
+    END;
+
+/* 11. Root-cause category counts; percentages use TimingUnavailableTrips. */
 WITH Categories AS
 (
     SELECT category.CategoryOrder, category.CategoryName
@@ -1209,7 +1547,7 @@ LEFT JOIN Counts AS counts
     ON counts.RootCauseCategory = categories.CategoryName
 ORDER BY categories.CategoryOrder;
 
-/* 11. Complete trip-level classification for all Timing Unavailable trips. */
+/* 12. Complete trip-level classification for all Timing Unavailable trips. */
 SELECT
     diagnostic.ServiceDate,
     diagnostic.ManagementTripKey,
@@ -1236,7 +1574,7 @@ ORDER BY
     diagnostic.ServiceDate,
     diagnostic.TripKey;
 
-/* 12. C-category detail is intentionally non-empty only when inconsistent. */
+/* 13. C-category detail is intentionally non-empty only when inconsistent. */
 SELECT
     diagnostic.ServiceDate,
     diagnostic.ManagementTripKey,
@@ -1257,7 +1595,7 @@ ORDER BY
     diagnostic.ServiceDate,
     diagnostic.TripKey;
 
-/* 13. Latest observation became NULL summary. */
+/* 14. Latest observation became NULL summary. */
 SELECT
     COUNT_BIG(*) AS AffectedOperationalStopOutcomeCount,
     (
@@ -1276,7 +1614,7 @@ SELECT
         AS PatternDefinition
 FROM #LatestNullPattern AS pattern;
 
-/* 14. Small diagnostic sample for the latest-observation-null pattern. */
+/* 15. Small diagnostic sample for the latest-observation-null pattern. */
 SELECT TOP (25)
     pattern.ServiceDate,
     pattern.TripKey,
@@ -1302,7 +1640,7 @@ ORDER BY
     pattern.TripKey,
     pattern.ScheduledStopEventKey;
 
-/* 15. Trip-grain breakdown by service date, mode, and route. */
+/* 16. Trip-grain breakdown by service date, mode, and route. */
 SELECT
     comparable.ServiceDate,
     comparable.Mode,
@@ -1337,7 +1675,7 @@ ORDER BY
     comparable.Mode,
     comparable.RouteName;
 
-/* 16. Station attribution is distinct dated-trip grain and is non-additive. */
+/* 17. Station attribution is distinct dated-trip grain and is non-additive. */
 SELECT
     trip_station.Station,
     CONVERT
@@ -1386,7 +1724,7 @@ FROM #ManagementTripStation AS trip_station
 GROUP BY trip_station.Station
 ORDER BY trip_station.Station;
 
-/* 17. Observation density before dated-stop-event consolidation. */
+/* 18. Observation density before dated-stop-event consolidation. */
 SELECT
     SUM(CONVERT(BIGINT, CASE WHEN diagnostic.UsableMatchedObservationCount = 0
                              THEN 1 ELSE 0 END))
@@ -1415,7 +1753,7 @@ SELECT
         AS GrainNote
 FROM #UnavailableTripDiagnostics AS diagnostic;
 
-/* 18. Consistent seven-to-50 comparison rule; no arbitrary threshold. */
+/* 19. Consistent seven-to-50 comparison rule; no arbitrary threshold. */
 SELECT
     N'Pre/post quality comparison rule' AS RuleName,
     N'Absolute TimingUnavailableTrips is sensitive to monitored volume and may increase when the panel expands.' AS ComparisonRule,
@@ -1423,7 +1761,7 @@ SELECT
     N'Also compare StaticCoverageMissingRate, UnresolvedRate, and UsableStaticMatchRate before and after the future 50-station pilot.' AS StaticCoverageComparison,
     N'No arbitrary acceptable percentage threshold is defined by this diagnostic.' AS ThresholdRule;
 
-/* 19. Roadmap Item 3 compatibility-test scope limitation. */
+/* 20. Roadmap Item 3 compatibility-test scope limitation. */
 SELECT
     N'Roadmap Item 3 compatibility test' AS AnalysisArea,
     N'Validated' AS ScopeStatus,
