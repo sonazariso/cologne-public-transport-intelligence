@@ -1124,11 +1124,16 @@ GROUP BY
     END
 ORDER BY target_trip.SamplingTargetId, LeadTimeBin;
 
-/* 16. Mutually exclusive current primary root-cause classification. */
+/* 16. Mutually exclusive current primary root-cause classification.
+       Observation exposure is secondary evidence only.  The primary
+       category is based on persisted timing evidence or an explicit
+       evidence gap, not on the number of observations. */
 SELECT
     timing.ServiceDate,
     timing.TripKey,
     CASE
+        WHEN timing.MatchedObservationCount = 0
+            THEN N'InsufficientEvidence'
         WHEN EXISTS
         (
             SELECT 1
@@ -1137,17 +1142,15 @@ SELECT
               AND latest_null.TripKey = timing.TripKey
         )
             THEN N'EstimatePreviouslyPresent_FinalObservationNull'
-        WHEN timing.MatchedObservationCount = 1
-         AND timing.MatchedObservationWithEstimateCount = 0
-            THEN N'ObservedOnlyOnce_NoArrivalEstimate'
-        WHEN timing.MatchedObservationCount > 1
-         AND timing.MatchedObservationWithEstimateCount = 0
-            THEN N'RepeatedlyObserved_NoArrivalEstimate'
-        WHEN timing.MatchedObservationCount = 0
-            THEN N'InsufficientEvidence'
+        WHEN timing.MatchedObservationWithEstimateCount = 0
+            THEN N'NoPersistedArrivalEstimateObserved'
         ELSE N'OtherProvenCause'
     END AS PrimaryRootCauseCategory,
-    CASE WHEN timing.MatchedObservationWithEstimateCount = 0 THEN N'SourceNeverProvidedArrivalEstimate' ELSE N'EstimateWasObservedAtLeastOnce' END AS SourceEstimateEvidence,
+    CASE
+        WHEN timing.MatchedObservationCount = 0 THEN N'NoMatchedObservation'
+        WHEN timing.MatchedObservationWithEstimateCount = 0 THEN N'NoPersistedArrivalEstimateObserved'
+        ELSE N'PersistedArrivalEstimateObserved'
+    END AS PersistedArrivalEstimateEvidence,
     CASE WHEN timing.MatchedObservationCount = 1 THEN N'OnlyObservedOnce' WHEN timing.MatchedObservationCount > 1 THEN N'MultipleObservations' ELSE N'NoMatchedObservation' END AS ObservationCountEvidence,
     CASE WHEN EXISTS
          (
@@ -1185,7 +1188,8 @@ ORDER BY category.PrimaryRootCauseCategory;
 
 SELECT
     COUNT_BIG(*) AS FrozenTimingUnavailableTripCount,
-    SUM(CASE WHEN SourceEstimateEvidence = N'SourceNeverProvidedArrivalEstimate' THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END) AS SourceNeverProvidedArrivalEstimateCount,
+    SUM(CASE WHEN PersistedArrivalEstimateEvidence = N'NoPersistedArrivalEstimateObserved' THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END) AS NoPersistedArrivalEstimateObservedCount,
+    SUM(CASE WHEN ObservationCountEvidence = N'NoMatchedObservation' THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END) AS NoMatchedObservationCount,
     SUM(CASE WHEN ObservationCountEvidence = N'OnlyObservedOnce' THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END) AS OnlyObservedOnceCount,
     SUM(CASE WHEN ObservationCountEvidence = N'MultipleObservations' THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END) AS MultipleObservationsCount,
     SUM(CASE WHEN LatestNullEvidence = N'LatestObservationWasNullAfterEarlierEstimate' THEN CONVERT(BIGINT, 1) ELSE CONVERT(BIGINT, 0) END) AS LatestNullAffectedDatedTripCount,
@@ -1193,26 +1197,28 @@ SELECT
     N'Only the PrimaryRootCauseCategory distribution is mutually exclusive; the columns in this result are secondary diagnostic flags.' AS Interpretation
 FROM #PrimaryRootCause;
 
-/* 17. Raw TRIAS inspection status is intentionally explicit when no safe credential is available. */
+/* 17. Raw TRIAS inspection is an external, diagnostic-only operation.  This
+       reusable SQL batch never issues MDD requests; the companion helper is
+       responsible for any prospective raw inspection. */
 SELECT
-    N'RawSourceInspectionStatus' AS Finding,
-    N'NOT_PERFORMED' AS Status,
-    N'No MDD_API_KEY was available in this execution environment; no raw TRIAS request was made, no response was persisted, and Collector configuration was not changed.' AS Evidence;
+    N'RawTriasTimingInspection' AS Finding,
+    N'NOT_EXECUTED' AS Status,
+    N'This read-only SQL batch does not issue MDD requests. Use collector/Inspect-MddTriasTimingEvidence.ps1 for the bounded seven-target raw inspection; no raw response is persisted by that helper.' AS Evidence;
 
 SELECT
     N'ServiceArrival.timetabledTime' AS SourceJsonPath,
     N'YES' AS CurrentParserPersistsIt,
-    N'YES' AS ObservedWhenArrivalEstimateMissing,
-    N'ESTABLISHED_FROM_CURRENT_COLLECTOR_SOURCE' AS SemanticConfidence,
-    N'Creates stg.MddRealtimeStopObservation.TimetabledArrivalUtc.' AS PotentiallyRelevantObservationPattern
+    N'NOT_TESTED' AS RawObservedWhenArrivalEstimateMissing,
+    N'PARSER_PROJECTION_ONLY' AS SemanticConfidence,
+    N'Creates stg.MddRealtimeStopObservation.TimetabledArrivalUtc; raw source presence in a missing-estimate event requires the bounded helper.' AS PotentiallyRelevantObservationPattern
 UNION ALL
-SELECT N'ServiceArrival.estimatedTime', N'YES', N'YES', N'ESTABLISHED_FROM_CURRENT_COLLECTOR_SOURCE', N'Creates stg.MddRealtimeStopObservation.EstimatedArrivalUtc; NULL remains unavailable.'
+SELECT N'ServiceArrival.estimatedTime', N'YES', N'NOT_TESTED', N'PARSER_PROJECTION_ONLY', N'Creates stg.MddRealtimeStopObservation.EstimatedArrivalUtc; NULL remains unavailable in the persisted path.'
 UNION ALL
-SELECT N'serviceDeparture.*', N'NO', N'NOT_TESTED', N'UNVERIFIED_RAW_SOURCE_NOT_AVAILABLE', N'Current parser has no persisted departure timing field.'
+SELECT N'serviceDeparture.*', N'NO', N'NOT_TESTED', N'RAW_INSPECTION_REQUIRED', N'Current parser has no persisted departure timing field; departure timing must not be treated as arrival timing.'
 UNION ALL
-SELECT N'actual/recorded arrival fields', N'NO', N'NOT_TESTED', N'UNVERIFIED_RAW_SOURCE_NOT_AVAILABLE', N'No current persisted actual/recorded arrival field.'
+SELECT N'actual/recorded arrival or departure fields', N'NO', N'NOT_TESTED', N'RAW_INSPECTION_REQUIRED', N'No current persisted actual/recorded arrival or departure field.'
 UNION ALL
-SELECT N'cancellation/status fields', N'NO', N'NOT_TESTED', N'UNVERIFIED_RAW_SOURCE_NOT_AVAILABLE', N'No current persisted deterministic cancellation/status field.';
+SELECT N'cancellation/status fields', N'NO', N'NOT_TESTED', N'RAW_INSPECTION_REQUIRED', N'No current persisted deterministic cancellation/status field; free text is not converted into cancellation.';
 
 /* 18. Alternative persisted timing conclusion. */
 SELECT
@@ -1243,15 +1249,9 @@ ORDER BY target_summary.SamplingTargetId;
 
 /* 20. Production-semantics answers supported by this stored-data analysis. */
 SELECT
-    N'CollectorOrParserLosesRelevantTiming' AS Question,
-    CASE
-        WHEN (SELECT COUNT_BIG(*) FROM #FrozenUnavailableObservation WHERE EstimatedArrivalUtc IS NULL) > 0
-         AND (SELECT COUNT_BIG(*) FROM #FrozenUnavailableObservation WHERE EstimatedArrivalUtc IS NULL AND CreatedAtUtc IS NOT NULL) > 0
-         AND (SELECT COUNT_BIG(*) FROM #FrozenUnavailableObservation WHERE EstimatedArrivalUtc IS NULL AND ObservedAtUtc IS NOT NULL) > 0
-            THEN N'INCONCLUSIVE'
-        ELSE N'INCONCLUSIVE'
-    END AS Answer,
-    N'Stored evidence proves the parser persists serviceArrival.timetabledTime and serviceArrival.estimatedTime, but safe raw TRIAS inspection was unavailable; no omission can be proven from stored rows alone.' AS Evidence
+    N'CollectorParserDiscardsRelevantTiming' AS Question,
+    N'INCONCLUSIVE' AS Answer,
+    N'Stored evidence proves the parser persists serviceArrival.timetabledTime and serviceArrival.estimatedTime, but this SQL batch does not inspect raw TRIAS responses; no discarded raw field can be proven from stored rows alone.' AS Evidence
 UNION ALL
 SELECT
     N'SamplingCadenceMateriallyContributes',

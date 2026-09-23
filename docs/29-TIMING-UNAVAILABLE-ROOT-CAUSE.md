@@ -2,11 +2,11 @@
 
 Status: diagnostic only. No production fix was made.
 
-This investigation implements the instructions in `prompts/05-OptimSql/o4-12.md`. It distinguishes stored-data evidence from hypotheses and keeps estimated arrival/delay separate from confirmed physical arrival.
+This follow-up implements the instructions in `prompts/05-OptimSql/o4-13.md`. It distinguishes stored-data evidence from hypotheses and keeps estimated arrival/delay separate from confirmed physical arrival.
 
 ## Execution contract and frozen scope
 
-The repository did not contain a local `v136` ref. The working baseline used for this run is the exact current commit `042c0b7` (`fix/sql: resolve residual in-scope static coverage gaps`) on branch `analysis/timing-unavailable-root-cause`.
+The repository baseline for this follow-up is **v137** on branch `analysis/timing-unavailable-source-evidence`.
 
 The reusable read-only batch is [09-analyze-timing-unavailable-root-cause.sql](../sql/05-analytics/09-analyze-timing-unavailable-root-cause.sql). It uses session-scoped temporary tables only and does not refresh the warehouse.
 
@@ -82,11 +82,125 @@ Rows with `ObservationKey > 17,802` were treated as a live tail and excluded fro
 
 Historical evidence is preserved separately and is not relabeled as current:
 
-| Snapshot | Comparable | Usable timing | Timing unavailable | Rate | Existing root evidence |
+| Snapshot | Comparable | Usable timing | Timing unavailable | Rate | Prior root evidence (preserved) |
 |---|---:|---:|---:|---:|---|
 | Historical M01 | 2,822 | 2,440 | 382 | 13.536490% | 380 / 2 / 0 |
 | Historical aligned seven-station | 5,127 | 4,239 | 888 | 17.320070% | 886 / 2 / 0 |
 | Current frozen | 5,857 | 4,907 | 950 | 16.219907% | 906 / 40 / 4 |
+
+## Source-level evidence completion
+
+This section completes the two remaining gaps without changing production
+behavior.
+
+### Historical evidence limitation
+
+The raw TRIAS responses for the historical 382-trip M01 snapshot were not
+persisted. The database therefore proves that 380 historical trips had no
+usable persisted `EstimatedArrivalUtc`, while 2 had an earlier persisted
+estimate followed by a latest persisted NULL and 0 were inconsistent. It does
+not retroactively prove whether the 380 historical raw responses contained a
+different, unpersisted timing or status field. This is an evidence limitation,
+not a database reconciliation failure. No historical source field is
+fabricated here.
+
+### Corrected primary root-cause distribution
+
+The reusable SQL now classifies primary causes from directly observed persisted
+timing evidence. Observation count is not part of the primary category. The
+current frozen population reconciles exactly to 950:
+
+| Primary category | Dated trips | Share | Direct evidence semantics |
+|---|---:|---:|---|
+| NoPersistedArrivalEstimateObserved | 946 | 99.5789% | At least one matched observation existed, and none had a non-NULL persisted `EstimatedArrivalUtc`. |
+| EstimatePreviouslyPresent_FinalObservationNull | 4 | 0.4211% | An earlier persisted estimate existed, but the final persisted observation was NULL. |
+| InsufficientEvidence | 0 | 0.0000% | No matched observation existed for the dated trip. |
+| OtherProvenCause | 0 | 0.0000% | Reserved for a directly proven cause outside the two timing patterns above. |
+| **Total** | **950** | **100.0000%** | **PASS** |
+
+The SQL derives these counts from the frozen tables; it does not hardcode the
+946/4 distribution.
+
+### Secondary observation and contextual evidence
+
+Observation exposure remains separate evidence:
+
+| Secondary flag | Dated trips |
+|---|---:|
+| OnlyObservedOnce | 906 |
+| MultipleObservations | 44 |
+| NoMatchedObservation | 0 |
+
+The latest-null flag affects 4 dated trips, and situation evidence is present
+for 27. These flags can overlap and are not primary causes. In particular,
+`OnlyObservedOnce` does not prove that sampling cadence caused the missing
+estimate.
+
+### Prospective raw TRIAS inspection status
+
+`RawTriasTimingInspection = NOT_EXECUTED` for this run. No explicit key was
+supplied, the current process had no `MDD_API_KEY`, and the Windows User
+environment lookup was unavailable in this non-Windows runtime. No safe key
+was available without weakening security. Therefore no MDD request was sent,
+the actual HTTP attempt count was 0, and no raw response was persisted. No
+before/after application-table count was taken for a live probe because the
+probe did not start.
+
+The diagnostic-only helper is
+[`Inspect-MddTriasTimingEvidence.ps1`](../collector/Inspect-MddTriasTimingEvidence.ps1).
+It reads the seven enabled targets and their existing `StopPointRef` and
+`NumberOfResults`, caps the run at seven logical requests, uses the existing
+safe request/retry helper, inspects raw JSON in memory before parser
+projection, and reports sanitized before/after counts for all non-system base
+tables. It does not call persistence or collector-run audit functions.
+
+Exact Windows Collector command when `MDD_API_KEY` is available in the process
+or User environment:
+
+```powershell
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File C:\Collector\Inspect-MddTriasTimingEvidence.ps1 -ConnectionString "Server=localhost;Database=CologneTransitIntelligence;Integrated Security=True;TrustServerCertificate=True;" -ReportPath C:\Collector\Logs\timing-unavailable-source-evidence-20260923.json
+```
+
+### Raw timing/status/departure field inventory
+
+No raw JSON was available in this run, so the following is the parser
+projection inventory and test status, not a fabricated source observation:
+
+| JsonPath | CurrentParserPersists | Parser target / note | ObservedValueType | NonNullOccurrenceCount | NullOccurrenceCount | ExampleSanitizedValue |
+|---|---|---|---|---:|---:|---|
+| `$.serviceDelivery.status` | NO | Validation only | NOT_TESTED | — | — | — |
+| `$.serviceDelivery.responseTimestamp` | YES | `ObservedAtUtc` | NOT_TESTED | — | — | — |
+| `$.serviceDelivery.deliveryPayload.stopEventResponse.stopEventResult[*].stopEvent.thisCall.callAtStop.serviceArrival.timetabledTime` | YES | `TimetabledArrivalUtc` | NOT_TESTED | — | — | — |
+| `$.serviceDelivery.deliveryPayload.stopEventResponse.stopEventResult[*].stopEvent.thisCall.callAtStop.serviceArrival.estimatedTime` | YES | `EstimatedArrivalUtc` | NOT_TESTED | — | — | — |
+| `$.serviceDelivery.deliveryPayload.stopEventResponse.stopEventResult[*].stopEvent.thisCall.callAtStop.serviceDeparture.timetabledTime` | NO | Not persisted; report separately | NOT_TESTED | — | — | — |
+| `$.serviceDelivery.deliveryPayload.stopEventResponse.stopEventResult[*].stopEvent.thisCall.callAtStop.serviceDeparture.estimatedTime` | NO | Not persisted; never treat as arrival | NOT_TESTED | — | — | — |
+| `*actual*` / `*recorded*` arrival or departure timestamp | NO | Evidence only; not integrated | NOT_TESTED | — | — | — |
+| `*delay*` | NO | No current raw delay projection | NOT_TESTED | — | — | — |
+| `*cancel*` / `*status*` event property | NO | No deterministic persisted field | NOT_TESTED | — | — | — |
+| `*situation*` / `*situationFullRef*` | YES | Current situation/link projection | NOT_TESTED | — | — | — |
+
+`CollectorParserDiscardsRelevantTiming = INCONCLUSIVE`: no raw missing-arrival
+event was available for comparison. The current parser does map the two
+service-arrival timing fields listed above, but stored rows cannot establish
+whether a relevant raw field was discarded.
+
+### Missing-arrival raw-event findings
+
+No raw stop-event results were inspected in this run. Consequently there is no
+supported finding about simultaneous `serviceDeparture` timing,
+actual/recorded timestamps, deterministic status/cancellation, or other raw
+fields when `serviceArrival.estimatedTime` is absent/NULL. Departure timing,
+if observed by the helper, will be reported separately and will not be treated
+as arrival timing. First/intermediate/last scheduled-stop association is also
+left `NOT_DETERMINED` unless a dated static scheduled-trip match is available.
+
+### Remaining uncertainty
+
+The current evidence proves only the persisted arrival-estimate path. It does
+not prove a historical source-level “never provided” statement, does not
+derive cancellation from free text, and does not authorize a KPI change from
+estimated delay to actual physical delay. Actual/recorded timing remains
+deferred to Roadmap Item 12.
 
 ## Stored timing lineage
 
@@ -154,21 +268,17 @@ The affected link inventory covered 44 rows:
 | RelationScope | 44 | 0 | 1 |
 | CreatedAtUtc | 44 | 0 | 28 |
 
-### Raw TRIAS inspection and parser inventory
+### Persisted-path boundary for affected observations
 
-Raw inspection was **not performed**. No safe `MDD_API_KEY` was available in the execution environment, so no TRIAS request was sent, no response was persisted, and no collector/configuration change was made.
+The raw-source status, parser inventory, and missing-arrival evidence are
+recorded in [Source-level evidence completion](#source-level-evidence-completion)
+above. The persisted data itself contains no departure time, actual/recorded
+arrival time, or deterministic cancellation/status field.
 
-| Source path / field | Current parser persists it | Observed with missing estimate | Confidence |
-|---|---|---|---|
-| `serviceArrival.timetabledTime` | YES | YES | Established from current parser and stored rows |
-| `serviceArrival.estimatedTime` | YES | YES | Established from current parser; NULL remains unavailable |
-| `serviceDeparture.*` | NO | Not tested | Raw source unavailable; no current persisted field |
-| Actual/recorded arrival fields | NO | Not tested | Raw source unavailable; no current persisted field |
-| Cancellation/status fields | NO | Not tested | Raw source unavailable; no current deterministic field |
-
-Because raw source inspection was unavailable, the collector/parser-loss answer is **INCONCLUSIVE**: stored evidence proves both service-arrival fields are mapped, but cannot prove whether an unpersisted TRIAS timing field existed in the unavailable cases.
-
-The alternative-persisted-timing check found **0** usable alternatives. All 1,007 affected observations had `ObservedAtUtc`, `CreatedAtUtc`, and `TimetabledArrivalUtc`, but those are respectively observation time, storage time, and scheduled time—not an arrival estimate.
+The alternative-persisted-timing check found **0** usable alternatives. All
+1,007 affected observations had `ObservedAtUtc`, `CreatedAtUtc`, and
+`TimetabledArrivalUtc`, but those are respectively observation time, storage
+time, and scheduled time—not an arrival estimate.
 
 ## Timing lead-time analysis
 
@@ -321,25 +431,33 @@ Collector audit context at analysis time showed successful/failed runs respectiv
 
 ## Mutually exclusive primary root causes
 
-Every frozen timing-unavailable dated trip received exactly one primary category; the distribution reconciles to 950:
+The reusable SQL now assigns primary categories from persisted timing evidence;
+observation count is retained only as secondary evidence. Every frozen
+timing-unavailable dated trip received exactly one primary category; the
+distribution reconciles to 950:
 
 | Primary category | Dated trips | Share |
 |---|---:|---:|
-| ObservedOnlyOnce_NoArrivalEstimate | 906 | 95.3684% |
-| RepeatedlyObserved_NoArrivalEstimate | 40 | 4.2105% |
+| NoPersistedArrivalEstimateObserved | 946 | 99.5789% |
 | EstimatePreviouslyPresent_FinalObservationNull | 4 | 0.4211% |
+| InsufficientEvidence | 0 | 0.0000% |
+| OtherProvenCause | 0 | 0.0000% |
 | **Total** | **950** | **100.0000%** |
 
-The secondary evidence totals were: source never provided an estimate for 946 trips; only one matched observation for 906; multiple observations for 44; latest-null pattern for 4; situation evidence for 27. Secondary flags are intentionally not treated as mutually exclusive causes.
+The secondary evidence totals were: no non-NULL persisted arrival estimate
+was observed for 946 trips; only one matched observation for 906; multiple
+observations for 44; no matched observation for 0; latest-null pattern for 4;
+and situation evidence for 27. These flags are intentionally not treated as
+mutually exclusive causes.
 
 ## Conclusions and unknowns
 
-1. The dominant observed condition is missing `EstimatedArrivalUtc` at the source-observation grain: 946/950 frozen unavailable dated trips never had a non-NULL estimate in matched observations. This is the primary root-cause evidence.
+1. The dominant proven condition is missing `EstimatedArrivalUtc` in the persisted arrival-estimate path: 946/950 frozen unavailable dated trips had matched observations but no non-NULL persisted estimate. This is not a retroactive claim about every raw TRIAS response.
 2. Limited observation exposure is a meaningful contributing factor: 906/950 unavailable trips were observed once. Sampling cadence receives **PARTIALLY** because the pattern is compatible with the 25/50-minute schedule, but station/service mix prevents causal attribution.
 3. Latest-null warehouse semantics contribute only **PARTIALLY** at this snapshot: 4 operational outcomes / 4 dated trips / 0.4211%. The latest semantic is unchanged.
-4. Collector/parser timing loss is **INCONCLUSIVE**. The parser clearly maps scheduled and estimated service-arrival fields, but raw TRIAS inspection was safely skipped because credentials were unavailable.
+4. `CollectorParserDiscardsRelevantTiming` is **INCONCLUSIVE**. The parser maps scheduled and estimated service-arrival fields, but raw TRIAS inspection was not executed because credentials were unavailable.
 5. Situation text and platform fields provide sparse contextual evidence. They do not prove cancellation, physical arrival, or causality.
 6. No alternative persisted realtime timing field can replace `EstimatedArrivalUtc`.
 7. Estimated delay remains an observed estimate-derived measure, never confirmed actual or physical delay.
 
-No collector, staging, working-layer, warehouse, production analytics view, Power BI, sampling, tiered-scheduling, or actual-physical-delay logic was changed. The only intended source diff is this report and the reusable read-only SQL analysis.
+No collector behavior, staging schema, working-layer matching, warehouse semantics, production analytics view, Power BI, sampling configuration, tiered-scheduling, or actual-physical-delay logic was changed. The source diff is this report, the reusable read-only SQL analysis, and the diagnostic-only raw inspection helper.
