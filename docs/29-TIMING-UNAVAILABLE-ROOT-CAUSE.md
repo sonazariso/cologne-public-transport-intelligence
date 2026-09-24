@@ -539,3 +539,114 @@ mutually exclusive causes.
 7. Estimated delay remains an observed estimate-derived measure, never confirmed actual or physical delay.
 
 Only the optional current-call source-evidence projection and its diagnostic inventory were changed. Working-layer matching, warehouse timing semantics, analytics KPIs, Power BI, sampling configuration, tiered-scheduling, and actual-physical-delay logic were not changed. The source diff is this report, the collector/parser and staging persistence additions, and the diagnostic raw inspection helper.
+
+## Stop-service status persistence acceptance
+
+The final documentation-only acceptance was validated at **2026-09-24
+10:26:48 UTC** using read-only evidence from the development database. The
+historical analysis above was not recomputed or rewritten.
+
+### Physical staging and persistence-contract validation
+
+The live physical-column check found the three optional columns on
+`stg.MddRealtimeStopObservation` as follows:
+
+| Column | SQL type | Nullable |
+|---|---|---|
+| `NotServicedStop` | `BIT` | Yes |
+| `NoBoardingAtStop` | `BIT` | Yes |
+| `NoAlightingAtStop` | `BIT` | Yes |
+
+The live check of `stg.MddRealtimeStopObservationInputType` found the same
+three `BIT NULL` columns in the same relative order expected by
+`New-MddRealtimeSnapshotDataTables`: `NotServicedStop`, `NoBoardingAtStop`,
+then `NoAlightingAtStop`. The collector creates those DataTable columns as
+nullable-capable PowerShell `[bool]` values and sends absent values as
+`DBNull.Value`.
+
+The live definition of `stg.uspPersistMddRealtimeSnapshot` was also checked.
+Each field is carried from `@StopObservations` through `StopRows` into both
+the `INSERT` column list and the corresponding `SELECT` projection for
+`stg.MddRealtimeStopObservation`.
+
+The nullable mapping contract is therefore:
+
+| TRIAS property | DataTable/TVP value | Persisted SQL value |
+|---|---|---|
+| Property absent | `DBNull.Value` | `NULL` |
+| `false` | Boolean false | `0` |
+| `true` | Boolean true | `1` |
+
+The earlier bounded raw probe also supplies the known positive parser case at
+Köln Bf Ehrenfeld: for returned stop `de:05315:14201:7:71`,
+`ResultId = ID-1FC8BC1C-4A67-4B80-B696-BA9725785F76`, and
+`JourneyRef = ddb:92K12::R:j26:343`, the current-call evidence contained
+`notServicedStop = true` and `noAlightingAtStop = true` while the current
+arrival estimate was absent. This remains source evidence, not a cancellation
+KPI or a requirement that every later snapshot contain a true flag.
+
+### Accepted live manual Collector run
+
+The newest matching manual run for `StopPointRef = de:05315:11110` was:
+
+| Field | Value |
+|---|---|
+| `CollectorRunId` | `11472` |
+| `SamplingMode` | `Manual` |
+| `StopPointRef` | `de:05315:11110` |
+| `StartedAtUtc` | `2026-09-24 10:12:48` |
+| `CompletedAtUtc` | `2026-09-24 10:12:51` |
+| `Status` | `Succeeded` |
+| `HttpStatus` | `200` |
+| `HttpAttempts` | `1` |
+| `ObservedAtUtc` | `2026-09-24 10:12:45` |
+| `StopEventsReturned` | `5` |
+| `StopsInserted` | `5` |
+| `StopsAlreadyPresent` | `0` |
+| `ErrorCategory` | `NULL` |
+| `ErrorMessage` | `NULL` |
+
+### Persisted real snapshot
+
+For the exact `ObservedAtUtc = 2026-09-24 10:12:45`, the staging query
+returned five rows. The row count reconciles exactly with
+`StopEventsReturned = 5` and `StopsInserted = 5`; `StopsAlreadyPresent = 0`.
+
+| `ObservationKey` | `ObservedAtUtc` | `ResultId` | `StopPointRef` | `JourneyRef` |
+|---:|---|---|---|---|
+| 18033 | 2026-09-24 10:12:45 | `ID-5B2C3A58-CAC3-409F-BBF6-72BA16E8D098` | `de:05315:11110:2:21` | `vrs:01133::R:673:214` |
+| 18034 | 2026-09-24 10:12:45 | `ID-5BEECA7D-24D1-4AE1-82D6-46BC74A7BA05` | `de:05315:11110:2:21` | `vrs:01133::H:673:686` |
+| 18035 | 2026-09-24 10:12:45 | `ID-9FBB3001-A6BF-4FDD-B33F-7770C9685251` | `de:05315:11110:1:12` | `vrs:01001::R:673:1226` |
+| 18036 | 2026-09-24 10:12:45 | `ID-D4CCB17C-0168-4ABF-AE5E-8DC7FCCB637B` | `de:05315:11110:1:11` | `vrs:01007::H:673:793` |
+| 18037 | 2026-09-24 10:12:45 | `ID-F5A4644E-5D48-4BEB-8253-ECED8A582CAA` | `de:05315:11110:2:24` | `vrs:03025:S:H:673:115` |
+
+The remaining requested persisted fields were:
+
+| `ObservationKey` | `TimetabledArrivalUtc` | `EstimatedArrivalUtc` | `PlannedBay` | `EstimatedBay` | `NotServicedStop` | `NoBoardingAtStop` | `NoAlightingAtStop` |
+|---:|---|---|---|---|---|---|---|
+| 18033 | 2026-09-24 10:12:00 | `NULL` | `NULL` | `NULL` | `NULL` | `NULL` | `NULL` |
+| 18034 | 2026-09-24 10:12:00 | 2026-09-24 10:16:48 | `NULL` | `NULL` | `NULL` | `NULL` | `NULL` |
+| 18035 | 2026-09-24 10:08:00 | 2026-09-24 10:12:42 | `NULL` | `NULL` | `NULL` | `NULL` | `NULL` |
+| 18036 | 2026-09-24 08:41:00 | 2026-09-24 10:53:54 | `NULL` | `NULL` | `NULL` | `NULL` | `NULL` |
+| 18037 | 2026-09-24 10:12:00 | `NULL` | `NULL` | `NULL` | `NULL` | `NULL` | `NULL` |
+
+All three status values being `NULL` in this optional-property snapshot is a
+valid result. The successful persisted snapshot, the reconciled row counts,
+and the null `ErrorCategory`/`ErrorMessage` prove that no DataTable column
+mismatch, TVP schema mismatch, BIT conversion error, missing-column error,
+stored-procedure parameter error, or SQL type mismatch occurred at runtime.
+
+### Preserved timing conclusions
+
+This acceptance leaves the accepted timing results unchanged:
+
+- Historical `TimingUnavailableTrips = 382`: 380 had no persisted arrival
+  estimate and 2 had an earlier estimate followed by latest `NULL`.
+- Current frozen `TimingUnavailableTrips = 950`: 946 were
+  `NoPersistedArrivalEstimateObserved` and 4 were
+  `EstimatePreviouslyPresent_FinalObservationNull`.
+- `CollectorParserDiscardsRelevantTiming = NO`.
+- `SamplingCadenceMateriallyContributes = PARTIALLY`.
+- `WarehouseLatestNullSemanticsContributes = PARTIALLY`.
+
+Stop-service status persistence is fully validated end-to-end.
