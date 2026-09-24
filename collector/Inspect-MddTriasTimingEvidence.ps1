@@ -199,7 +199,7 @@ function Get-InspectionApplicationTableCounts {
 SELECT
     schema_row.name AS SchemaName,
     table_row.name AS TableName,
-    CONVERT(BIGINT, COALESCE(SUM(CASE WHEN partition_row.index_id IN (0, 1) THEN partition_row.row_count ELSE 0 END), 0)) AS RowCount
+    CONVERT(BIGINT, COALESCE(SUM(CASE WHEN partition_row.index_id IN (0, 1) THEN partition_row.row_count ELSE 0 END), 0)) AS [RowCount]
 FROM sys.tables AS table_row
 JOIN sys.schemas AS schema_row
   ON schema_row.schema_id = table_row.schema_id
@@ -293,6 +293,18 @@ function Get-ParserProjectionForPath {
 
     if ($normalizedPath -match '(?i)serviceArrival\.estimatedTime$') {
         return [PSCustomObject]@{ Persists = "YES"; TargetField = "EstimatedArrivalUtc" }
+    }
+
+    if ($normalizedPath -match '(?i)thisCall\.callAtStop\.notServicedStop$') {
+        return [PSCustomObject]@{ Persists = "YES"; TargetField = "NotServicedStop" }
+    }
+
+    if ($normalizedPath -match '(?i)thisCall\.callAtStop\.noBoardingAtStop$') {
+        return [PSCustomObject]@{ Persists = "YES"; TargetField = "NoBoardingAtStop" }
+    }
+
+    if ($normalizedPath -match '(?i)thisCall\.callAtStop\.noAlightingAtStop$') {
+        return [PSCustomObject]@{ Persists = "YES"; TargetField = "NoAlightingAtStop" }
     }
 
     if ($normalizedPath -match '(?i)(plannedBay|estimatedBay)$') {
@@ -460,6 +472,15 @@ function Get-FocusEvidenceClass {
     # neutral until the raw value and structure establish their meaning.
     if ($Path -match '(?i)serviceDelivery\.status$') {
         return "ServiceOrRequestStatusNamedField"
+    }
+
+    # Keep current/previous/onward CallAtStop serviceability evidence distinct
+    # from generic status/cancellation names.  NotServicedStop means that the
+    # planned stop is not served; the noBoarding/noAlighting flags are
+    # boarding/alighting restrictions.  None of these flags implies route or
+    # trip cancellation.
+    if ($Path -match '(?i)callAtStop\.(notServicedStop|noBoardingAtStop|noAlightingAtStop)$') {
+        return "StopServiceStatusEvidence"
     }
 
     if ($Path -match '(?i)(cancel|cancelled|cancellation|status)') {
@@ -636,6 +657,12 @@ function Get-MissingArrivalEvents {
             PotentialAlternativeArrivalTimingEvidence = @($potentialAlternativeArrivalTimingEvidence)
             AmbiguousNonPersistedTimingEvidenceCount = $ambiguousNonPersistedTimingEvidence.Count
             AmbiguousNonPersistedTimingEvidence       = @($ambiguousNonPersistedTimingEvidence)
+            StopServiceStatusEvidence                = @(
+                $eventEvidence | Where-Object {
+                    $_.EvidenceClass -eq "StopServiceStatusEvidence" -and
+                    $_.JsonPath -match '(?i)\.thisCall\.callAtStop\.'
+                }
+            )
             OtherRelatedFieldEvidence                = @($eventEvidence | Where-Object { $_.EvidenceClass -eq "OtherRelatedField" })
             ParserMatched                            = $false
             ParserEstimatedArrivalUtc                = "<not compared>"
@@ -946,7 +973,7 @@ $report = [ordered]@{
     SafetyNotes                                = @(
         "Raw response content was inspected in memory only; no raw response file was written.",
         "No collector persistence function, collector-run audit insertion, sampling configuration write, or application-table write was called.",
-        "StatusOrCancellationNamedField and ServiceOrRequestStatusNamedField labels are property-path inventory labels only; no cancellation semantics are inferred from a field name or generic service/request status.",
+        "StatusOrCancellationNamedField, ServiceOrRequestStatusNamedField, and StopServiceStatusEvidence labels are property-path inventory labels; no cancellation semantics are inferred from a field name or generic service/request status.",
         "Status/cancellation-named fields are reported separately and cannot by themselves establish CollectorParserDiscardsRelevantTiming.",
         "Departure timing is reported separately and is not treated as arrival timing.",
         "Only clearly identified non-persisted actual/recorded/measured arrival timing can establish parser-discarded relevant timing; ambiguous non-persisted timing evidence yields INCONCLUSIVE.",

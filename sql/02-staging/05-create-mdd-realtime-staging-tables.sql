@@ -33,8 +33,33 @@ BEGIN
         CreatedAtUtc DATETIME2(0) NOT NULL
             CONSTRAINT DF_MddRealtimeStopObservation_CreatedAtUtc DEFAULT SYSUTCDATETIME(),
         PlannedBay NVARCHAR(100) NULL,
-        EstimatedBay NVARCHAR(100) NULL
+        EstimatedBay NVARCHAR(100) NULL,
+        NotServicedStop BIT NULL,
+        NoBoardingAtStop BIT NULL,
+        NoAlightingAtStop BIT NULL
     );
+END;
+GO
+
+/* Existing append-only rows remain NULL when these optional source fields are added. */
+IF COL_LENGTH(N'stg.MddRealtimeStopObservation', N'NotServicedStop') IS NULL
+BEGIN
+    ALTER TABLE stg.MddRealtimeStopObservation
+        ADD NotServicedStop BIT NULL;
+END;
+GO
+
+IF COL_LENGTH(N'stg.MddRealtimeStopObservation', N'NoBoardingAtStop') IS NULL
+BEGIN
+    ALTER TABLE stg.MddRealtimeStopObservation
+        ADD NoBoardingAtStop BIT NULL;
+END;
+GO
+
+IF COL_LENGTH(N'stg.MddRealtimeStopObservation', N'NoAlightingAtStop') IS NULL
+BEGIN
+    ALTER TABLE stg.MddRealtimeStopObservation
+        ADD NoAlightingAtStop BIT NULL;
 END;
 GO
 

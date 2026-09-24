@@ -1,12 +1,12 @@
 # Timing Unavailable Root-Cause Investigation
 
-Status: diagnostic only. No production fix was made.
+Status: diagnostic evidence completion plus prospective source-evidence capture. No timing or KPI semantic fix was made.
 
-This follow-up implements the instructions in `prompts/05-OptimSql/o4-13.md`. It distinguishes stored-data evidence from hypotheses and keeps estimated arrival/delay separate from confirmed physical arrival.
+This follow-up implements the instructions in `prompts/05-OptimSql/o4-16.md`. It distinguishes stored-data evidence from hypotheses, keeps estimated arrival/delay separate from confirmed physical arrival, and persists only the proven current-call stop-service evidence for future observations.
 
 ## Execution contract and frozen scope
 
-The repository baseline for this follow-up is **v137** on branch `analysis/timing-unavailable-source-evidence`.
+The repository baseline for this follow-up is **v139 plus the local RowCount alias fix** on branch `fix/timing-unavailable-stop-service-status-evidence`.
 
 The reusable read-only batch is [09-analyze-timing-unavailable-root-cause.sql](../sql/05-analytics/09-analyze-timing-unavailable-root-cause.sql). It uses session-scoped temporary tables only and does not refresh the warehouse.
 
@@ -90,7 +90,7 @@ Historical evidence is preserved separately and is not relabeled as current:
 
 ## Source-level evidence completion
 
-This section completes the two remaining gaps without changing production
+This section completes the source-evidence gap without changing timing or KPI
 behavior.
 
 ### Historical evidence limitation
@@ -101,8 +101,9 @@ usable persisted `EstimatedArrivalUtc`, while 2 had an earlier persisted
 estimate followed by a latest persisted NULL and 0 were inconsistent. It does
 not retroactively prove whether the 380 historical raw responses contained a
 different, unpersisted timing or status field. This is an evidence limitation,
-not a database reconciliation failure. No historical source field is
-fabricated here.
+not a database reconciliation failure. The historical raw payloads do not
+exist, so those 380 trips cannot be retrospectively subdivided by
+`NotServicedStop`. No historical source field is fabricated here.
 
 ### Corrected primary root-cause distribution
 
@@ -136,15 +137,42 @@ for 27. These flags can overlap and are not primary causes. In particular,
 `OnlyObservedOnce` does not prove that sampling cadence caused the missing
 estimate.
 
+### Prospective source-level finding
+
+`StopNotServicedEvidenceObserved` is a separate prospective source finding,
+not a replacement for the frozen persisted-data categories:
+
+| Finding | Evidence | Scope |
+|---|---|---|
+| `StopNotServicedEvidenceObserved` | One of the three current raw missing-arrival events had `thisCall.callAtStop.notServicedStop = true`; the same event also had `noAlightingAtStop = true`. | One bounded raw-probe event only; not merged into the historical 946/4 counts and not a cancellation KPI. |
+
+This branch does not exclude `NotServicedStop` rows from
+`ComparableScheduledTrips`, `TimingUnavailableTrips`, On-Time, Delayed, or
+Early populations. It adds no cancellation rate, cancelled-trip measure, or
+other management KPI; status semantics will be reviewed only after enough
+prospective evidence has been collected.
+
 ### Prospective raw TRIAS inspection status
 
-`RawTriasTimingInspection = NOT_EXECUTED` for this run. No explicit key was
-supplied, the current process had no `MDD_API_KEY`, and the Windows User
-environment lookup was unavailable in this non-Windows runtime. No safe key
-was available without weakening security. Therefore no MDD request was sent,
-the actual HTTP attempt count was 0, and no raw response was persisted. No
-before/after application-table count was taken for a live probe because the
-probe did not start.
+The bounded raw probe executed successfully. The evidence report is
+[`tmp/timing-unavailable-source-evidence.json`](../tmp/timing-unavailable-source-evidence.json).
+It inspected the seven enabled targets with seven logical requests and seven
+HTTP attempts. All seven requests succeeded, all seven responses parsed, and
+the probe made no persistence or collector-audit write.
+
+| Metric | Result |
+|---|---:|
+| `RawTriasTimingInspection` | `EXECUTED` |
+| Logical requests | 7 |
+| HTTP attempts | 7 |
+| Successful requests | 7 |
+| Failed requests | 0 |
+| `ParserSuccessCount` | 7 |
+| `ParserFailureCount` | 0 |
+| Raw current-stop events | 35 |
+| Missing `thisCall.callAtStop.serviceArrival.estimatedTime` events | 3 |
+| `ApplicationTablesUnchanged` | `true` |
+| `CollectorParserDiscardsRelevantTiming` | `NO` |
 
 The diagnostic-only helper is
 [`Inspect-MddTriasTimingEvidence.ps1`](../collector/Inspect-MddTriasTimingEvidence.ps1).
@@ -154,53 +182,95 @@ safe request/retry helper, inspects raw JSON in memory before parser
 projection, and reports sanitized before/after counts for all non-system base
 tables. It does not call persistence or collector-run audit functions.
 
-Exact Windows Collector command when `MDD_API_KEY` is available in the process
-or User environment:
+Exact Windows Collector command used when `MDD_API_KEY` is available in the
+process or User environment:
 
 ```powershell
-powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File C:\Collector\Inspect-MddTriasTimingEvidence.ps1 -ConnectionString "Server=localhost;Database=CologneTransitIntelligence;Integrated Security=True;TrustServerCertificate=True;" -ReportPath C:\Collector\Logs\timing-unavailable-source-evidence-20260923.json
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File C:\Collector\Inspect-MddTriasTimingEvidence.ps1 -ConnectionString "Server=localhost;Database=CologneTransitIntelligence;Integrated Security=True;TrustServerCertificate=True;" -ReportPath C:\Collector\Logs\timing-unavailable-source-evidence-20260924.json
 ```
 
 ### Raw timing/status/departure field inventory
 
-No raw JSON was available in this run, so the following is the parser
-projection inventory and test status, not a fabricated source observation:
+The executed report found the following relevant source fields. The diagnostic
+helper now classifies the three current-call serviceability properties as
+`StopServiceStatusEvidence`; generic request status remains separate.
+The supplied report is retained as the raw-probe evidence artifact; the
+classification and parser-target labels below describe the updated helper and
+collector contract without changing the raw occurrence counts.
 
 | JsonPath | CurrentParserPersists | Parser target / note | ObservedValueType | NonNullOccurrenceCount | NullOccurrenceCount | ExampleSanitizedValue |
 |---|---|---|---|---:|---:|---|
-| `$.serviceDelivery.status` | NO | Validation only | NOT_TESTED | — | — | — |
-| `$.serviceDelivery.responseTimestamp` | YES | `ObservedAtUtc` | NOT_TESTED | — | — | — |
-| `$.serviceDelivery.deliveryPayload.stopEventResponse.stopEventResult[*].stopEvent.thisCall.callAtStop.serviceArrival.timetabledTime` | YES | `TimetabledArrivalUtc` | NOT_TESTED | — | — | — |
-| `$.serviceDelivery.deliveryPayload.stopEventResponse.stopEventResult[*].stopEvent.thisCall.callAtStop.serviceArrival.estimatedTime` | YES | `EstimatedArrivalUtc` | NOT_TESTED | — | — | — |
-| `$.serviceDelivery.deliveryPayload.stopEventResponse.stopEventResult[*].stopEvent.thisCall.callAtStop.serviceDeparture.timetabledTime` | NO | Not persisted; report separately | NOT_TESTED | — | — | — |
-| `$.serviceDelivery.deliveryPayload.stopEventResponse.stopEventResult[*].stopEvent.thisCall.callAtStop.serviceDeparture.estimatedTime` | NO | Not persisted; never treat as arrival | NOT_TESTED | — | — | — |
-| `*actual*` / `*recorded*` arrival or departure timestamp | NO | Evidence only; not integrated | NOT_TESTED | — | — | — |
-| `*delay*` | NO | No current raw delay projection | NOT_TESTED | — | — | — |
-| `*cancel*` / `*status*` event property | NO | No deterministic persisted field | NOT_TESTED | — | — | — |
-| `*situation*` / `*situationFullRef*` | YES | Current situation/link projection | NOT_TESTED | — | — | — |
+| `$.serviceDelivery.status` | NO | `ServiceOrRequestStatusNamedField`; validation only | Boolean | 7 | 0 | `True` |
+| `$.serviceDelivery.responseTimestamp` | YES | `ObservedAtUtc` | String | 7 | 0 | `2026-09-24T08:39:09Z` |
+| `...thisCall.callAtStop.serviceArrival.timetabledTime` | YES | `TimetabledArrivalUtc` | String | 35 | 0 | `2026-09-24T06:41:00Z[GMT]` |
+| `...thisCall.callAtStop.serviceArrival.estimatedTime` | YES | `EstimatedArrivalUtc` | String | 32 | 0 | `2026-09-24T08:47:48Z[GMT]` |
+| `...thisCall.callAtStop.notServicedStop` | YES | `NotServicedStop`; `StopServiceStatusEvidence` | Boolean | 1 | 0 | `True` |
+| `...thisCall.callAtStop.noBoardingAtStop` | YES when present | `NoBoardingAtStop`; not observed on a current call in this sample | — | — | — | — |
+| `...thisCall.callAtStop.noAlightingAtStop` | YES | `NoAlightingAtStop`; `StopServiceStatusEvidence` | Boolean | 1 | 0 | `True` |
+| `...previousCall[*].callAtStop.serviceDeparture.timetabledTime` | NO | `AdditionalDepartureTimingEvidence` only | String | 556 | 0 | `2026-09-24T06:04:00Z[GMT]` |
+| `...previousCall[*].callAtStop.serviceDeparture.estimatedTime` | NO | `AdditionalDepartureTimingEvidence` only | String | 544 | 0 | `2026-09-24T06:04:00Z[GMT]` |
+| `...onwardCall[*].callAtStop.serviceDeparture.timetabledTime` | NO | `AdditionalDepartureTimingEvidence` only | String | 409 | 0 | `2026-09-24T06:43:00Z[GMT]` |
+| `...onwardCall[*].callAtStop.serviceDeparture.estimatedTime` | NO | `AdditionalDepartureTimingEvidence` only | String | 349 | 0 | `2026-09-24T08:49:48Z[GMT]` |
+| `*actual*` / `*recorded*` arrival timestamp | NO | No observed field | — | 0 | 0 | — |
+| `*delay*` arrival replacement | NO | No observed field | — | 0 | 0 | — |
 
-`CollectorParserDiscardsRelevantTiming = INCONCLUSIVE`: no raw missing-arrival
-event was available for comparison. The current parser does map the two
-service-arrival timing fields listed above, but stored rows cannot establish
-whether a relevant raw field was discarded.
+The same property names also appeared on surrounding calls: the report
+observed `notServicedStop` on 7 `previousCall` and 2 `onwardCall` entries,
+`noBoardingAtStop` on 8 previous and 2 onward entries, and
+`noAlightingAtStop` on 7 previous and 2 onward entries. These remain
+`StopServiceStatusEvidence` inventory only; only `thisCall.callAtStop.*` is
+projected into the current observation row.
+
+`serviceDelivery.status = true` is retained as
+`ServiceOrRequestStatusNamedField`; it is a service/request response status,
+not vehicle or trip cancellation evidence. Arbitrary status/cancel-named
+properties remain separate from the confirmed current-call serviceability
+properties. `NoBoardingAtStop` and `NoAlightingAtStop` are restrictions on
+boarding/alighting, not route cancellation. `NotServicedStop` means that the
+planned stop is not served; it is source evidence only.
+
+`CollectorParserDiscardsRelevantTiming = NO`: all three missing-estimate
+events parsed successfully with `EstimatedArrivalUtc = NULL`, and none
+contained an alternative current-call arrival timestamp for the parser to
+discard. `serviceDeparture.timetabledTime` and `serviceDeparture.estimatedTime`
+remain departure context, never arrival timing.
 
 ### Missing-arrival raw-event findings
 
-No raw stop-event results were inspected in this run. Consequently there is no
-supported finding about simultaneous `serviceDeparture` timing,
-actual/recorded timestamps, deterministic status/cancellation, or other raw
-fields when `serviceArrival.estimatedTime` is absent/NULL. Departure timing,
-if observed by the helper, will be reported separately and will not be treated
-as arrival timing. First/intermediate/last scheduled-stop association is also
-left `NOT_DETERMINED` unless a dated static scheduled-trip match is available.
+The probe inspected 35 current stop events: 32 had
+`thisCall.callAtStop.serviceArrival.estimatedTime`, and three had that
+property absent. Each missing event was parser-matched and produced
+`ParserEstimatedArrivalUtc = NULL`. No event exposed actual/recorded arrival
+timing, an alternative arrival field, a delay field that could replace arrival,
+or a parser-discarded relevant timing field.
+
+| Target | StopPointRef | ResultId | JourneyRef | ArrivalEstimatePresence | ParserEstimatedArrivalUtc | ActualOrRecordedTimingEvidence | PotentialAlternativeArrivalTimingEvidence | StopServiceStatusEvidence |
+|---|---|---|---|---|---|---|---|---|
+| Köln Rodenkirchen Bf (`de:05315:12711`) | `de:05315:12711:1:11` | `ID-B40CD36A-282C-40F4-9EE7-325832FD0F13` | `vrs:01016::H:673:996` | `ABSENT` | `NULL` | None | None | None on `thisCall`; arrival estimate absent; no alternative current-call arrival timing or service-status explanation observed in this bounded sample. |
+| Köln Bf Ehrenfeld (`de:05315:14201`) | `de:05315:14201:7:71` | `ID-1FC8BC1C-4A67-4B80-B696-BA9725785F76` | `ddb:92K12::R:j26:343` | `ABSENT` | `NULL` | None | None | `thisCall.callAtStop.notServicedStop = true`; `thisCall.callAtStop.noAlightingAtStop = true`. |
+| Köln Bf Mülheim (`de:05315:19201`) | `de:05315:19201:1:12` | `ID-4A2B6FA6-C169-4740-B964-3F9F3BEB0665` | `vrs:01018::R:673:1426` | `ABSENT` | `NULL` | None | None | None on `thisCall`; arrival estimate absent; no alternative current-call arrival timing or service-status explanation observed in this bounded sample. |
+
+The Ehrenfeld event is the one prospective raw-probe finding named
+`StopNotServicedEvidenceObserved`: confirmed stop-not-serviced evidence is
+associated with a missing-arrival event. It must not be generalized to all
+historical `TimingUnavailableTrips`, and the three missing estimates must not
+be described as cancelled services. A `previousCall.noBoardingAtStop` value
+also occurred in the Ehrenfeld event's surrounding call history; it is not
+current-call evidence and is not persisted into the current observation row.
+
+Departure context was retained as `AdditionalDepartureTimingEvidence`. The
+three missing events exposed only non-persisted departure paths in
+`previousCall` and/or `onwardCall`; those values do not resolve the missing
+current-stop arrival estimate and are not used for `TimingUnavailable`.
 
 ### Remaining uncertainty
 
-The current evidence proves only the persisted arrival-estimate path. It does
-not prove a historical source-level “never provided” statement, does not
-derive cancellation from free text, and does not authorize a KPI change from
-estimated delay to actual physical delay. Actual/recorded timing remains
-deferred to Roadmap Item 12.
+The current evidence proves one prospective source-level stop-service status
+finding, but it does not prove a historical source-level subdivision of the
+382-trip snapshot. It does not derive cancellation from free text or generic
+status fields, and it does not authorize a KPI change from estimated delay to
+actual physical delay. Actual/recorded timing remains deferred to Roadmap Item
+12.
 
 ## Stored timing lineage
 
@@ -208,15 +278,17 @@ The current collector/parser stores the following timing path:
 
 | Stage | Evidence and semantics |
 |---|---|
-| TRIAS source | `serviceArrival.timetabledTime` and `serviceArrival.estimatedTime` are parsed in `collector/MddRealtimeCollector.psm1:586-605`. |
+| TRIAS source | `serviceArrival.timetabledTime`, `serviceArrival.estimatedTime`, and current-call stop-service flags are parsed in `collector/MddRealtimeCollector.psm1:586-608`. |
 | Collector observation time | `serviceDelivery.responseTimestamp` becomes `ObservedAtUtc` (`collector/MddRealtimeCollector.psm1:570-571`). |
-| Staging | The parser persists `TimetabledArrivalUtc`, `EstimatedArrivalUtc`, `PlannedBay`, and `EstimatedBay`; `CreatedAtUtc` is storage time. |
+| Staging | The parser persists `TimetabledArrivalUtc`, `EstimatedArrivalUtc`, `PlannedBay`, `EstimatedBay`, and nullable current-call `NotServicedStop`, `NoBoardingAtStop`, and `NoAlightingAtStop`; `CreatedAtUtc` is storage time. |
 | Working match | `ArrivalDelayMinutes` is derived from scheduled versus estimated arrival. Matching identifies the dated scheduled event; it does not fill a missing estimate. |
 | Fact | The refresh consolidates repeated observations and stores first/latest observed estimate, delay, observation count, bays, platform evidence, and situation associations. |
 | Analytics reliability | `FinalObservedEstimatedDelayMinutes` is an observed estimate-derived delay, explicitly not confirmed physical delay (`sql/05-analytics/03-create-realtime-analytics-views.sql:471-485`). |
 | Management | `HasValidRealtimeObservation = 1` only when the selected outcome has a non-NULL final observed estimated delay (`sql/05-analytics/05-create-m01-management-views.sql:58-73`). A NULL estimate remains unavailable, not on-time. |
 
-No departure time, actual/recorded arrival time, or deterministic cancellation/status field is persisted by the current collector path.
+No departure time, actual/recorded arrival time, or deterministic cancellation
+status is persisted by the current collector path. The three optional
+current-call service-status booleans are source evidence only.
 
 ### Persisted field inventory for affected observations
 
@@ -242,7 +314,11 @@ The affected-source inventory covers 1,007 matched staging observations belongin
 | EstimatedBay | 2 | 1,005 | 2 |
 | CreatedAtUtc | 1,007 | 0 | 546 |
 
-The parser’s persisted source shapes are also visible in `collector/MddRealtimeCollector.psm1:789-867`, including the situation and link payloads.
+The parser’s persisted source shapes are also visible in `collector/MddRealtimeCollector.psm1:792-870`, including the situation and link payloads.
+
+The three new status columns were added after the frozen source audit. Existing
+rows, including the historical and current frozen populations, remain NULL in
+those columns; no historical rows were rewritten.
 
 The linked situation inventory covered 43 distinct situation rows:
 
@@ -273,7 +349,9 @@ The affected link inventory covered 44 rows:
 The raw-source status, parser inventory, and missing-arrival evidence are
 recorded in [Source-level evidence completion](#source-level-evidence-completion)
 above. The persisted data itself contains no departure time, actual/recorded
-arrival time, or deterministic cancellation/status field.
+arrival time, or deterministic cancellation/status field. Newly collected
+rows may contain only the three nullable current-call service-status fields;
+they do not contain previous-call or onward-call status values.
 
 The alternative-persisted-timing check found **0** usable alternatives. All
 1,007 affected observations had `ObservedAtUtc`, `CreatedAtUtc`, and
@@ -455,9 +533,9 @@ mutually exclusive causes.
 1. The dominant proven condition is missing `EstimatedArrivalUtc` in the persisted arrival-estimate path: 946/950 frozen unavailable dated trips had matched observations but no non-NULL persisted estimate. This is not a retroactive claim about every raw TRIAS response.
 2. Limited observation exposure is a meaningful contributing factor: 906/950 unavailable trips were observed once. Sampling cadence receives **PARTIALLY** because the pattern is compatible with the 25/50-minute schedule, but station/service mix prevents causal attribution.
 3. Latest-null warehouse semantics contribute only **PARTIALLY** at this snapshot: 4 operational outcomes / 4 dated trips / 0.4211%. The latest semantic is unchanged.
-4. `CollectorParserDiscardsRelevantTiming` is **INCONCLUSIVE**. The parser maps scheduled and estimated service-arrival fields, but raw TRIAS inspection was not executed because credentials were unavailable.
-5. Situation text and platform fields provide sparse contextual evidence. They do not prove cancellation, physical arrival, or causality.
+4. `CollectorParserDiscardsRelevantTiming` is **NO**. The executed raw probe found no alternative current-call arrival timestamp in the three missing-arrival events, and the parser produced NULL estimates for all three.
+5. One prospective missing-arrival event carried confirmed `NotServicedStop` evidence. It is not generalized to historical trips, and it does not prove cancellation, physical arrival, or causality for other events.
 6. No alternative persisted realtime timing field can replace `EstimatedArrivalUtc`.
 7. Estimated delay remains an observed estimate-derived measure, never confirmed actual or physical delay.
 
-No collector behavior, staging schema, working-layer matching, warehouse semantics, production analytics view, Power BI, sampling configuration, tiered-scheduling, or actual-physical-delay logic was changed. The source diff is this report, the reusable read-only SQL analysis, and the diagnostic-only raw inspection helper.
+Only the optional current-call source-evidence projection and its diagnostic inventory were changed. Working-layer matching, warehouse timing semantics, analytics KPIs, Power BI, sampling configuration, tiered-scheduling, and actual-physical-delay logic were not changed. The source diff is this report, the collector/parser and staging persistence additions, and the diagnostic raw inspection helper.

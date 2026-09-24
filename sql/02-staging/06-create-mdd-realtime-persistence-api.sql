@@ -12,6 +12,53 @@ GO
     the existing staging-table surrogate keys inside the persistence
     procedure.
 */
+/*
+    SQL Server table types cannot be altered in place. Replace the prior stop
+    input contract when this script is applied to a database that predates
+    the optional current-call service-status fields. The procedure is dropped
+    first because it depends on the table type; it is recreated below.
+*/
+IF EXISTS
+(
+    SELECT 1
+    FROM sys.table_types AS table_type
+    WHERE table_type.schema_id = SCHEMA_ID(N'stg')
+      AND table_type.name = N'MddRealtimeStopObservationInputType'
+      AND
+      (
+          NOT EXISTS
+          (
+              SELECT 1
+              FROM sys.columns AS column_row
+              WHERE column_row.object_id = table_type.type_table_object_id
+                AND column_row.name = N'NotServicedStop'
+          )
+          OR NOT EXISTS
+          (
+              SELECT 1
+              FROM sys.columns AS column_row
+              WHERE column_row.object_id = table_type.type_table_object_id
+                AND column_row.name = N'NoBoardingAtStop'
+          )
+          OR NOT EXISTS
+          (
+              SELECT 1
+              FROM sys.columns AS column_row
+              WHERE column_row.object_id = table_type.type_table_object_id
+                AND column_row.name = N'NoAlightingAtStop'
+          )
+      )
+)
+BEGIN
+    IF OBJECT_ID(N'stg.uspPersistMddRealtimeSnapshot', N'P') IS NOT NULL
+    BEGIN
+        DROP PROCEDURE stg.uspPersistMddRealtimeSnapshot;
+    END;
+
+    DROP TYPE stg.MddRealtimeStopObservationInputType;
+END;
+GO
+
 IF TYPE_ID(N'stg.MddRealtimeStopObservationInputType') IS NULL
 BEGIN
     EXEC
@@ -31,7 +78,10 @@ BEGIN
             TimetabledArrivalUtc DATETIME2(0) NULL,
             EstimatedArrivalUtc DATETIME2(0) NULL,
             PlannedBay NVARCHAR(100) NULL,
-            EstimatedBay NVARCHAR(100) NULL
+            EstimatedBay NVARCHAR(100) NULL,
+            NotServicedStop BIT NULL,
+            NoBoardingAtStop BIT NULL,
+            NoAlightingAtStop BIT NULL
         );'
     );
 END;
@@ -111,6 +161,9 @@ BEGIN
                 s.EstimatedArrivalUtc,
                 s.PlannedBay,
                 s.EstimatedBay,
+                s.NotServicedStop,
+                s.NoBoardingAtStop,
+                s.NoAlightingAtStop,
                 ROW_NUMBER() OVER
                 (
                     PARTITION BY s.ResultId
@@ -134,7 +187,10 @@ BEGIN
             TimetabledArrivalUtc,
             EstimatedArrivalUtc,
             PlannedBay,
-            EstimatedBay
+            EstimatedBay,
+            NotServicedStop,
+            NoBoardingAtStop,
+            NoAlightingAtStop
         )
         SELECT
             @ObservedAtUtc,
@@ -151,7 +207,10 @@ BEGIN
             s.TimetabledArrivalUtc,
             s.EstimatedArrivalUtc,
             s.PlannedBay,
-            s.EstimatedBay
+            s.EstimatedBay,
+            s.NotServicedStop,
+            s.NoBoardingAtStop,
+            s.NoAlightingAtStop
         FROM StopRows AS s
         WHERE s.SourceRowNumber = 1
           AND NOT EXISTS

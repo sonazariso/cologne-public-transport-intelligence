@@ -603,6 +603,9 @@ function ConvertFrom-MddTriasResponse {
                 EstimatedArrivalUtc  = Get-TriasPropertyValue -Object $serviceArrival -PropertyName "estimatedTime"
                 PlannedBay           = Get-TriasText (Get-TriasPropertyValue -Object $call -PropertyName "plannedBay")
                 EstimatedBay         = Get-TriasText (Get-TriasPropertyValue -Object $call -PropertyName "estimatedBay")
+                NotServicedStop      = Get-TriasPropertyValue -Object $call -PropertyName "notServicedStop"
+                NoBoardingAtStop     = Get-TriasPropertyValue -Object $call -PropertyName "noBoardingAtStop"
+                NoAlightingAtStop    = Get-TriasPropertyValue -Object $call -PropertyName "noAlightingAtStop"
             }
 
             if ([string]::IsNullOrWhiteSpace($parsed.ResultId) -or
@@ -800,7 +803,10 @@ function New-MddRealtimeSnapshotDataTables {
         @{ Name = "TimetabledArrivalUtc"; DataType = [datetime]; MaxLength = 0 },
         @{ Name = "EstimatedArrivalUtc"; DataType = [datetime]; MaxLength = 0 },
         @{ Name = "PlannedBay"; DataType = [string]; MaxLength = 100 },
-        @{ Name = "EstimatedBay"; DataType = [string]; MaxLength = 100 }
+        @{ Name = "EstimatedBay"; DataType = [string]; MaxLength = 100 },
+        @{ Name = "NotServicedStop"; DataType = [bool]; MaxLength = 0 },
+        @{ Name = "NoBoardingAtStop"; DataType = [bool]; MaxLength = 0 },
+        @{ Name = "NoAlightingAtStop"; DataType = [bool]; MaxLength = 0 }
     )
 
     foreach ($source in @($Snapshot.Stops)) {
@@ -819,6 +825,9 @@ function New-MddRealtimeSnapshotDataTables {
             EstimatedArrivalUtc  = Get-DbValue (Convert-TriasUtc $source.EstimatedArrivalUtc)
             PlannedBay           = Get-DbValue $source.PlannedBay
             EstimatedBay         = Get-DbValue $source.EstimatedBay
+            NotServicedStop      = Get-DbValue $source.NotServicedStop
+            NoBoardingAtStop     = Get-DbValue $source.NoBoardingAtStop
+            NoAlightingAtStop    = Get-DbValue $source.NoAlightingAtStop
         }
     }
 
